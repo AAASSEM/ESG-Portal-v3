@@ -48,6 +48,20 @@ const List = () => {
   };
 
   useEffect(() => {
+    // Load saved answers from localStorage first
+    const savedAnswers = localStorage.getItem(`profiling_answers_${companyId}`);
+    if (savedAnswers) {
+      console.log('Loading saved profiling answers:', savedAnswers);
+      setAnswers(JSON.parse(savedAnswers));
+    }
+    
+    // Check if wizard has been completed and checklist should be shown
+    const wizardCompleted = localStorage.getItem(`profiling_wizard_completed_${companyId}`);
+    if (wizardCompleted === 'true') {
+      console.log('Profiling wizard was previously completed, showing checklist');
+      setShowChecklist(true);
+    }
+    
     fetchProfilingQuestions();
   }, [companyId]);
 
@@ -141,10 +155,15 @@ const List = () => {
   };
 
   const handleAnswerChange = (questionId, answer) => {
-    setAnswers(prev => ({
-      ...prev,
+    const newAnswers = {
+      ...answers,
       [questionId]: answer
-    }));
+    };
+    setAnswers(newAnswers);
+    
+    // Save to localStorage
+    localStorage.setItem(`profiling_answers_${companyId}`, JSON.stringify(newAnswers));
+    console.log('Saved profiling answer to localStorage:', questionId, answer);
   };
 
   const handleAnswerAll = (answer) => {
@@ -153,6 +172,10 @@ const List = () => {
       allAnswers[question.id] = answer;
     });
     setAnswers(allAnswers);
+    
+    // Save to localStorage
+    localStorage.setItem(`profiling_answers_${companyId}`, JSON.stringify(allAnswers));
+    console.log('Saved all profiling answers to localStorage:', answer);
   };
 
   const allQuestionsAnswered = profilingQuestions.every(question => 
@@ -251,6 +274,9 @@ const List = () => {
   const categoryStats = getCategoryStats();
 
   const handleContinue = () => {
+    // Mark wizard as completed when continuing from checklist
+    localStorage.setItem(`profiling_wizard_completed_${companyId}`, 'true');
+    console.log('Profiling wizard marked as completed');
     navigate('/meter');
   };
 
@@ -459,7 +485,7 @@ const List = () => {
       </div>
 
       {/* Questions by Category */}
-      {['Basic Operations', 'Sustainability Practices'].map(category => (
+      {['Basic Operations'].map(category => (
         <div key={category} className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
           <div className="p-6 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">{category}</h3>
@@ -517,6 +543,9 @@ const List = () => {
               onClick={async () => {
                 const checklist = await saveAnswersAndGenerateChecklist();
                 if (checklist) {
+                  // Mark wizard as completed and show checklist
+                  localStorage.setItem(`profiling_wizard_completed_${companyId}`, 'true');
+                  console.log('Profiling wizard marked as completed');
                   setShowChecklist(true);
                 }
               }}
