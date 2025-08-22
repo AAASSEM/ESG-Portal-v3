@@ -1,0 +1,390 @@
+<html><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script><script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif']
+            }
+          }
+        }
+      };
+    </script>
+    <script>window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <style>
+        ::webkit-scrollbar { display: none;}
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .glass-effect { backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.1); }
+    </style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"><style>
+  .highlighted-section {
+    outline: 2px solid #3F20FB;
+    background-color: rgba(63, 32, 251, 0.1);
+  }
+
+  .edit-button {
+    position: absolute;
+    z-index: 1000;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  html, body {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  </style></head>
+<body class="bg-gray-50">
+
+<div class="flex h-screen">
+    <!-- Sidebar -->
+    <div id="sidebar" class="w-80 bg-white shadow-xl border-r border-gray-200 flex flex-col">
+        <!-- Logo Section -->
+        <div id="logo-section" class="p-6 border-b border-gray-200">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-leaf text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900">ESG Portal</h1>
+                    <p class="text-sm text-gray-500">Sustainability Dashboard</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Overview -->
+        <div id="progress-overview" class="p-6 border-b border-gray-200">
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">Overall Progress</span>
+                    <span class="text-sm font-bold text-blue-600">50%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full" style="width: 50%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Module Navigation -->
+        <div id="module-navigation" class="flex-1 p-6 space-y-3">
+            <div class="module-item bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-4 cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">1. Company Onboarding</h3>
+                            <p class="text-sm text-gray-600">Basic company information</p>
+                        </div>
+                    </div>
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                </div>
+            </div>
+
+            <div class="module-item bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-4 cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">2. Framework Selection</h3>
+                            <p class="text-sm text-gray-600">Choose ESG frameworks</p>
+                        </div>
+                    </div>
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                </div>
+            </div>
+
+            <div class="module-item bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-lg p-4 cursor-pointer border-2">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm font-bold">3</span>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">3. Data Checklist</h3>
+                            <p class="text-sm text-gray-600">Personalized data requirements</p>
+                        </div>
+                    </div>
+                    <div class="w-3 h-3 bg-purple-600 rounded-full"></div>
+                </div>
+            </div>
+
+            <div class="module-item bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-4 opacity-60">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                            <i class="fas fa-lock text-gray-500 text-sm"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-700">4. Meter Management</h3>
+                            <p class="text-sm text-gray-500">Configure measurement points</p>
+                        </div>
+                    </div>
+                    <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                </div>
+            </div>
+
+            <div class="module-item bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-4 opacity-60">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                            <i class="fas fa-lock text-gray-500 text-sm"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-700">5. Data Collection</h3>
+                            <p class="text-sm text-gray-500">Track and input data</p>
+                        </div>
+                    </div>
+                    <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                </div>
+            </div>
+
+            <div class="module-item bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-4 opacity-60">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                            <i class="fas fa-lock text-gray-500 text-sm"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-700">6. Dashboard</h3>
+                            <p class="text-sm text-gray-500">Performance overview</p>
+                        </div>
+                    </div>
+                    <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Profile -->
+        <div id="user-profile" class="p-6 border-t border-gray-200">
+            <div class="flex items-center space-x-3">
+                <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg" alt="User" class="w-10 h-10 rounded-full">
+                <div class="flex-1">
+                    <h4 class="font-medium text-gray-900">Sarah Johnson</h4>
+                    <p class="text-sm text-gray-500">ESG Manager</p>
+                </div>
+                <button class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col">
+        <!-- Top Header -->
+        <div id="header" class="bg-white border-b border-gray-200 px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <nav class="text-sm text-gray-500">
+                        <span>Module 3</span> <span class="mx-2">/</span> <span class="text-gray-900 font-medium">Personalized Data Checklist</span>
+                    </nav>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <div class="text-sm">
+                        <span class="text-gray-500">Company:</span>
+                        <span class="font-medium text-gray-900 ml-1">Emirates Hotels Group</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-question-circle text-lg"></i>
+                        </button>
+                        <button class="text-gray-400 hover:text-gray-600 relative">
+                            <i class="fas fa-bell text-lg"></i>
+                            <div class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                        </button>
+                        <button class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-cog text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div id="main-content" class="flex-1 p-8 overflow-y-auto">
+            <!-- Module Header -->
+            <div id="module-header-card" class="mb-8">
+                <div class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-8 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-3xl font-bold mb-2">Personalized Data Checklist</h1>
+                            <p class="text-purple-100 text-lg">Answer a few questions to generate your customized ESG data requirements</p>
+                            <div class="flex items-center space-x-4 mt-4">
+                                <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">Module 3 of 6</span>
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                                        <span class="text-sm font-bold">1</span>
+                                    </div>
+                                    <div class="w-4 h-0.5 bg-white bg-opacity-40"></div>
+                                    <div class="w-8 h-8 bg-white bg-opacity-40 rounded-full flex items-center justify-center">
+                                        <span class="text-sm font-bold">2</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-purple-100 text-sm mb-2">Progress</div>
+                            <div class="text-2xl font-bold">7/15</div>
+                            <div class="text-sm text-purple-100">Questions Answered</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profiling Wizard -->
+            <div id="profiling-wizard" class="mb-8">
+                <!-- Quick Actions Bar -->
+                <div id="quick-actions-bar" class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-900">Quick Actions</h3>
+                        <div class="flex items-center space-x-3">
+                            <button class="bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors">
+                                <i class="fas fa-check-double mr-2"></i>Answer All Yes
+                            </button>
+                            <button class="bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors">
+                                <i class="fas fa-times-circle mr-2"></i>Answer All No
+                            </button>
+                            <button class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
+                                <i class="fas fa-undo mr-2"></i>Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div id="wizard-progress" class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-sm font-medium text-gray-700">Question Progress</span>
+                        <span class="text-sm font-bold text-purple-600">7 of 15 answered</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="bg-gradient-to-r from-purple-600 to-blue-600 h-3 rounded-full transition-all duration-500" style="width: 46.7%"></div>
+                    </div>
+                </div>
+
+                <!-- Questions Grid -->
+                <div id="questions-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="question-card bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <span class="text-purple-600 font-bold text-sm">1</span>
+                                </div>
+                                <h4 class="font-medium text-gray-900">Energy Management</h4>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        </div>
+                        <p class="text-gray-600 mb-4">Do you track electricity consumption across your facilities?</p>
+                        <div class="flex space-x-3">
+                            <button class="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg font-medium">
+                                <i class="fas fa-check mr-2"></i>Yes
+                            </button>
+                            <button class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200">
+                                <i class="fas fa-times mr-2"></i>No
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="question-card bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <span class="text-purple-600 font-bold text-sm">2</span>
+                                </div>
+                                <h4 class="font-medium text-gray-900">Water Usage</h4>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        </div>
+                        <p class="text-gray-600 mb-4">Do you monitor water consumption in your operations?</p>
+                        <div class="flex space-x-3">
+                            <button class="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg font-medium">
+                                <i class="fas fa-check mr-2"></i>Yes
+                            </button>
+                            <button class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200">
+                                <i class="fas fa-times mr-2"></i>No
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="question-card bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <span class="text-purple-600 font-bold text-sm">3</span>
+                                </div>
+                                <h4 class="font-medium text-gray-900">Waste Management</h4>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        </div>
+                        <p class="text-gray-600 mb-4">Do you track waste generation and recycling rates?</p>
+                        <div class="flex space-x-3">
+                            <button class="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg font-medium">
+                                <i class="fas fa-check mr-2"></i>Yes
+                            </button>
+                            <button class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200">
+                                <i class="fas fa-times mr-2"></i>No
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="question-card bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <span class="text-purple-600 font-bold text-sm">4</span>
+                                </div>
+                                <h4 class="font-medium text-gray-900">Employee Diversity</h4>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        </div>
+                        <p class="text-gray-600 mb-4">Do you collect data on workforce diversity and inclusion?</p>
+                        <div class="flex space-x-3">
+                            <button class="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg font-medium">
+                                <i class="fas fa-check mr-2"></i>Yes
+                            </button>
+                            <button class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200">
+                                <i class="fas fa-times mr-2"></i>No
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="question-card bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <span class="text-purple-600 font-bold text-sm">5</span>
+                                </div>
+                                <h4 class="font-medium text-gray-900">Training Programs</h4>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        </div>
+                        <p class="text-gray-600 mb-4">Do you track employee training hours and programs?</p>
+                        <div class="flex space-x-3">
+                            <button class="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg font-medium">
+                                <i class="fas fa-check mr-2"></i>Yes
+                            </button>
+                            <button class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200">
+                                <i class="fas fa-times mr-2"></i>No
+                            </button>
+                        </div></div></div></div></div></div></div></body></html>

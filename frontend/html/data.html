@@ -1,0 +1,381 @@
+<html><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script><script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif']
+            }
+          }
+        }
+      };
+    </script>
+    <script>window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    
+    <style>
+        ::webkit-scrollbar { display: none;}
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .glass-effect { backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.1); }
+    </style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"><style>
+  .highlighted-section {
+    outline: 2px solid #3F20FB;
+    background-color: rgba(63, 32, 251, 0.1);
+  }
+
+  .edit-button {
+    position: absolute;
+    z-index: 1000;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  html, body {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  </style></head>
+<body class="bg-gray-50">
+
+<div class="flex h-screen">
+    <!-- Sidebar -->
+    <div id="sidebar" class="w-80 bg-white shadow-xl border-r border-gray-200 flex flex-col">
+        <!-- Logo Section -->
+        <div id="logo-section" class="p-6 border-b border-gray-200">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-leaf text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900">ESG Portal</h1>
+                    <p class="text-sm text-gray-500">Sustainability Dashboard</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Overview -->
+        <div id="progress-overview" class="p-6 border-b border-gray-200">
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">Overall Progress</span>
+                    <span class="text-sm font-bold text-blue-600">83%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full" style="width: 83%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Module Navigation -->
+        <div id="module-navigation" class="flex-1 p-6 space-y-3">
+            <div class="module-item bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-4 cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">1. Company Onboarding</h3>
+                            <p class="text-sm text-gray-600">Basic company information</p>
+                        </div>
+                    </div>
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                </div>
+            </div>
+
+            <div class="module-item bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-4 cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">2. Framework Selection</h3>
+                            <p class="text-sm text-gray-600">Choose ESG frameworks</p>
+                        </div>
+                    </div>
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                </div>
+            </div>
+
+            <div class="module-item bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-4 cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">3. Data Checklist</h3>
+                            <p class="text-sm text-gray-600">Personalized data requirements</p>
+                        </div>
+                    </div>
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                </div>
+            </div>
+
+            <div class="module-item bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-4 cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">4. Meter Management</h3>
+                            <p class="text-sm text-gray-600">Configure measurement points</p>
+                        </div>
+                    </div>
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                </div>
+            </div>
+
+            <div class="module-item bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-300 rounded-lg p-4 cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm font-bold">5</span>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">5. Data Collection</h3>
+                            <p class="text-sm text-gray-600">Track and input data</p>
+                        </div>
+                    </div>
+                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                </div>
+            </div>
+
+            <div class="module-item bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-4 cursor-pointer opacity-60">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center">
+                            <i class="fas fa-lock text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">6. Dashboard</h3>
+                            <p class="text-sm text-gray-600">Performance overview</p>
+                        </div>
+                    </div>
+                    <div class="w-3 h-3 bg-gray-400 rounded-full"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Profile -->
+        <div id="user-profile" class="p-6 border-t border-gray-200">
+            <div class="flex items-center space-x-3">
+                <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg" alt="User" class="w-10 h-10 rounded-full">
+                <div class="flex-1">
+                    <h4 class="font-medium text-gray-900">Sarah Johnson</h4>
+                    <p class="text-sm text-gray-500">ESG Manager</p>
+                </div>
+                <button class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col">
+        <!-- Top Header -->
+        <div id="header" class="bg-white border-b border-gray-200 px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <nav class="text-sm text-gray-500">
+                        <span>Module 5</span> <span class="mx-2">/</span> <span class="text-gray-900 font-medium">Data Collection &amp; Tracking</span>
+                    </nav>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <div class="text-sm">
+                        <span class="text-gray-500">Company:</span>
+                        <span class="font-medium text-gray-900 ml-1">Emirates Hotels Group</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-question-circle text-lg"></i>
+                        </button>
+                        <button class="text-gray-400 hover:text-gray-600 relative">
+                            <i class="fas fa-bell text-lg"></i>
+                            <div class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                        </button>
+                        <button class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-cog text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Collection Content -->
+        <div id="data-collection-content" class="flex-1 p-8 overflow-y-auto">
+            <!-- Module Header -->
+            <div id="module-header" class="mb-8">
+                <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-8 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-3xl font-bold mb-2">Data Collection &amp; Tracking</h1>
+                            <p class="text-blue-100 text-lg">Monitor and input your ESG data for the current reporting period</p>
+                            <div class="flex items-center space-x-4 mt-4">
+                                <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">Module 5 of 6</span>
+                                <span class="text-sm">Current Period: January 2024</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-blue-100 mb-1">Days Remaining</div>
+                            <div class="text-3xl font-bold">9</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reporting Period Selector -->
+            <div id="reporting-period" class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">Reporting Period</h3>
+                <div class="flex items-center space-x-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Year</label>
+                        <select class="border border-gray-300 rounded-lg px-4 py-2 w-32">
+                            <option>2024</option>
+                            <option>2023</option>
+                            <option>2022</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Month</label>
+                        <div class="grid grid-cols-6 gap-2">
+                            <button class="bg-green-100 border border-green-300 text-green-700 px-3 py-2 rounded-lg text-sm font-medium">Jan</button>
+                            <button class="bg-blue-100 border-2 border-blue-500 text-blue-700 px-3 py-2 rounded-lg text-sm font-medium">Feb</button>
+                            <button class="bg-gray-100 border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium">Mar</button>
+                            <button class="bg-gray-100 border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium">Apr</button>
+                            <button class="bg-gray-100 border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium">May</button>
+                            <button class="bg-gray-100 border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium">Jun</button>
+                            <button class="bg-gray-100 border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium">Jul</button>
+                            <button class="bg-gray-100 border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium">Aug</button>
+                            <button class="bg-gray-100 border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium">Sep</button>
+                            <button class="bg-gray-100 border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium">Oct</button>
+                            <button class="bg-gray-100 border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium">Nov</button>
+                            <button class="bg-gray-200 border border-gray-400 text-gray-500 px-3 py-2 rounded-lg text-sm font-medium opacity-50 cursor-not-allowed">Dec</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Dashboard -->
+            <div id="progress-dashboard" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6">Annual Progress (2024)</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-gray-700">Data Entry Progress</span>
+                                <span class="text-sm font-bold text-blue-600">78%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div class="bg-blue-500 h-3 rounded-full" style="width: 78%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-gray-700">Evidence Upload</span>
+                                <span class="text-sm font-bold text-green-600">85%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div class="bg-green-500 h-3 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <div class="pt-4 border-t border-gray-200">
+                            <div class="text-2xl font-bold text-gray-900">247</div>
+                            <div class="text-sm text-gray-500">Total Data Points YTD</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6">February 2024 Progress</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-gray-700">Data Entry Progress</span>
+                                <span class="text-sm font-bold text-orange-600">45%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div class="bg-orange-500 h-3 rounded-full" style="width: 45%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-gray-700">Evidence Upload</span>
+                                <span class="text-sm font-bold text-purple-600">32%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div class="bg-purple-500 h-3 rounded-full" style="width: 32%"></div>
+                            </div>
+                        </div>
+                        <div class="pt-4 border-t border-gray-200">
+                            <div class="text-2xl font-bold text-gray-900">18</div>
+                            <div class="text-sm text-gray-500">Items Remaining</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Entry Interface -->
+            <div id="data-entry-interface" class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Data Entry Interface</h3>
+                        <div class="flex space-x-3">
+                            <button class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-200">
+                                <i class="fas fa-upload mr-2"></i>Upload Multiple Files
+                            </button>
+                            <button class="bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-200">
+                                <i class="fas fa-download mr-2"></i>Export Template
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <label class="text-sm font-medium text-gray-700">View by:</label>
+                            <select class="border border-gray-300 rounded-lg px-3 py-1 text-sm">
+                                <option>All Items</option>
+                                <option>Metered</option>
+                                <option>Non-metered</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <label class="text-sm font-medium text-gray-700">Group by:</label>
+                            <select class="border border-gray-300 rounded-lg px-3 py-1 text-sm">
+                                <option>Category</option>
+                                <option>Frequency</option>
+                                <option>Status</option>
+                            </select>
+                        </div>
+                        <div class="flex-1">
+                            <input type="text" placeholder="Search data elements..." class="w-full border border-gray-300 rounded-lg px-3 py-1 text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900">Electricity Consumption - Main Building</h4>
+                                        <p class="text-sm text-gray-600">Meter ID: ELC-001 | Monthly Reading</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-4">
+                                    <input type="number" value="15420" class="border border-gray-300 rounded-lg px-3 py-2 w-24 text-sm">
+                                    <span class="text-sm text-gray-500">kWh</span>
+                                    <button class="bg-green-100 text-green-700 px-3 py-1 rounded text-sm">
+                                        <i class="fas fa-check mr-1"></i></button></div></div></div></div></div></div></div></div></div></body></html>
