@@ -60,6 +60,49 @@ class CompanyViewSet(viewsets.ModelViewSet):
         progress['overall_percentage'] = (completed_modules / 5) * 100
         
         return Response(progress)
+    
+    @action(detail=True, methods=['get'])
+    def profile_answers(self, request, pk=None):
+        """Get company's profiling wizard answers"""
+        company = get_object_or_404(Company, pk=pk)
+        
+        answers = CompanyProfileAnswer.objects.filter(company=company)
+        serializer = CompanyProfileAnswerSerializer(answers, many=True)
+        
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'])
+    def save_profile_answer(self, request, pk=None):
+        """Save a single profiling wizard answer"""
+        company = get_object_or_404(Company, pk=pk)
+        
+        question_id = request.data.get('question')
+        answer = request.data.get('answer')
+        
+        if question_id is None or answer is None:
+            return Response(
+                {'error': 'question and answer are required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            question = ProfilingQuestion.objects.get(question_id=question_id)
+            
+            # Update or create the answer
+            profile_answer, created = CompanyProfileAnswer.objects.update_or_create(
+                company=company,
+                question=question,
+                defaults={'answer': answer}
+            )
+            
+            serializer = CompanyProfileAnswerSerializer(profile_answer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+            
+        except ProfilingQuestion.DoesNotExist:
+            return Response(
+                {'error': 'Question not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
 
 
 class ActivityViewSet(viewsets.ReadOnlyModelViewSet):

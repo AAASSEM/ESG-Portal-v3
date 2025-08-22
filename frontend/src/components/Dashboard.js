@@ -320,6 +320,7 @@ const Dashboard = () => {
   const [selectedMeter, setSelectedMeter] = useState(0);
   const [selectedEmissionScope, setSelectedEmissionScope] = useState('Scope 2');
   const [modalData, setModalData] = useState({ isOpen: false, type: '', data: {} });
+  const [showDeadlineModal, setShowDeadlineModal] = useState(false);
   
   // Get current company ID (should come from context or route params)
   const companyId = 1;
@@ -957,38 +958,27 @@ const Dashboard = () => {
   };
 
   const handleAddDeadline = () => {
-    // Navigate to the relevant ESG management page
-    const options = [
-      'Data Collection - Add monthly submission deadline',
-      'Framework Compliance - Add reporting deadline', 
-      'ESG Checklist - Add action item deadline'
-    ];
-    
-    const choice = prompt(`Choose what type of deadline to add:\n\n${options.map((opt, i) => `${i + 1}. ${opt}`).join('\n')}\n\nEnter 1, 2, or 3:`);
-    
-    switch(choice) {
-      case '1':
+    setShowDeadlineModal(true);
+  };
+
+  const handleDeadlineModalClose = () => {
+    setShowDeadlineModal(false);
+  };
+
+  const handleDeadlineTypeSelect = (type) => {
+    setShowDeadlineModal(false);
+    switch(type) {
+      case 'data':
         navigate('/data');
         break;
-      case '2':
+      case 'framework':
         navigate('/rame');
         break;
-      case '3':
+      case 'checklist':
         navigate('/list');
         break;
       default:
-        if (choice !== null) {
-          // Show modal instead of alert for invalid choice
-          setModalData({
-            isOpen: true,
-            type: 'error',
-            data: {
-              type: 'error',
-              title: 'Invalid Selection',
-              message: 'Please select a valid option (1, 2, or 3) and try again.'
-            }
-          });
-        }
+        break;
     }
   };
 
@@ -1492,6 +1482,113 @@ const Dashboard = () => {
         onConfirm={confirmExport}
         data={modalData.data}
       />
+
+      {/* Deadline Modal */}
+      <DeadlineModal
+        isOpen={showDeadlineModal}
+        onClose={handleDeadlineModalClose}
+        onSelectType={handleDeadlineTypeSelect}
+      />
+    </div>
+  );
+};
+
+// Deadline Modal Component
+const DeadlineModal = ({ isOpen, onClose, onSelectType }) => {
+  if (!isOpen) return null;
+  
+  const deadlineTypes = [
+    {
+      id: 'data',
+      icon: 'fas fa-database',
+      title: 'Data Collection Deadline',
+      description: 'Add monthly submission deadline for meter readings and ESG data',
+      color: 'blue'
+    },
+    {
+      id: 'framework',
+      icon: 'fas fa-file-alt',
+      title: 'Framework Compliance Deadline',
+      description: 'Add reporting deadline for ESG frameworks (DST, Green Key, etc.)',
+      color: 'green'
+    },
+    {
+      id: 'checklist',
+      icon: 'fas fa-tasks',
+      title: 'ESG Action Item Deadline',
+      description: 'Add deadline for checklist items and sustainability initiatives',
+      color: 'purple'
+    }
+  ];
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        {/* Modal Header */}
+        <div className="p-6 border-b bg-blue-50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i className="fas fa-calendar-plus text-blue-600"></i>
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Add New Deadline</h2>
+                <p className="text-gray-600">Choose the type of deadline you want to add</p>
+              </div>
+            </div>
+            <button 
+              onClick={onClose}
+              className="p-2 hover:bg-white rounded-lg transition-colors"
+            >
+              <i className="fas fa-times text-gray-500"></i>
+            </button>
+          </div>
+        </div>
+
+        {/* Modal Body */}
+        <div className="p-6">
+          <div className="space-y-4">
+            {deadlineTypes.map((type) => (
+              <button
+                key={type.id}
+                onClick={() => onSelectType(type.id)}
+                className={`w-full p-6 rounded-xl border-2 border-gray-200 hover:border-${type.color}-300 hover:shadow-md transition-all duration-200 text-left group`}
+              >
+                <div className="flex items-start space-x-4">
+                  <div className={`w-12 h-12 bg-${type.color}-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-${type.color}-200 transition-colors`}>
+                    <i className={`${type.icon} text-${type.color}-600 text-lg`}></i>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                      {type.title}
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      {type.description}
+                    </p>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <i className="fas fa-arrow-right text-gray-400 group-hover:text-blue-500 transition-colors"></i>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Modal Footer */}
+        <div className="p-6 border-t bg-gray-50 flex justify-between">
+          <div className="text-sm text-gray-500">
+            <i className="fas fa-info-circle mr-2"></i>
+            You'll be taken to the relevant page to set up your deadline
+          </div>
+          <button 
+            onClick={onClose}
+            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

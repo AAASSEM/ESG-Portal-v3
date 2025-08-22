@@ -19,55 +19,52 @@ const Onboard = () => {
       try {
         console.log('Fetching company data for ID:', companyId);
         
-        // Try to get data from localStorage first
-        const savedData = localStorage.getItem(`company_${companyId}`);
-        if (savedData) {
-          console.log('Found data in localStorage:', savedData);
-          const data = JSON.parse(savedData);
-          setFormData({
-            companyName: data.companyName || '',
-            emirate: data.emirate || '',
-            primarySector: data.primarySector || '',
-            activities: data.activities || [],
-            customActivity: ''
-          });
-          setLoading(false);
-          return;
-        }
-
-        // Try the API call
+        // Try the API call first
         const response = await fetch(`http://localhost:8000/api/companies/${companyId}/`);
         console.log('API Response status:', response.status);
         
         if (response.ok) {
           const data = await response.json();
           console.log('Loaded company data from API:', data);
+          
+          // Extract activity names from the nested structure
+          const activityNames = data.activities ? data.activities.map(a => a.name) : [];
+          
           setFormData({
             companyName: data.name || '',
             emirate: data.emirate || '',
-            primarySector: data.primary_sector || '',
-            activities: data.activities || [],
+            primarySector: data.sector || '',
+            activities: activityNames,
+            customActivity: ''
+          });
+        } else if (response.status === 404) {
+          console.log('Company not found, starting with empty form');
+          // Company doesn't exist yet, start with empty form
+          setFormData({
+            companyName: '',
+            emirate: '',
+            primarySector: '',
+            activities: [],
             customActivity: ''
           });
         } else {
-          console.log('Company not found or API error, using defaults');
-          // If company doesn't exist, use default values
+          console.error('API error, using empty form');
           setFormData({
-            companyName: 'Emirates Hotels Group',
-            emirate: 'Dubai',
-            primarySector: 'Hospitality & Tourism',
-            activities: ['Hotel Operations', 'Food & Beverage', 'Event Management'],
+            companyName: '',
+            emirate: '',
+            primarySector: '',
+            activities: [],
             customActivity: ''
           });
         }
       } catch (error) {
         console.error('Error fetching company data:', error);
-        // Use default values on error
+        // Use empty form on error
         setFormData({
-          companyName: 'Emirates Hotels Group',
-          emirate: 'Dubai',
-          primarySector: 'Hospitality & Tourism',
-          activities: ['Hotel Operations', 'Food & Beverage', 'Event Management'],
+          companyName: '',
+          emirate: '',
+          primarySector: '',
+          activities: [],
           customActivity: ''
         });
       } finally {
@@ -240,55 +237,53 @@ const Onboard = () => {
   const handleContinue = async () => {
     console.log('Saving company data:', formData);
     
-    // Always save to localStorage first for immediate persistence
-    localStorage.setItem(`company_${companyId}`, JSON.stringify(formData));
-    console.log('Saved to localStorage');
-    
-    // Try to also save to API
     try {
-      // Try to create or update the company data
-      let response = await fetch(`http://localhost:8000/api/companies/${companyId}/`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.companyName,
-          emirate: formData.emirate,
-          primary_sector: formData.primarySector,
-          activities: formData.activities
-        })
-      });
-
-      // If PUT fails, try POST to create a new company
-      if (!response.ok && response.status === 404) {
-        console.log('Company not found, creating new company...');
+      // First, check if company exists
+      let response = await fetch(`http://localhost:8000/api/companies/${companyId}/`);
+      let isUpdate = response.ok;
+      
+      // Prepare the data in the format expected by the API
+      const apiData = {
+        name: formData.companyName,
+        emirate: formData.emirate.toLowerCase().replace(' ', '_'), // Convert to API format
+        sector: formData.primarySector.toLowerCase().replace(/\s+/g, '_').replace('&', ''),
+        activities: formData.activities
+      };
+      
+      console.log('API data to send:', apiData);
+      
+      if (isUpdate) {
+        // Update existing company
+        console.log('Updating existing company...');
+        response = await fetch(`http://localhost:8000/api/companies/${companyId}/`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(apiData)
+        });
+      } else {
+        // Create new company
+        console.log('Creating new company...');
         response = await fetch(`http://localhost:8000/api/companies/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            id: companyId,
-            name: formData.companyName,
-            emirate: formData.emirate,
-            primary_sector: formData.primarySector,
-            activities: formData.activities
-          })
+          body: JSON.stringify(apiData)
         });
       }
 
       if (response.ok) {
         const savedData = await response.json();
-        console.log('Company data saved to API successfully:', savedData);
+        console.log('Company data saved successfully:', savedData);
       } else {
-        console.error('Failed to save company data to API. Status:', response.status);
+        console.error('Failed to save company data. Status:', response.status);
         const errorText = await response.text();
         console.error('Error response:', errorText);
       }
     } catch (error) {
-      console.error('Error saving company data to API:', error);
-      console.log('Data still saved locally');
+      console.error('Error saving company data:', error);
     }
     
     navigate('/rame');

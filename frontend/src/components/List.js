@@ -48,22 +48,63 @@ const List = () => {
   };
 
   useEffect(() => {
-    // Load saved answers from localStorage first
-    const savedAnswers = localStorage.getItem(`profiling_answers_${companyId}`);
-    if (savedAnswers) {
-      console.log('Loading saved profiling answers:', savedAnswers);
-      setAnswers(JSON.parse(savedAnswers));
-    }
+    const fetchData = async () => {
+      // Fetch profiling questions and existing answers
+      await fetchProfilingQuestions();
+      await fetchExistingAnswers();
+      await checkWizardCompletion();
+    };
     
-    // Check if wizard has been completed and checklist should be shown
-    const wizardCompleted = localStorage.getItem(`profiling_wizard_completed_${companyId}`);
-    if (wizardCompleted === 'true') {
-      console.log('Profiling wizard was previously completed, showing checklist');
-      setShowChecklist(true);
-    }
-    
-    fetchProfilingQuestions();
+    fetchData();
   }, [companyId]);
+
+  // Fetch existing answers from database
+  const fetchExistingAnswers = async () => {
+    try {
+      console.log('Fetching existing profile answers for company:', companyId);
+      const response = await fetch(`http://localhost:8000/api/companies/${companyId}/profile_answers/`);
+      
+      if (response.ok) {
+        const answersData = await response.json();
+        console.log('Loaded profile answers from API:', answersData);
+        
+        // Convert API format to component format
+        const answersMap = {};
+        answersData.forEach(item => {
+          answersMap[item.question.question_id] = item.answer;
+        });
+        
+        setAnswers(answersMap);
+      } else {
+        console.log('No existing answers found or API error');
+      }
+    } catch (error) {
+      console.error('Error fetching existing answers:', error);
+    }
+  };
+
+  // Check if wizard has been completed
+  const checkWizardCompletion = async () => {
+    try {
+      // Check if company has answered all questions (wizard completed)
+      const response = await fetch(`http://localhost:8000/api/companies/${companyId}/profile_answers/`);
+      if (response.ok) {
+        const answersData = await response.json();
+        const questionsResponse = await fetch(`http://localhost:8000/api/profiling-questions/for_company/?company_id=${companyId}`);
+        if (questionsResponse.ok) {
+          const questionsData = await questionsResponse.json();
+          
+          // If all questions are answered, show checklist
+          if (answersData.length > 0 && answersData.length >= questionsData.length) {
+            console.log('Profiling wizard completed, showing checklist');
+            setShowChecklist(true);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error checking wizard completion:', error);
+    }
+  };
 
   // Fallback hardcoded questions (will be replaced by API data)
   const fallbackQuestions = [
@@ -154,28 +195,74 @@ const List = () => {
     'board_composition': { id: 'board_composition', name: 'Board Composition', description: 'Board diversity metrics', unit: '%', cadence: 'Annually', frameworks: ['ESG'], category: 'Governance', is_metered: false }
   };
 
-  const handleAnswerChange = (questionId, answer) => {
+  const handleAnswerChange = async (questionId, answer) => {
     const newAnswers = {
       ...answers,
       [questionId]: answer
     };
     setAnswers(newAnswers);
     
-    // Save to localStorage
-    localStorage.setItem(`profiling_answers_${companyId}`, JSON.stringify(newAnswers));
-    console.log('Saved profiling answer to localStorage:', questionId, answer);
+    // Save to database
+    try {
+      console.log('Saving profiling answer to database:', questionId, answer);
+      const response = await fetch(`http://localhost:8000/api/companies/${companyId}/save_profile_answer/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: questionId,
+          answer: answer
+        })
+      });
+
+      if (response.ok) {
+        const savedAnswer = await response.json();
+        console.log('Answer saved successfully:', savedAnswer);
+      } else {
+        console.error('Failed to save answer. Status:', response.status);
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+      }
+    } catch (error) {
+      console.error('Error saving answer to database:', error);
+    }
   };
 
-  const handleAnswerAll = (answer) => {
+  const handleAnswerAll = async (answer) => {
     const allAnswers = {};
     profilingQuestions.forEach(question => {
       allAnswers[question.id] = answer;
     });
     setAnswers(allAnswers);
     
-    // Save to localStorage
-    localStorage.setItem(`profiling_answers_${companyId}`, JSON.stringify(allAnswers));
-    console.log('Saved all profiling answers to localStorage:', answer);
+    // Save all answers to database
+    try {
+      console.log('Saving all profiling answers to database:', answer);
+      const promises = profilingQuestions.map(question => 
+        fetch(`http://localhost:8000/api/companies/${companyId}/save_profile_answer/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            question: question.id,
+            answer: answer
+          })
+        })
+      );
+      
+      const responses = await Promise.all(promises);
+      const allSuccessful = responses.every(response => response.ok);
+      
+      if (allSuccessful) {
+        console.log('All answers saved successfully');
+      } else {
+        console.error('Some answers failed to save');
+      }
+    } catch (error) {
+      console.error('Error saving all answers to database:', error);
+    }
   };
 
   const allQuestionsAnswered = profilingQuestions.every(question => 
@@ -227,7 +314,7 @@ const List = () => {
             isMetered: item.is_metered
           }));
           
-          localStorage.setItem('finalizedChecklist', JSON.stringify(transformedChecklist));
+          // Checklist is now stored in database, no need for localStorage
           return transformedChecklist;
         }
       }
@@ -274,9 +361,8 @@ const List = () => {
   const categoryStats = getCategoryStats();
 
   const handleContinue = () => {
-    // Mark wizard as completed when continuing from checklist
-    localStorage.setItem(`profiling_wizard_completed_${companyId}`, 'true');
-    console.log('Profiling wizard marked as completed');
+    // Wizard completion is now tracked by database (all questions answered)
+    console.log('Profiling wizard completed, continuing to meters');
     navigate('/meter');
   };
 
@@ -543,9 +629,8 @@ const List = () => {
               onClick={async () => {
                 const checklist = await saveAnswersAndGenerateChecklist();
                 if (checklist) {
-                  // Mark wizard as completed and show checklist
-                  localStorage.setItem(`profiling_wizard_completed_${companyId}`, 'true');
-                  console.log('Profiling wizard marked as completed');
+                  // Wizard completion is tracked by database (all questions answered)
+                  console.log('Profiling wizard completed, showing checklist');
                   setShowChecklist(true);
                 }
               }}

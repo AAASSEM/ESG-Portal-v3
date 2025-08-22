@@ -1,0 +1,13 @@
+{
+  "name": "esg-portal-monorepo",
+  "version": "1.0.0",
+  "description": "ESG Portal - Full Stack Application",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "postinstall": "cd frontend && npm install"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}
