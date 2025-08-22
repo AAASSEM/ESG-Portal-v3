@@ -978,6 +978,7 @@ const Dashboard = () => {
         navigate('/list');
         break;
       default:
+        // No action needed for default case
         break;
     }
   };
