@@ -8,7 +8,7 @@ import Meter from './components/Meter';
 import Data from './components/Data';
 import Dashboard from './components/Dashboard';
 import DashboardTest from './components/DashboardTest';
-import DashboardSimple from './components/DashboardSimple';
+// import DashboardSimple from './components/DashboardSimple'; // Unused
 import './App.css';
 
 console.log('App.js loaded');

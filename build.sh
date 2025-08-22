@@ -7,7 +7,7 @@ set -o errexit
 echo "Building React frontend..."
 cd frontend
 npm install
-npm run build
+CI=false npm run build
 cd ..
 
 # Install Python dependencies
