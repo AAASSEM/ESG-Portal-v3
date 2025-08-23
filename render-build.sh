@@ -15,10 +15,11 @@ pip install --upgrade pip
 pip install -r backend/requirements.txt
 
 # Navigate to frontend directory and build React app
-echo "🔨 Building React frontend..."
+echo "🔨 Setting up React frontend..."
 cd frontend
 npm install
-npm run build
+# Skip npm run build - we'll use the pre-built good version
+echo "📦 Using pre-built frontend files..."
 cd ..
 
 # Navigate to backend directory 

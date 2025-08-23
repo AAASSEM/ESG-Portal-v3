@@ -67,7 +67,7 @@ const Meter = () => {
 
   const createMeter = async (meterData) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/meters/`, {
+      const response = await fetch(`http://localhost:8000/api/meters/?company_id=${companyId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ const Meter = () => {
 
   const updateMeter = async (meterId, meterData) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/meters/${meterId}/`, {
+      const response = await fetch(`http://localhost:8000/api/meters/${meterId}/?company_id=${companyId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -122,7 +122,7 @@ const Meter = () => {
 
   const deleteMeter = async (meterId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/meters/${meterId}/`, {
+      const response = await fetch(`http://localhost:8000/api/meters/${meterId}/?company_id=${companyId}`, {
         method: 'DELETE',
       });
       
@@ -437,7 +437,7 @@ const Meter = () => {
                     }`}>
                       <i className={`${
                         meter.type === 'Electricity Consumption' ? 'fas fa-bolt text-yellow-600' :
-                        meter.type === 'Water Consumption' ? 'fas fa-droplet text-cyan-600' :
+                        meter.type === 'Water Consumption' ? 'fas fa-tint text-cyan-600' :
                         meter.type === 'Waste to Landfill' ? 'fas fa-trash-alt text-green-600' :
                         meter.type === 'Generator Fuel Consumption' ? 'fas fa-gas-pump text-red-600' :
                         meter.type === 'Vehicle Fuel Consumption' ? 'fas fa-car text-purple-600' :
@@ -511,6 +511,7 @@ const Meter = () => {
                     <i className="fas fa-copy"></i>
                   </button> */}
                   <button 
+                    type="button"
                     className={`py-2 px-3 rounded-lg text-sm ${
                       meter.isAutoCreated 
                         ? meter.status === 'Active'
@@ -518,7 +519,11 @@ const Meter = () => {
                           : 'bg-green-100 text-green-600 hover:bg-green-200'
                         : 'bg-red-100 text-red-600 hover:bg-red-200'
                     }`}
-                    onClick={() => handleToggleMeterStatus(meter.id)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleToggleMeterStatus(meter.id);
+                    }}
                     title={meter.isAutoCreated 
                       ? meter.status === 'Active' ? 'Deactivate Meter' : 'Activate Meter'
                       : 'Delete Meter'
@@ -555,23 +560,23 @@ const Meter = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-3">
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                            meter.type === 'Electricity' ? 'bg-yellow-100' :
-                            meter.type === 'Water' ? 'bg-cyan-100' :
-                            meter.type === 'Waste' ? 'bg-green-100' :
-                            meter.type === 'Generator' ? 'bg-red-100' :
-                            meter.type === 'Vehicle' ? 'bg-purple-100' :
-                            meter.type === 'LPG' ? 'bg-orange-100' :
-                            meter.type === 'Renewable Energy' ? 'bg-teal-100' :
+                            meter.type === 'Electricity Consumption' ? 'bg-yellow-100' :
+                            meter.type === 'Water Consumption' ? 'bg-cyan-100' :
+                            meter.type === 'Waste to Landfill' ? 'bg-green-100' :
+                            meter.type === 'Generator Fuel Consumption' ? 'bg-red-100' :
+                            meter.type === 'Vehicle Fuel Consumption' ? 'bg-purple-100' :
+                            meter.type === 'LPG Usage' ? 'bg-orange-100' :
+                            meter.type === 'Renewable Energy Usage' ? 'bg-teal-100' :
                             'bg-gray-100'
                           }`}>
                             <i className={`${
-                              meter.type === 'Electricity' ? 'fas fa-bolt text-yellow-600' :
-                              meter.type === 'Water' ? 'fas fa-droplet text-cyan-600' :
-                              meter.type === 'Waste' ? 'fas fa-trash-alt text-green-600' :
-                              meter.type === 'Generator' ? 'fas fa-gas-pump text-red-600' :
-                              meter.type === 'Vehicle' ? 'fas fa-car text-purple-600' :
-                              meter.type === 'LPG' ? 'fas fa-fire text-orange-600' :
-                              meter.type === 'Renewable Energy' ? 'fas fa-solar-panel text-teal-600' :
+                              meter.type === 'Electricity Consumption' ? 'fas fa-bolt text-yellow-600' :
+                              meter.type === 'Water Consumption' ? 'fas fa-tint text-cyan-600' :
+                              meter.type === 'Waste to Landfill' ? 'fas fa-trash-alt text-green-600' :
+                              meter.type === 'Generator Fuel Consumption' ? 'fas fa-gas-pump text-red-600' :
+                              meter.type === 'Vehicle Fuel Consumption' ? 'fas fa-car text-purple-600' :
+                              meter.type === 'LPG Usage' ? 'fas fa-fire text-orange-600' :
+                              meter.type === 'Renewable Energy Usage' ? 'fas fa-solar-panel text-teal-600' :
                               'fas fa-gauge text-gray-600'
                             } text-sm`}></i>
                           </div>
@@ -590,13 +595,13 @@ const Meter = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          meter.type === 'Electricity' ? 'bg-yellow-100 text-yellow-800' :
-                          meter.type === 'Water' ? 'bg-cyan-100 text-cyan-800' :
-                          meter.type === 'Waste' ? 'bg-green-100 text-green-800' :
-                          meter.type === 'Generator' ? 'bg-red-100 text-red-800' :
-                          meter.type === 'Vehicle' ? 'bg-purple-100 text-purple-800' :
-                          meter.type === 'LPG' ? 'bg-orange-100 text-orange-800' :
-                          meter.type === 'Renewable Energy' ? 'bg-teal-100 text-teal-800' :
+                          meter.type === 'Electricity Consumption' ? 'bg-yellow-100 text-yellow-800' :
+                          meter.type === 'Water Consumption' ? 'bg-cyan-100 text-cyan-800' :
+                          meter.type === 'Waste to Landfill' ? 'bg-green-100 text-green-800' :
+                          meter.type === 'Generator Fuel Consumption' ? 'bg-red-100 text-red-800' :
+                          meter.type === 'Vehicle Fuel Consumption' ? 'bg-purple-100 text-purple-800' :
+                          meter.type === 'LPG Usage' ? 'bg-orange-100 text-orange-800' :
+                          meter.type === 'Renewable Energy Usage' ? 'bg-teal-100 text-teal-800' :
                           'bg-gray-100 text-gray-800'
                         }`}>
                           {meter.type}
@@ -650,6 +655,7 @@ const Meter = () => {
                             <i className="fas fa-copy"></i>
                           </button> */}
                           <button 
+                            type="button"
                             className={`${
                               meter.isAutoCreated 
                                 ? meter.status === 'Active'
@@ -657,7 +663,11 @@ const Meter = () => {
                                   : 'text-green-600 hover:text-green-900'
                                 : 'text-red-600 hover:text-red-900'
                             }`}
-                            onClick={() => handleToggleMeterStatus(meter.id)}
+                            onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleToggleMeterStatus(meter.id);
+                    }}
                             title={meter.isAutoCreated 
                               ? meter.status === 'Active' ? 'Deactivate Meter' : 'Activate Meter'
                               : 'Delete Meter'

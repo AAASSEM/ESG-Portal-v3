@@ -42,21 +42,26 @@ const List = () => {
         }
       } catch (error) {
         console.error('Error fetching profiling questions:', error);
-      } finally {
-        setLoading(false);
       }
   };
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
+      // Reset state to ensure clean load
+      setAnswers({});
+      setShowChecklist(false);
+      setProfilingQuestions([]);
+      
       // Fetch profiling questions and existing answers
       await fetchProfilingQuestions();
       await fetchExistingAnswers();
       await checkWizardCompletion();
+      setLoading(false);
     };
     
     fetchData();
-  }, [companyId]);
+  }, []); // Run on component mount
 
   // Fetch existing answers from database
   const fetchExistingAnswers = async () => {
@@ -71,12 +76,18 @@ const List = () => {
         // Convert API format to component format
         const answersMap = {};
         answersData.forEach(item => {
-          answersMap[item.question.question_id] = item.answer;
+          answersMap[item.question] = item.answer;
         });
         
+        console.log('Setting answers state to:', answersMap);
         setAnswers(answersMap);
+        
+        // If we have answers, we should show the checklist
+        if (Object.keys(answersMap).length > 0) {
+          console.log('Answers found, checking if should show checklist');
+        }
       } else {
-        console.log('No existing answers found or API error');
+        console.log('No existing answers found or API error, status:', response.status);
       }
     } catch (error) {
       console.error('Error fetching existing answers:', error);
@@ -265,9 +276,19 @@ const List = () => {
     }
   };
 
-  const allQuestionsAnswered = profilingQuestions.every(question => 
+  const allQuestionsAnswered = profilingQuestions.length > 0 && profilingQuestions.every(question => 
     answers.hasOwnProperty(question.id)
   );
+  
+  // Debug logging
+  console.log('Current state:', {
+    answersCount: Object.keys(answers).length,
+    answers: answers,
+    questionsCount: profilingQuestions.length,
+    questions: profilingQuestions.map(q => q.id),
+    allQuestionsAnswered: allQuestionsAnswered,
+    showChecklist: showChecklist
+  });
 
 
   // API function to save answers and generate checklist

@@ -261,24 +261,36 @@ class DataCollectionService:
                 # For metered elements, create task for each active meter
                 # Match meters based on data element type (e.g., electricity, water, etc.)
                 meter_type_mapping = {
-                    'electricity': 'Electricity',
-                    'water': 'Water', 
-                    'waste': 'Waste',
-                    'gas': 'Generator',
-                    'natural gas': 'Generator',
-                    'lpg': 'LPG',
-                    'vehicle': 'Vehicle',
-                    'renewable': 'Renewable Energy'
+                    'electricity': 'Electricity Consumption',
+                    'water': 'Water Consumption', 
+                    'waste': 'Waste to Landfill',
+                    'gas': 'Generator Fuel Consumption',
+                    'generator': 'Generator Fuel Consumption',
+                    'fuel': 'Generator Fuel Consumption',
+                    'lpg': 'LPG Usage',
+                    'vehicle': 'Vehicle Fuel Consumption',
+                    'renewable': 'Renewable Energy Usage'
                 }
                 
                 # Try to find the meter type based on element name
                 element_lower = item.element.name.lower()
                 meter_type = None
                 
-                for keyword, mtype in meter_type_mapping.items():
-                    if keyword in element_lower:
-                        meter_type = mtype
-                        break
+                # Use more specific matching - check for exact patterns first
+                if 'electricity' in element_lower:
+                    meter_type = 'Electricity Consumption'
+                elif 'water' in element_lower:
+                    meter_type = 'Water Consumption'
+                elif 'waste' in element_lower:
+                    meter_type = 'Waste to Landfill'
+                elif 'vehicle' in element_lower:
+                    meter_type = 'Vehicle Fuel Consumption'
+                elif 'generator' in element_lower:
+                    meter_type = 'Generator Fuel Consumption'
+                elif 'lpg' in element_lower:
+                    meter_type = 'LPG Usage'
+                elif 'renewable' in element_lower:
+                    meter_type = 'Renewable Energy Usage'
                 
                 # If no specific match found, get all active meters
                 if meter_type:
@@ -346,10 +358,11 @@ class DataCollectionService:
         data_complete = submissions.exclude(value='').count()
         evidence_complete = submissions.exclude(evidence_file='').count()
         
-        # Calculate remaining tasks: count missing data + missing evidence separately
-        data_remaining = total_submissions - data_complete
-        evidence_remaining = total_submissions - evidence_complete
-        items_remaining = data_remaining + evidence_remaining
+        # Calculate remaining tasks: count items that need either data OR evidence (or both)
+        incomplete_items = submissions.filter(
+            Q(value='') | Q(evidence_file='')
+        ).count()
+        items_remaining = incomplete_items
         
         # An item is fully complete only when it has both data AND evidence
         fully_complete = submissions.exclude(value='').exclude(evidence_file='').count()

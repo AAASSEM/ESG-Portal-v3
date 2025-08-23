@@ -261,6 +261,64 @@ class MeterViewSet(viewsets.ModelViewSet):
             return Meter.objects.filter(company_id=company_id)
         return Meter.objects.none()
     
+    def create(self, request, *args, **kwargs):
+        """Custom create to handle company_id from query params or request body"""
+        # Get company_id from query params or request body
+        company_id = request.query_params.get('company_id') or request.data.get('company')
+        
+        if not company_id:
+            return Response(
+                {'error': 'company_id is required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Validate company exists
+        try:
+            company = Company.objects.get(pk=company_id)
+        except Company.DoesNotExist:
+            return Response(
+                {'error': 'Company not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Create meter data with company_id
+        meter_data = request.data.copy()
+        meter_data['company_id'] = company_id
+        
+        # Create meter directly
+        meter = Meter.objects.create(
+            company=company,
+            type=meter_data.get('type'),
+            name=meter_data.get('name'),
+            account_number=meter_data.get('account_number'),
+            location_description=meter_data.get('location_description'),
+            status=meter_data.get('status', 'active').lower()
+        )
+        
+        serializer = self.get_serializer(meter)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def update(self, request, *args, **kwargs):
+        """Custom update to ensure company_id consistency"""
+        meter = self.get_object()
+        
+        # Update meter fields
+        if 'name' in request.data:
+            meter.name = request.data['name']
+        if 'type' in request.data:
+            meter.type = request.data['type']
+        if 'account_number' in request.data:
+            meter.account_number = request.data['account_number']
+        if 'location_description' in request.data:
+            meter.location_description = request.data['location_description']
+        if 'status' in request.data:
+            meter.status = request.data['status'].lower()
+        
+        meter.save()
+        
+        serializer = self.get_serializer(meter)
+        return Response(serializer.data)
+    
     @action(detail=False, methods=['post'])
     def auto_create(self, request):
         """Auto-create default meters for company"""

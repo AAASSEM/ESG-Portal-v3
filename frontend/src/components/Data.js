@@ -442,18 +442,41 @@ const Data = () => {
     try {
       const success = await saveDataEntry(entryId, value, file);
       if (success) {
-        // Update the entry status and value
-        setDataEntries(prev => 
-          prev.map(entry => 
-            entry.id === entryId 
-              ? { 
-                  ...entry, 
-                  status: (value && file) ? 'complete' : 'partial',
-                  value: value || entry.value 
-                } 
-              : entry
-          )
-        );
+        // If file was uploaded, we need to get the updated entry data to get the actual file URL
+        if (file) {
+          // Fetch the updated entry data from backend to get the actual evidence_file URL
+          const response = await fetch(`http://localhost:8000/api/data-collection/${entryId}/`);
+          if (response.ok) {
+            const updatedSubmission = await response.json();
+            
+            // Update the entry with both value and evidence file from backend
+            setDataEntries(prev => 
+              prev.map(entry => 
+                entry.id === entryId 
+                  ? { 
+                      ...entry, 
+                      status: (value || entry.value) && updatedSubmission.evidence_file ? 'complete' : 'partial',
+                      value: value || entry.value,
+                      evidence_file: updatedSubmission.evidence_file
+                    } 
+                  : entry
+              )
+            );
+          }
+        } else {
+          // If no file, just update value and status
+          setDataEntries(prev => 
+            prev.map(entry => 
+              entry.id === entryId 
+                ? { 
+                    ...entry, 
+                    status: value && entry.evidence_file ? 'complete' : 'partial',
+                    value: value || entry.value 
+                  } 
+                : entry
+            )
+          );
+        }
         
         // Clear the temporary values
         setEntryValues(prev => {

@@ -7,26 +7,44 @@ const Rame = () => {
 
   const mandatoryFrameworks = [
     {
-      id: 'gri',
-      name: 'GRI Standards',
-      description: 'Global Reporting Initiative - The world\'s most widely used sustainability reporting standards',
-      icon: 'fas fa-leaf',
+      id: 'dst',
+      name: 'Dubai Sustainable Tourism (DST)',
+      description: 'Dubai Department of Economy and Tourism sustainability requirements for all hotels in Dubai',
+      icon: 'fas fa-building',
       color: 'green',
-      coverage: 'Environmental, Social, Governance',
-      reason: 'UAE regulatory requirement for hospitality sector'
+      coverage: 'Energy, Water, Waste, Community',
+      reason: 'Mandatory for all Dubai hospitality entities'
     },
     {
-      id: 'uae',
-      name: 'UAE ESG Guidelines',
-      description: 'National ESG reporting framework aligned with UAE Vision 2071 sustainability goals',
-      icon: 'fas fa-flag',
+      id: 'esg',
+      name: 'ESG Framework',
+      description: 'Core Environmental, Social, and Governance reporting framework',
+      icon: 'fas fa-chart-line',
       color: 'blue',
-      coverage: 'Local compliance, Carbon neutrality',
-      reason: 'UAE business registration requirement'
+      coverage: 'Environmental, Social, Governance',
+      reason: 'Core framework for all businesses'
     }
   ];
 
   const voluntaryFrameworks = [
+    {
+      id: 'green_key',
+      name: 'Green Key Certification',
+      description: 'Eco-label for tourism establishments with comprehensive sustainability criteria',
+      icon: 'fas fa-key',
+      color: 'green',
+      features: ['13 criteria areas', 'Water & energy efficiency', 'Guest engagement programs'],
+      bestFor: 'Hotels seeking eco-certification'
+    },
+    {
+      id: 'gri',
+      name: 'GRI Standards',
+      description: 'Global Reporting Initiative - Comprehensive sustainability reporting standards',
+      icon: 'fas fa-globe',
+      color: 'blue',
+      features: ['Universal standards', 'Stakeholder engagement', 'Detailed disclosures'],
+      bestFor: 'Comprehensive sustainability reporting'
+    },
     {
       id: 'sasb',
       name: 'SASB Standards',
