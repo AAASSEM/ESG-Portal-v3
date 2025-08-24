@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
 
 const Data = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { selectedCompany } = useAuth();
   const [selectedYear, setSelectedYear] = useState(2025); // Use 2025 to match backend data
   const [selectedMonth, setSelectedMonth] = useState(8); // Use August to match current backend data
@@ -138,7 +139,7 @@ const Data = () => {
   // API functions
   const fetchAvailableMonths = async (year) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/data-collection/available_months/?year=${year}`);
+      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/data-collection/available_months/?year=${year}`);
       const data = await response.json();
       return data.months || [];
     } catch (error) {
@@ -149,7 +150,7 @@ const Data = () => {
 
   const fetchDataEntries = async (year, month) => {
     try {
-      const response = await fetch(
+      const response = await makeAuthenticatedRequest(
         `http://localhost:8000/api/data-collection/tasks/?company_id=${companyId}&year=${year}&month=${month}`
       );
       const data = await response.json();
@@ -166,7 +167,7 @@ const Data = () => {
         ? `http://localhost:8000/api/data-collection/progress/?company_id=${companyId}&year=${year}&month=${month}`
         : `http://localhost:8000/api/data-collection/progress/?company_id=${companyId}&year=${year}`;
       
-      const response = await fetch(url);
+      const response = await makeAuthenticatedRequest(url);
       const data = await response.json();
       return data;
     } catch (error) {
@@ -181,7 +182,7 @@ const Data = () => {
       if (value) formData.append('value', value);
       if (file) formData.append('evidence_file', file);
 
-      const response = await fetch(`http://localhost:8000/api/data-collection/${submissionId}/`, {
+      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/data-collection/${submissionId}/`, {
         method: 'PATCH',
         body: formData, // Use FormData for file uploads
       });
@@ -271,6 +272,8 @@ const Data = () => {
   // Load initial data
   useEffect(() => {
     const loadInitialData = async () => {
+      if (!companyId) return; // Don't load if no company selected
+      
       setLoading(true);
       try {
         // Load available months for current year
@@ -303,12 +306,13 @@ const Data = () => {
           }
         });
 
-        // Load data entries for current month
+        // Load data entries for current month - will include new meters automatically
+        console.log('Loading data entries for company:', companyId, 'year:', selectedYear, 'month:', selectedMonth);
         const entries = await fetchDataEntries(selectedYear, selectedMonth);
         console.log('Raw entries from API:', entries);
         const transformedEntries = entries.map(entry => ({
           id: entry.submission.id,
-          name: entry.element_name,
+          name: entry.meter ? `${entry.element_name} - ${entry.meter.name}` : entry.element_name,
           meter: entry.meter ? `${entry.meter.name} (${entry.meter.type})` : 'N/A',
           meter_id: entry.meter ? entry.meter.id : null,
           meter_type: entry.meter ? entry.meter.type : null,
@@ -332,13 +336,63 @@ const Data = () => {
     };
 
     loadInitialData();
-  }, [selectedYear, selectedMonth]);
+  }, [selectedYear, selectedMonth, companyId]);
 
   // Update filtered entries when search, filter, or grouping changes
   useEffect(() => {
     const filtered = applyFiltersAndSearch(dataEntries);
     setFilteredEntries(filtered);
   }, [searchTerm, viewFilter, groupBy, dataEntries]);
+
+  // Add window focus listener to refresh data when user returns to tab
+  useEffect(() => {
+    const handleFocus = () => {
+      if (companyId) {
+        console.log('Window focused - refreshing data entries to include any new meters');
+        refreshDataEntries();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [companyId, selectedYear, selectedMonth]);
+
+  // Add navigation-based refresh - triggers when navigating to Data page
+  useEffect(() => {
+    if (location.pathname === '/data' && companyId) {
+      console.log('Navigated to Data page - refreshing data entries to include any meter changes');
+      refreshDataEntries();
+    }
+  }, [location.pathname, companyId, selectedYear, selectedMonth]);
+
+  // Helper function to refresh data entries
+  const refreshDataEntries = async () => {
+    if (!companyId) return;
+    
+    console.log('Refreshing data entries for company:', companyId);
+    try {
+      const entries = await fetchDataEntries(selectedYear, selectedMonth);
+      const transformedEntries = entries.map(entry => ({
+        id: entry.submission.id,
+        name: entry.element_name,
+        meter: entry.meter ? `${entry.meter.name} (${entry.meter.type})` : 'N/A',
+        meter_id: entry.meter ? entry.meter.id : null,
+        meter_type: entry.meter ? entry.meter.type : null,
+        meter_location: entry.meter ? entry.meter.location : null,
+        frequency: entry.cadence,
+        value: entry.submission.value || '',
+        unit: entry.element_unit || '',
+        status: entry.submission.status || 'missing',
+        category: entry.type,
+        description: entry.element_description || '',
+        evidence_file: entry.submission.evidence_file || null
+      }));
+      setDataEntries(transformedEntries);
+      console.log('✅ Data entries refreshed, found', transformedEntries.length, 'tasks');
+    } catch (error) {
+      console.error('Error refreshing data entries:', error);
+    }
+  };
 
   const handleValueChange = (entryId, value) => {
     setEntryValues(prev => ({
@@ -425,7 +479,7 @@ const Data = () => {
       const formData = new FormData();
       formData.append('remove_evidence', 'true'); // Signal to remove file
       
-      const response = await fetch(`http://localhost:8000/api/data-collection/${entryId}/`, {
+      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/data-collection/${entryId}/`, {
         method: 'PATCH',
         body: formData,
       });
@@ -469,7 +523,7 @@ const Data = () => {
         // If file was uploaded, we need to get the updated entry data to get the actual file URL
         if (file) {
           // Fetch the updated entry data from backend to get the actual evidence_file URL
-          const response = await fetch(`http://localhost:8000/api/data-collection/${entryId}/`);
+          const response = await makeAuthenticatedRequest(`http://localhost:8000/api/data-collection/${entryId}/`);
           if (response.ok) {
             const updatedSubmission = await response.json();
             
@@ -688,7 +742,7 @@ const Data = () => {
         const entries = await fetchDataEntries(selectedYear, monthId);
         const transformedEntries = entries.map(entry => ({
           id: entry.submission.id,
-          name: entry.element_name,
+          name: entry.meter ? `${entry.element_name} - ${entry.meter.name}` : entry.element_name,
           meter: entry.meter ? `${entry.meter.name} (${entry.meter.type})` : 'N/A',
           meter_id: entry.meter ? entry.meter.id : null,
           meter_type: entry.meter ? entry.meter.type : null,

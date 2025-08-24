@@ -316,11 +316,21 @@ class DataCollectionService:
                 
                 # If no specific match found, get all active meters
                 if meter_type:
+                    # Try exact match first
                     meters = Meter.objects.filter(
                         company=company,
                         type=meter_type,
                         status='active'
                     )
+                    
+                    # If no exact match, try flexible matching (for backwards compatibility)
+                    if not meters.exists():
+                        short_type = meter_type.replace(' Consumption', '').replace(' Usage', '').replace('Waste to Landfill', 'Waste')
+                        meters = Meter.objects.filter(
+                            company=company,
+                            type__icontains=short_type,
+                            status='active'
+                        )
                 else:
                     # Fallback: get all active meters
                     meters = Meter.objects.filter(
@@ -371,7 +381,13 @@ class DataCollectionService:
             month_name = datetime(year, month, 1).strftime('%b')
             filters['reporting_period'] = month_name
         
-        submissions = CompanyDataSubmission.objects.filter(**filters)
+        # Only count submissions from active meters (or non-metered elements)
+        submissions = CompanyDataSubmission.objects.filter(
+            **filters
+        ).filter(
+            Q(meter__status='active') |  # Active meters
+            Q(meter__isnull=True)       # Non-metered elements (no meter)
+        )
         
         total_submissions = submissions.count()
         if total_submissions == 0:

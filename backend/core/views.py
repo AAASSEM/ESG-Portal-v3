@@ -375,40 +375,63 @@ class MeterViewSet(viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         """Custom create to handle company_id from query params or request body"""
-        # Get company_id from query params or request body
-        company_id = request.query_params.get('company_id') or request.data.get('company')
-        
-        if not company_id:
-            return Response(
-                {'error': 'company_id is required'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Validate company exists and belongs to authenticated user
         try:
-            company = Company.objects.get(pk=company_id, user=request.user)
-        except Company.DoesNotExist:
-            return Response(
-                {'error': 'Company not found'}, 
-                status=status.HTTP_404_NOT_FOUND
+            print(f"🔍 Meter create request received from user: {request.user}")
+            print(f"📊 Request data: {request.data}")
+            print(f"📊 Query params: {request.query_params}")
+            
+            # Get company_id from query params or request body
+            company_id = request.query_params.get('company_id') or request.data.get('company')
+            print(f"🏢 Company ID: {company_id}")
+            
+            if not company_id:
+                return Response(
+                    {'error': 'company_id is required'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Validate company exists and belongs to authenticated user
+            try:
+                company = Company.objects.get(pk=company_id, user=request.user)
+                print(f"✅ Company found: {company.name}")
+            except Company.DoesNotExist:
+                print(f"❌ Company not found for ID: {company_id}")
+                return Response(
+                    {'error': 'Company not found'}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Create meter data with company_id
+            meter_data = request.data.copy()
+            meter_data['company_id'] = company_id
+            print(f"🔧 Creating meter with data: {meter_data}")
+            
+            # Create meter directly
+            meter = Meter.objects.create(
+                user=request.user,  # CRITICAL: Set the user field
+                company=company,
+                type=meter_data.get('type'),
+                name=meter_data.get('name'),
+                account_number=meter_data.get('account_number', ''),
+                location_description=meter_data.get('location_description', ''),
+                status=meter_data.get('status', 'active').lower(),
+                is_auto_created=False  # Manual meter creation by user
             )
-        
-        # Create meter data with company_id
-        meter_data = request.data.copy()
-        meter_data['company_id'] = company_id
-        
-        # Create meter directly
-        meter = Meter.objects.create(
-            company=company,
-            type=meter_data.get('type'),
-            name=meter_data.get('name'),
-            account_number=meter_data.get('account_number'),
-            location_description=meter_data.get('location_description'),
-            status=meter_data.get('status', 'active').lower()
-        )
-        
-        serializer = self.get_serializer(meter)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            print(f"✅ Meter created successfully: {meter.id}")
+            
+            serializer = self.get_serializer(meter)
+            print(f"📤 Returning meter data: {serializer.data}")
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            print(f"💥 ERROR in meter creation: {str(e)}")
+            print(f"💥 Error type: {type(e).__name__}")
+            import traceback
+            print(f"💥 Full traceback: {traceback.format_exc()}")
+            return Response(
+                {'error': f'Internal server error: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     
     def update(self, request, *args, **kwargs):
         """Custom update to ensure company_id consistency"""

@@ -162,7 +162,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3001",
     "http://localhost:3002",
     "http://localhost:3003",
-    "http://localhost:7701",  # Current frontend port
+    "http://localhost:7701",  # Previous frontend port
+    "http://localhost:7702",  # Current frontend port
     "http://127.0.0.1:3000",
     "http://127.0.0.1:3001",
     "http://127.0.0.1:3002",
@@ -203,6 +204,8 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:7701',
     'http://127.0.0.1:7701',
+    'http://localhost:7702',
+    'http://127.0.0.1:7702',
     'https://*.onrender.com',
     'http://*.onrender.com',
 ]

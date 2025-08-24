@@ -178,14 +178,18 @@ class Meter(models.Model):
     account_number = models.CharField(max_length=255, blank=True)
     location_description = models.TextField(blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='active')
+    is_auto_created = models.BooleanField(default=False)  # Track if meter was auto-generated
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
         return f"{self.company.name} - {self.type} - {self.name} (User: {self.user.username})"
     
     def has_data(self):
-        """Check if meter has any data submissions"""
-        return self.companydatasubmission_set.exists()
+        """Check if meter has any actual data values entered (not just empty submissions)"""
+        return self.companydatasubmission_set.filter(
+            models.Q(value__isnull=False) & ~models.Q(value='') |
+            models.Q(evidence_file__isnull=False) & ~models.Q(evidence_file='')
+        ).exists()
 
 
 class CompanyDataSubmission(models.Model):

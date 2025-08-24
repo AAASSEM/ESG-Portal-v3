@@ -9,6 +9,10 @@ const Meter = () => {
   const [showAddMeter, setShowAddMeter] = useState(false);
   const [showEditMeter, setShowEditMeter] = useState(false);
   const [editingMeter, setEditingMeter] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteModalData, setDeleteModalData] = useState(null);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [statusModalData, setStatusModalData] = useState(null);
   const [meters, setMeters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,20 +54,25 @@ const Meter = () => {
       const data = await response.json();
       
       // Transform backend data to frontend format
-      const transformedMeters = data.results.map(meter => ({
-        id: meter.id,
-        name: meter.name,
-        type: meter.type,
-        location: meter.location_description || 'To be configured',
-        account_number: meter.account_number || '',
-        status: meter.status === 'active' ? 'Active' : 'Inactive',
-        lastReading: 'No readings yet',
-        lastUpdate: new Date(meter.created_at).toLocaleString(),
-        dataPoints: ['Primary Measurement'],
-        frameworks: ['Auto-assigned'],
-        has_data: meter.has_data, // Track if meter has data (prevents deletion)
-        isAutoCreated: true // All meters are auto-created from checklist
-      }));
+      const transformedMeters = data.results.map(meter => {
+        // Detect auto-created meters by name pattern (starts with "Main")
+        const isAutoCreated = meter.name && meter.name.trim().toLowerCase().startsWith('main');
+        
+        return {
+          id: meter.id,
+          name: meter.name,
+          type: meter.type,
+          location: meter.location_description || 'To be configured',
+          account_number: meter.account_number || '',
+          status: meter.status === 'active' ? 'Active' : 'Inactive',
+          lastReading: 'No readings yet',
+          lastUpdate: new Date(meter.created_at).toLocaleString(),
+          dataPoints: ['Primary Measurement'],
+          frameworks: ['Auto-assigned'],
+          has_data: meter.has_data, // Track if meter has data (prevents deletion)
+          isAutoCreated: isAutoCreated // Detect based on name pattern
+        };
+      });
       
       setMeters(transformedMeters);
     } catch (error) {
@@ -75,25 +84,52 @@ const Meter = () => {
 
   const createMeter = async (meterData) => {
     try {
+      console.log('🔍 CREATE METER - Starting meter creation');
+      console.log('📊 Company ID:', companyId);
+      console.log('📊 Original meter data received:', meterData);
+      
+      const requestBody = {
+        company: companyId,
+        name: meterData.name,
+        type: meterData.type,
+        location_description: meterData.location,
+        account_number: meterData.account_number,
+        status: meterData.status?.toLowerCase() || 'active'
+      };
+      
+      console.log('📤 Request body being sent:', requestBody);
+      console.log('🌐 Request URL:', `http://localhost:8000/api/meters/?company_id=${companyId}`);
+      
       const response = await makeAuthenticatedRequest(`http://localhost:8000/api/meters/?company_id=${companyId}`, {
         method: 'POST',
-        body: JSON.stringify({
-          company: companyId,
-          name: meterData.name,
-          type: meterData.type,
-          location_description: meterData.location,
-          account_number: meterData.account_number,
-          status: meterData.status?.toLowerCase() || 'active'
-        }),
+        body: JSON.stringify(requestBody),
       });
       
+      console.log('📥 Response status:', response.status);
+      console.log('📥 Response ok:', response.ok);
+      
       if (response.ok) {
+        const responseData = await response.json();
+        console.log('✅ Meter created successfully:', responseData);
         await fetchMeters(); // Refresh the list
         return true;
+      } else {
+        // Try to get error details
+        try {
+          const errorData = await response.json();
+          console.error('❌ Server error response:', errorData);
+        } catch (e) {
+          console.error('❌ Could not parse error response');
+        }
+        console.error('❌ Response status:', response.status, response.statusText);
+        return false;
       }
-      return false;
     } catch (error) {
-      console.error('Error creating meter:', error);
+      console.error('💥 Network error creating meter:', error);
+      console.error('💥 Error details:', {
+        message: error.message,
+        stack: error.stack
+      });
       return false;
     }
   };
@@ -163,25 +199,70 @@ const Meter = () => {
 
   const deactivateMeter = async (meterId) => {
     const meter = meters.find(m => m.id === meterId);
-    if (!meter) return false;
+    if (!meter) {
+      setStatusModalData({
+        type: 'error',
+        title: 'Error',
+        message: 'Meter not found.',
+        meterId: null
+      });
+      setShowStatusModal(true);
+      return false;
+    }
     
     const newStatus = meter.status === 'Active' ? 'Inactive' : 'Active';
     const action = newStatus === 'Inactive' ? 'deactivate' : 'activate';
     
-    if (!window.confirm(`Are you sure you want to ${action} the meter "${meter.name}" (${meter.type})?`)) {
-      return false;
-    }
-    
-    const success = await updateMeter(meterId, {
-      ...meter,
-      status: newStatus
+    // Show confirmation modal
+    setStatusModalData({
+      type: 'confirm',
+      title: `Confirm ${action.charAt(0).toUpperCase() + action.slice(1)}`,
+      message: `Are you sure you want to ${action} the meter "${meter.name}" (${meter.type})?`,
+      meterId: meterId,
+      newStatus: newStatus,
+      action: action
     });
+    setShowStatusModal(true);
     
-    if (success) {
-      alert(`Meter ${action}d successfully`);
+    return false; // Return false since we're showing modal instead of immediate action
+  };
+
+  const confirmStatusChange = async () => {
+    if (!statusModalData?.meterId) return;
+    
+    const meter = meters.find(m => m.id === statusModalData.meterId);
+    if (!meter) return;
+    
+    try {
+      const success = await updateMeter(statusModalData.meterId, {
+        ...meter,
+        status: statusModalData.newStatus
+      });
+      
+      if (success) {
+        setStatusModalData({
+          type: 'success',
+          title: 'Success',
+          message: `Meter ${statusModalData.action}d successfully.`,
+          meterId: null
+        });
+      } else {
+        setStatusModalData({
+          type: 'error',
+          title: 'Error',
+          message: `Failed to ${statusModalData.action} meter. Please try again.`,
+          meterId: null
+        });
+      }
+    } catch (error) {
+      console.error(`Error ${statusModalData.action}ing meter:`, error);
+      setStatusModalData({
+        type: 'error',
+        title: 'Network Error',
+        message: `Network error occurred while ${statusModalData.action}ing meter. Please try again.`,
+        meterId: null
+      });
     }
-    
-    return success;
   };
 
   // Load meters on component mount
@@ -296,12 +377,79 @@ const Meter = () => {
     const meter = meters.find(m => m.id === meterId);
     if (!meter) return;
     
-    if (meter.isAutoCreated) {
-      // Auto-created meters can only be activated/deactivated (never deleted)
-      await deactivateMeter(meterId);
-    } else {
-      // Manual meters can be deleted, but only if they don't have data
-      await deleteMeter(meterId);
+    // All meters should just toggle active/inactive status
+    await deactivateMeter(meterId);
+  };
+
+  const handleDeleteMeter = (meterId) => {
+    const meter = meters.find(m => m.id === meterId);
+    if (!meter) {
+      setDeleteModalData({
+        type: 'error',
+        title: 'Error',
+        message: 'Meter not found.',
+        meterId: null
+      });
+      setShowDeleteModal(true);
+      return;
+    }
+    
+    // Check if meter has data - prevent deletion if it has data
+    if (meter.has_data) {
+      setDeleteModalData({
+        type: 'warning',
+        title: 'Cannot Delete Meter',
+        message: `Cannot delete meter "${meter.name}" because it has data entries. Please remove all data entries first, or deactivate the meter instead.`,
+        meterId: null
+      });
+      setShowDeleteModal(true);
+      return;
+    }
+    
+    // Show confirmation modal
+    setDeleteModalData({
+      type: 'confirm',
+      title: 'Confirm Deletion',
+      message: `Are you sure you want to permanently delete the meter "${meter.name}" (${meter.type})?\n\nThis action cannot be undone.`,
+      meterId: meterId,
+      meterName: meter.name
+    });
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteMeter = async () => {
+    if (!deleteModalData?.meterId) return;
+    
+    try {
+      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/meters/${deleteModalData.meterId}/?company_id=${companyId}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        await fetchMeters(); // Refresh the list
+        setDeleteModalData({
+          type: 'success',
+          title: 'Success',
+          message: `Meter "${deleteModalData.meterName}" has been deleted successfully.`,
+          meterId: null
+        });
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setDeleteModalData({
+          type: 'error',
+          title: 'Deletion Failed',
+          message: `Failed to delete meter: ${errorData.error || errorData.detail || 'Unknown error'}`,
+          meterId: null
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting meter:', error);
+      setDeleteModalData({
+        type: 'error',
+        title: 'Network Error',
+        message: 'Network error occurred while deleting meter. Please try again.',
+        meterId: null
+      });
     }
   };
 
@@ -554,30 +702,36 @@ const Meter = () => {
                   >
                     <i className="fas fa-copy"></i>
                   </button> */}
+                  {/* Activate/Deactivate Button */}
                   <button 
                     type="button"
                     className={`py-2 px-3 rounded-lg text-sm ${
-                      meter.isAutoCreated 
-                        ? meter.status === 'Active'
-                          ? 'bg-red-100 text-red-600 hover:bg-red-200' 
-                          : 'bg-green-100 text-green-600 hover:bg-green-200'
-                        : 'bg-red-100 text-red-600 hover:bg-red-200'
+                      meter.status === 'Active'
+                        ? 'bg-red-100 text-red-600 hover:bg-red-200' 
+                        : 'bg-green-100 text-green-600 hover:bg-green-200'
                     }`}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       handleToggleMeterStatus(meter.id);
                     }}
-                    title={meter.isAutoCreated 
-                      ? meter.status === 'Active' ? 'Deactivate Meter' : 'Activate Meter'
-                      : 'Delete Meter'
-                    }
+                    title={meter.status === 'Active' ? 'Deactivate Meter' : 'Activate Meter'}
                   >
-                    <i className={`fas ${
-                      meter.isAutoCreated 
-                        ? meter.status === 'Active' ? 'fa-power-off' : 'fa-play'
-                        : 'fa-trash'
-                    }`}></i>
+                    <i className={`fas ${meter.status === 'Active' ? 'fa-power-off' : 'fa-play'}`}></i>
+                  </button>
+                  
+                  {/* Delete Button */}
+                  <button 
+                    type="button"
+                    className="py-2 px-3 rounded-lg text-sm bg-red-100 text-red-600 hover:bg-red-200"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleDeleteMeter(meter.id);
+                    }}
+                    title="Delete Meter"
+                  >
+                    <i className="fas fa-trash"></i>
                   </button>
                 </div>
               </div>
@@ -692,44 +846,37 @@ const Meter = () => {
                           >
                             <i className="fas fa-edit"></i>
                           </button>
-                          {/* <button 
-                            className="text-gray-600 hover:text-gray-900"
-                            onClick={() => handleCopyMeter(meter)}
-                          >
-                            <i className="fas fa-copy"></i>
-                          </button> */}
+                          
+                          {/* Activate/Deactivate Button */}
                           <button 
                             type="button"
                             className={`${
-                              meter.isAutoCreated 
-                                ? meter.status === 'Active'
-                                  ? 'text-red-600 hover:text-red-900' 
-                                  : 'text-green-600 hover:text-green-900'
-                                : meter.has_data
-                                  ? 'text-gray-400 cursor-not-allowed'
-                                  : 'text-red-600 hover:text-red-900'
+                              meter.status === 'Active'
+                                ? 'text-red-600 hover:text-red-900' 
+                                : 'text-green-600 hover:text-green-900'
                             }`}
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
                               handleToggleMeterStatus(meter.id);
                             }}
-                            title={
-                              meter.isAutoCreated 
-                                ? meter.status === 'Active' ? 'Deactivate Meter' : 'Activate Meter'
-                                : meter.has_data
-                                  ? 'Cannot delete - meter has data'
-                                  : 'Delete Meter'
-                            }
-                            disabled={!meter.isAutoCreated && meter.has_data}
+                            title={meter.status === 'Active' ? 'Deactivate Meter' : 'Activate Meter'}
                           >
-                            <i className={`fas ${
-                              meter.isAutoCreated 
-                                ? meter.status === 'Active' ? 'fa-power-off' : 'fa-play'
-                                : meter.has_data
-                                  ? 'fa-lock'
-                                  : 'fa-trash'
-                            }`}></i>
+                            <i className={`fas ${meter.status === 'Active' ? 'fa-power-off' : 'fa-play'}`}></i>
+                          </button>
+                          
+                          {/* Delete Button */}
+                          <button 
+                            type="button"
+                            className="text-red-600 hover:text-red-900"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleDeleteMeter(meter.id);
+                            }}
+                            title="Delete Meter"
+                          >
+                            <i className="fas fa-trash"></i>
                           </button>
                         </div>
                       </td>
@@ -838,6 +985,126 @@ const Meter = () => {
           setEditingMeter(null);
         }}
       />}
+
+      {/* Delete Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    deleteModalData?.type === 'error' ? 'bg-red-100' :
+                    deleteModalData?.type === 'warning' ? 'bg-yellow-100' :
+                    deleteModalData?.type === 'success' ? 'bg-green-100' :
+                    'bg-blue-100'
+                  }`}>
+                    <i className={`${
+                      deleteModalData?.type === 'error' ? 'fas fa-exclamation-triangle text-red-600' :
+                      deleteModalData?.type === 'warning' ? 'fas fa-exclamation-triangle text-yellow-600' :
+                      deleteModalData?.type === 'success' ? 'fas fa-check-circle text-green-600' :
+                      'fas fa-question-circle text-blue-600'
+                    }`}></i>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    {deleteModalData?.title || 'Confirm Action'}
+                  </h3>
+                </div>
+                <button 
+                  className="text-gray-400 hover:text-gray-600"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+              
+              <div className="mb-6">
+                <p className="text-gray-600 whitespace-pre-line">
+                  {deleteModalData?.message}
+                </p>
+              </div>
+              
+              <div className="flex justify-end space-x-3">
+                <button 
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  {deleteModalData?.type === 'confirm' ? 'Cancel' : 'Close'}
+                </button>
+                {deleteModalData?.type === 'confirm' && (
+                  <button 
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                    onClick={confirmDeleteMeter}
+                  >
+                    Delete Meter
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Status Modal */}
+      {showStatusModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    statusModalData?.type === 'error' ? 'bg-red-100' :
+                    statusModalData?.type === 'success' ? 'bg-green-100' :
+                    'bg-blue-100'
+                  }`}>
+                    <i className={`${
+                      statusModalData?.type === 'error' ? 'fas fa-exclamation-triangle text-red-600' :
+                      statusModalData?.type === 'success' ? 'fas fa-check-circle text-green-600' :
+                      'fas fa-question-circle text-blue-600'
+                    }`}></i>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    {statusModalData?.title || 'Confirm Action'}
+                  </h3>
+                </div>
+                <button 
+                  className="text-gray-400 hover:text-gray-600"
+                  onClick={() => setShowStatusModal(false)}
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+              
+              <div className="mb-6">
+                <p className="text-gray-600 whitespace-pre-line">
+                  {statusModalData?.message}
+                </p>
+              </div>
+              
+              <div className="flex justify-end space-x-3">
+                <button 
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  onClick={() => setShowStatusModal(false)}
+                >
+                  {statusModalData?.type === 'confirm' ? 'Cancel' : 'Close'}
+                </button>
+                {statusModalData?.type === 'confirm' && (
+                  <button 
+                    className={`px-4 py-2 rounded-md text-white ${
+                      statusModalData?.action === 'deactivate' 
+                        ? 'bg-red-600 hover:bg-red-700' 
+                        : 'bg-green-600 hover:bg-green-700'
+                    }`}
+                    onClick={confirmStatusChange}
+                  >
+                    {statusModalData?.action === 'deactivate' ? 'Deactivate' : 'Activate'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Installation Guide */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-8">
@@ -961,9 +1228,23 @@ const MeterFormModal = ({ isOpen, title, meter, meterTypes, onSave, onClose }) =
 
   const handleTypeSelect = (selectedType) => {
     const typeData = meterTypes.find(t => t.name.replace(' Meters', '').replace(' Trackers', '') === selectedType);
+    
+    // Map short names to full backend names
+    const typeMapping = {
+      'Electricity': 'Electricity Consumption',
+      'Water': 'Water Consumption', 
+      'Waste': 'Waste to Landfill',
+      'Generator': 'Generator Fuel Consumption',
+      'Vehicle': 'Vehicle Fuel Consumption',
+      'LPG': 'LPG Usage',
+      'Renewable Energy': 'Renewable Energy Usage'
+    };
+    
+    const fullTypeName = typeMapping[selectedType] || selectedType;
+    
     setFormData(prev => ({
       ...prev,
-      type: selectedType,
+      type: fullTypeName,
       name: meter?.name?.includes('Copy') ? `${selectedType} Copy` : `Main ${selectedType}`,
       location: 'To be configured'
     }));
