@@ -21,6 +21,7 @@ ALLOWED_HOSTS = [
     '0.0.0.0',
     '.onrender.com',  # Allow all Render subdomains
     '.render.com',     # Alternative Render domain
+    '*',  # Allow all hosts in development (remove in production)
 ]
 
 # Add your specific Render app URL if known
@@ -41,12 +42,12 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add whitenoise for static files
+    'corsheaders.middleware.CorsMiddleware',  # Must be before CommonMiddleware
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # For static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',  # Re-enabled to get tokens
+    # 'django.middleware.csrf.CsrfViewMiddleware',  # Disabled for API development
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -59,7 +60,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             BASE_DIR / 'templates',
-            BASE_DIR.parent / 'frontend' / 'build',  # Add React build directory
+            BASE_DIR.parent / 'frontend' / 'build',  # React build directory
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -123,12 +124,18 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
-    BASE_DIR.parent / 'frontend' / 'build' / 'static',  # React build static files
 ]
+
+# Only add frontend build if it exists (for production)
+FRONTEND_BUILD_DIR = BASE_DIR.parent / 'frontend' / 'build' / 'static'
+if FRONTEND_BUILD_DIR.exists():
+    STATICFILES_DIRS.append(FRONTEND_BUILD_DIR)
+
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # WhiteNoise configuration for serving static files in production
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage' if not DEBUG else 'django.contrib.staticfiles.storage.StaticFilesStorage'
+if not DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
@@ -137,14 +144,12 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# REST Framework settings
+# REST Framework settings - SIMPLIFIED FOR DEVELOPMENT
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',  # For development
+        'rest_framework.permissions.AllowAny',  # Allow all requests without authentication
     ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'core.authentication.CsrfExemptSessionAuthentication',
-    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [],  # No authentication for now
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
     'DEFAULT_FILTER_BACKENDS': [
@@ -153,23 +158,48 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',  # Re-enable browsable API for debugging
     ],
 }
 
-# CORS settings - Allow React frontend
+# CORS settings - COMPLETELY OPEN FOR DEVELOPMENT
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# Specific CORS origins (backup if CORS_ALLOW_ALL_ORIGINS is False)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:3002",
     "http://localhost:3003",
-    "http://localhost:7701",  # Previous frontend port
-    "http://localhost:7702",  # Current frontend port
+    "http://localhost:7701",
+    "http://localhost:7702",
+    "http://localhost:8000",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:3001",
     "http://127.0.0.1:3002",
     "http://127.0.0.1:3003",
-    "http://127.0.0.1:7701",  # Current frontend port
-    "http://localhost:8000",
+    "http://127.0.0.1:7701",
+    "http://127.0.0.1:7702",
     "http://127.0.0.1:8000",
 ]
 
@@ -186,26 +216,22 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^http://.*\.onrender\.com$",
 ]
 
-CORS_ALLOW_CREDENTIALS = True
-
-# Disable CSRF completely for development
+# CSRF Settings - DISABLED FOR API DEVELOPMENT
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = False
-CSRF_FAILURE_VIEW = lambda request, reason="": None
+CSRF_COOKIE_SAMESITE = None
 
-# Completely disable CSRF
-USE_TZ = True
-CSRF_TRUSTED_ORIGINS_ENABLED = False
-
-# CSRF Trusted Origins for Render
+# CSRF Trusted Origins (if CSRF is re-enabled)
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
+    'http://localhost:3000',
     'http://localhost:7701',
-    'http://127.0.0.1:7701',
     'http://localhost:7702',
+    'http://localhost:8000',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:7701',
     'http://127.0.0.1:7702',
+    'http://127.0.0.1:8000',
     'https://*.onrender.com',
     'http://*.onrender.com',
 ]
@@ -214,8 +240,42 @@ CSRF_TRUSTED_ORIGINS = [
 if os.environ.get('RENDER_EXTERNAL_HOSTNAME'):
     CSRF_TRUSTED_ORIGINS.append(f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}")
 
-# File uploads (removed Pillow dependency for now)
+# File uploads
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+
+# Session settings
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 86400 * 7  # 7 days
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# Logging configuration for debugging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'core': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
 
 # UAE Emirates choices
 UAE_EMIRATES = [
