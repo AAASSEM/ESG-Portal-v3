@@ -1,9 +1,10 @@
 """
-Django settings for esg_backend project.
+Django settings for esg_backend project - Render Production
 """
 
 from pathlib import Path
 import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -12,21 +13,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-esg-backend-secret-key-change-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+# For Render, we want DEBUG=False in production
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+
+# Get Render's provided hostname
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 
 # Allowed hosts for production
 ALLOWED_HOSTS = [
     'localhost', 
-    '127.0.0.1', 
-    '0.0.0.0',
+    '127.0.0.1',
     '.onrender.com',  # Allow all Render subdomains
-    '.render.com',     # Alternative Render domain
-    '*',  # Allow all hosts in development (remove in production)
 ]
 
-# Add your specific Render app URL if known
-if os.environ.get('RENDER_EXTERNAL_HOSTNAME'):
-    ALLOWED_HOSTS.append(os.environ.get('RENDER_EXTERNAL_HOSTNAME'))
+# Add the specific Render hostname if available
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 # Application definition
 INSTALLED_APPS = [
@@ -44,10 +46,11 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # Must be before CommonMiddleware
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # For static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # For serving static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',  # Disabled for API development
+    # CSRF disabled for API-only backend
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -76,12 +79,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'esg_backend.wsgi.application'
 
-# Database
-# Use PostgreSQL in production (Render), SQLite in development
-import dj_database_url
-
-if os.environ.get('DATABASE_URL'):
-    # Production database (Render PostgreSQL)
+# Database Configuration
+# Render provides DATABASE_URL automatically
+if 'DATABASE_URL' in os.environ:
     DATABASES = {
         'default': dj_database_url.config(
             default=os.environ.get('DATABASE_URL'),
@@ -90,7 +90,7 @@ if os.environ.get('DATABASE_URL'):
         )
     }
 else:
-    # Development database (SQLite)
+    # Fallback for local development
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -122,20 +122,20 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-
-# Only add frontend build if it exists (for production)
-FRONTEND_BUILD_DIR = BASE_DIR.parent / 'frontend' / 'build' / 'static'
-if FRONTEND_BUILD_DIR.exists():
-    STATICFILES_DIRS.append(FRONTEND_BUILD_DIR)
-
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# WhiteNoise configuration for serving static files in production
-if not DEBUG:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Static files directories
+STATICFILES_DIRS = []
+if (BASE_DIR / "static").exists():
+    STATICFILES_DIRS.append(BASE_DIR / "static")
+
+# Add frontend build static files if they exist
+FRONTEND_STATIC = BASE_DIR.parent / 'frontend' / 'build' / 'static'
+if FRONTEND_STATIC.exists():
+    STATICFILES_DIRS.append(FRONTEND_STATIC)
+
+# Use WhiteNoise for static files in production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
@@ -144,12 +144,12 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# REST Framework settings - SIMPLIFIED FOR DEVELOPMENT
+# REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',  # Allow all requests without authentication
+        'rest_framework.permissions.AllowAny',  # Open API access
     ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [],  # No authentication for now
+    'DEFAULT_AUTHENTICATION_CLASSES': [],  # No authentication required
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
     'DEFAULT_FILTER_BACKENDS': [
@@ -158,12 +158,33 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',  # Re-enable browsable API for debugging
     ],
 }
 
-# CORS settings - COMPLETELY OPEN FOR DEVELOPMENT
-CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins
+# CORS Configuration for Render
+CORS_ALLOW_ALL_ORIGINS = False  # Be specific in production
+
+# Your Render app URL
+if RENDER_EXTERNAL_HOSTNAME:
+    RENDER_APP_URL = f"https://{RENDER_EXTERNAL_HOSTNAME}"
+else:
+    # Fallback - update this with your actual Render URL
+    RENDER_APP_URL = "https://esg-portal-v0-1-1.onrender.com"
+
+CORS_ALLOWED_ORIGINS = [
+    RENDER_APP_URL,
+    "http://localhost:3000",  # For local development
+    "http://localhost:8000",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8000",
+]
+
+# Also allow all Render subdomains
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.onrender\.com$",
+]
+
+# CORS settings
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -185,78 +206,34 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
-# Specific CORS origins (backup if CORS_ALLOW_ALL_ORIGINS is False)
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://localhost:3002",
-    "http://localhost:3003",
-    "http://localhost:7701",
-    "http://localhost:7702",
-    "http://localhost:8000",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:3001",
-    "http://127.0.0.1:3002",
-    "http://127.0.0.1:3003",
-    "http://127.0.0.1:7701",
-    "http://127.0.0.1:7702",
-    "http://127.0.0.1:8000",
-]
-
-# Add Render URLs to CORS if in production
-if os.environ.get('RENDER_EXTERNAL_HOSTNAME'):
-    CORS_ALLOWED_ORIGINS.extend([
-        f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}",
-        f"http://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}",
-    ])
-
-# Allow all origins with .onrender.com in production
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https://.*\.onrender\.com$",
-    r"^http://.*\.onrender\.com$",
-]
-
-# CSRF Settings - DISABLED FOR API DEVELOPMENT
-CSRF_COOKIE_SECURE = False
-CSRF_COOKIE_HTTPONLY = False
-CSRF_USE_SESSIONS = False
-CSRF_COOKIE_SAMESITE = None
-
-# CSRF Trusted Origins (if CSRF is re-enabled)
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:3000',
-    'http://localhost:7701',
-    'http://localhost:7702',
-    'http://localhost:8000',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:7701',
-    'http://127.0.0.1:7702',
-    'http://127.0.0.1:8000',
-    'https://*.onrender.com',
-    'http://*.onrender.com',
-]
-
-# Add specific Render app URL if known
-if os.environ.get('RENDER_EXTERNAL_HOSTNAME'):
-    CSRF_TRUSTED_ORIGINS.append(f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}")
-
-# File uploads
-FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+# Security settings for production
+SECURE_SSL_REDIRECT = not DEBUG  # Force HTTPS in production
+SESSION_COOKIE_SECURE = not DEBUG  # Secure cookies in production
+CSRF_COOKIE_SECURE = not DEBUG
 
 # Session settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 86400 * 7  # 7 days
-SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 
-# Logging configuration for debugging
+# File uploads
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+
+# Logging configuration
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
     },
     'root': {
@@ -266,12 +243,12 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         'core': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
     },
