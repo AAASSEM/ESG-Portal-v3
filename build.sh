@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # Build script for ESG Portal Render deployment
-
 set -o errexit
 
 # Build React frontend
@@ -13,8 +12,6 @@ cd ..
 # Install Python dependencies
 echo "Installing Python dependencies..."
 cd backend
-
-# Install production dependencies
 pip install -r requirements.txt
 pip install gunicorn whitenoise dj-database-url
 
@@ -22,10 +19,7 @@ pip install gunicorn whitenoise dj-database-url
 echo "Running database migrations..."
 python manage.py migrate
 
-# Create superuser if needed (optional - remove in production)
-# python manage.py createsuperuser --noinput --username admin --email admin@example.com || true
-
-# Collect static files (this will gather React build files too)
+# Collect static files
 echo "Collecting static files..."
 python manage.py collectstatic --no-input
 
