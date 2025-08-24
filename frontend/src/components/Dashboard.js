@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
 
 // Simple chart components
 const EnergyChart = ({ chartData, meterType }) => {
@@ -313,6 +314,7 @@ const ExportModal = ({ isOpen, onClose, onConfirm, data }) => {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user, selectedCompany } = useAuth();
   const [selectedTimeRange, setSelectedTimeRange] = useState('Last 30 Days');
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -322,16 +324,21 @@ const Dashboard = () => {
   const [modalData, setModalData] = useState({ isOpen: false, type: '', data: {} });
   const [showDeadlineModal, setShowDeadlineModal] = useState(false);
   
-  // Get current company ID (should come from context or route params)
-  const companyId = 1;
+  // Get company ID from auth context
+  const companyId = selectedCompany?.id;
 
   // API function to fetch dashboard data
   const fetchDashboardData = async () => {
+    if (!companyId) {
+      console.log('No company selected, skipping dashboard data fetch');
+      return null;
+    }
+    
     try {
       const [dashboardResponse, progressResponse, frameworksResponse] = await Promise.all([
-        fetch(`http://localhost:8000/api/dashboard/?company_id=${companyId}`),
-        fetch(`http://localhost:8000/api/companies/${companyId}/progress/`),
-        fetch(`http://localhost:8000/api/frameworks/`)
+        makeAuthenticatedRequest(`http://localhost:8000/api/dashboard/?company_id=${companyId}`),
+        makeAuthenticatedRequest(`http://localhost:8000/api/companies/${companyId}/progress/`),
+        makeAuthenticatedRequest(`http://localhost:8000/api/frameworks/`)
       ]);
       
       const dashboard = await dashboardResponse.json();
@@ -351,10 +358,15 @@ const Dashboard = () => {
 
   // Fetch chart data
   const fetchChartData = async () => {
+    if (!companyId) {
+      console.log('No company selected, skipping chart data fetch');
+      return { meters: [], dataEntries: [] };
+    }
+    
     try {
       const [metersResponse, dataResponse] = await Promise.all([
-        fetch(`http://localhost:8000/api/meters/?company_id=${companyId}`),
-        fetch(`http://localhost:8000/api/data-collection/tasks/?company_id=${companyId}&year=2025&month=8`)
+        makeAuthenticatedRequest(`http://localhost:8000/api/meters/?company_id=${companyId}`),
+        makeAuthenticatedRequest(`http://localhost:8000/api/data-collection/tasks/?company_id=${companyId}&year=2025&month=8`)
       ]);
       
       const meters = await metersResponse.json();

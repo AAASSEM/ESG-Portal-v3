@@ -1,12 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
 
 const Onboard = () => {
-  console.log('🚀 Onboard component loaded/re-rendered at', new Date().toLocaleTimeString());
-  
   const navigate = useNavigate();
-  const { selectedCompany } = useAuth();
   const [formData, setFormData] = useState({
     companyName: '',
     emirate: '',
@@ -16,30 +12,16 @@ const Onboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const companyId = selectedCompany?.id || null;
-  const isInitialLoad = useRef(true);
-  const lastSavedData = useRef(null);
-  
-  console.log('📊 Current formData state:', formData);
-  console.log('⏱️ Component states - Loading:', loading, 'Saving:', saving, 'InitialLoad:', isInitialLoad.current);
+  const companyId = 1; // Should come from context or authentication
 
   // Fetch existing company data and activities on component mount
   useEffect(() => {
-    console.log('🔄 useEffect for data fetching triggered');
-    if (!companyId) {
-      console.log('⏸️ No company selected, skipping data fetch');
-      setLoading(false);
-      return;
-    }
-    
     const fetchCompanyData = async () => {
       try {
-        console.log('📡 Fetching company data for ID:', companyId);
+        console.log('Fetching company data for ID:', companyId);
         
         // Fetch company basic info
-        const companyResponse = await fetch(`http://localhost:8000/api/companies/${companyId}/`, {
-          credentials: 'include'
-        });
+        const companyResponse = await fetch(`http://localhost:8000/api/companies/${companyId}/`);
         console.log('Company API Response status:', companyResponse.status);
         
         if (companyResponse.ok) {
@@ -47,9 +29,7 @@ const Onboard = () => {
           console.log('Loaded company data from API:', companyData);
           
           // Fetch company activities separately
-          const activitiesResponse = await fetch(`http://localhost:8000/api/companies/${companyId}/activities/`, {
-            credentials: 'include'
-          });
+          const activitiesResponse = await fetch(`http://localhost:8000/api/companies/${companyId}/activities/`);
           let activityNames = [];
           
           if (activitiesResponse.ok) {
@@ -92,107 +72,58 @@ const Onboard = () => {
           
           console.log('Setting form data:', finalFormData);
           setFormData(finalFormData);
-          lastSavedData.current = finalFormData;
         } else if (companyResponse.status === 404) {
           console.log('Company not found, starting with empty form');
           // Company doesn't exist yet, start with empty form
-          const emptyData = {
+          setFormData({
             companyName: '',
             emirate: '',
             primarySector: '',
             activities: [],
             customActivity: ''
-          };
-          setFormData(emptyData);
-          lastSavedData.current = emptyData;
+          });
         } else {
           console.error('API error, using empty form');
-          const emptyData = {
+          setFormData({
             companyName: '',
             emirate: '',
             primarySector: '',
             activities: [],
             customActivity: ''
-          };
-          setFormData(emptyData);
-          lastSavedData.current = emptyData;
+          });
         }
       } catch (error) {
         console.error('Error fetching company data:', error);
         // Use empty form on error
-        const emptyData = {
+        setFormData({
           companyName: '',
           emirate: '',
           primarySector: '',
           activities: [],
           customActivity: ''
-        };
-        setFormData(emptyData);
-        lastSavedData.current = emptyData;
+        });
       } finally {
         setLoading(false);
-        isInitialLoad.current = false;
       }
     };
 
     fetchCompanyData();
   }, [companyId]);
 
-  // Auto-save when form data changes (debounced) - TEMPORARILY DISABLED
+  // Auto-save when form data changes (debounced)
   useEffect(() => {
-    return; // Disable auto-save for now
-    console.log('🔄 Auto-save useEffect triggered');
-    console.log('💾 Auto-save conditions - Loading:', loading, 'Saving:', saving, 'InitialLoad:', isInitialLoad.current);
+    if (loading || saving) return; // Don't save during initial load or while already saving
     
-    if (loading || saving || isInitialLoad.current) {
-      console.log('⏸️ Auto-save skipped due to conditions');
-      return;
-    }
-    
-    // Check if data actually changed
-    const currentData = {
-      companyName: formData.companyName,
-      emirate: formData.emirate,
-      primarySector: formData.primarySector,
-      activities: formData.activities
-    };
-    
-    const lastData = {
-      companyName: lastSavedData.current?.companyName || '',
-      emirate: lastSavedData.current?.emirate || '',
-      primarySector: lastSavedData.current?.primarySector || '',
-      activities: lastSavedData.current?.activities || []
-    };
-    
-    console.log('📄 Current data:', currentData);
-    console.log('📄 Last saved data:', lastData);
-    
-    const hasDataChanged = JSON.stringify(currentData) !== JSON.stringify(lastData);
-    
-    console.log('🔄 Data changed?', hasDataChanged);
-    
-    if (!hasDataChanged) {
-      console.log('⏸️ No changes detected, skipping auto-save');
-      return;
-    }
-    
-    console.log('⏰ Setting auto-save timeout (3 seconds)...');
     const timeoutId = setTimeout(() => {
-      // Only auto-save if we have meaningful data
-      const hasMeaningfulData = formData.companyName.trim() || formData.activities.length > 0;
-      console.log('💾 Auto-save timeout triggered - Has meaningful data?', hasMeaningfulData);
-      console.log('💾 Company name:', formData.companyName, 'Activities count:', formData.activities.length);
-      
-      if (hasMeaningfulData) {
-        console.log('✅ Auto-saving due to form change...');
-        saveData(false);
-      } else {
-        console.log('❌ Skipping auto-save - no meaningful data');
+      // Only auto-save if we have meaningful data and user has made changes
+      if ((formData.companyName.trim() || formData.activities.length > 0) && !saving) {
+        console.log('Auto-saving due to form change...');
+        saveData();
       }
-    }, 3000); // 3 second debounce
+    }, 5000); // 5 second debounce to prevent spam
 
     return () => clearTimeout(timeoutId);
-  }, [formData, loading, saving]);
+  }, [formData.companyName, formData.emirate, formData.primarySector, formData.activities.length]); // Use .length to prevent infinite updates
 
   // Comprehensive hospitality activity icon mapping
   const getActivityIcon = (activityName) => {
@@ -349,18 +280,10 @@ const Onboard = () => {
 
   const handleAddCustomActivity = async () => {
     if (formData.customActivity && !formData.activities.includes(formData.customActivity)) {
-      // First add to local state
-      setFormData(prev => ({
-        ...prev,
-        activities: [...prev.activities, prev.customActivity],
-        customActivity: ''
-      }));
-      
-      // Then add to backend (will be saved with next auto-save)
       try {
+        // Add custom activity to backend
         const response = await fetch('http://localhost:8000/api/activities/add_custom/', {
           method: 'POST',
-          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -373,36 +296,46 @@ const Onboard = () => {
         if (response.ok) {
           const data = await response.json();
           console.log('Custom activity added:', data);
+          
+          // Update local state
+          setFormData(prev => ({
+            ...prev,
+            activities: [...prev.activities, prev.customActivity],
+            customActivity: ''
+          }));
         } else {
-          console.error('Failed to add custom activity to backend');
+          console.error('Failed to add custom activity');
+          // Still add to local state as fallback
+          setFormData(prev => ({
+            ...prev,
+            activities: [...prev.activities, prev.customActivity],
+            customActivity: ''
+          }));
         }
       } catch (error) {
         console.error('Error adding custom activity:', error);
+        // Still add to local state as fallback
+        setFormData(prev => ({
+          ...prev,
+          activities: [...prev.activities, prev.customActivity],
+          customActivity: ''
+        }));
       }
     }
   };
 
   // Auto-save function
   const saveData = async (showMessage = false) => {
-    console.log('💾 saveData function called with showMessage:', showMessage);
-    console.log('💾 Current saving state:', saving);
+    if (saving) return; // Prevent concurrent saves
     
-    if (saving) {
-      console.log('❌ saveData aborted - already saving');
-      return; // Prevent concurrent saves
-    }
-    
-    console.log('💾 saveData called, formData:', formData);
+    console.log('saveData called, formData:', formData);
     
     setSaving(true);
-    console.log('💾 Set saving state to true');
-    console.log('💾 Starting to save company data:', formData);
+    console.log('Auto-saving company data:', formData);
     
     try {
       // Step 1: Save/Update company basic info
-      let response = await fetch(`http://localhost:8000/api/companies/${companyId}/`, {
-        credentials: 'include'
-      });
+      let response = await fetch(`http://localhost:8000/api/companies/${companyId}/`);
       let isUpdate = response.ok;
       
       // Convert frontend values to backend format
@@ -428,9 +361,9 @@ const Onboard = () => {
       };
 
       const companyData = {
-        name: formData.companyName || 'Unnamed Company',
-        emirate: emirateReverseMap[formData.emirate] || 'dubai',
-        sector: sectorReverseMap[formData.primarySector] || 'hospitality'
+        name: formData.companyName,
+        emirate: emirateReverseMap[formData.emirate] || formData.emirate.toLowerCase().replace(/\s+/g, '_'),
+        sector: sectorReverseMap[formData.primarySector] || formData.primarySector.toLowerCase().replace(/\s+/g, '_').replace(/[&\s]/g, '_')
       };
       
       console.log('Company data to send:', companyData);
@@ -438,16 +371,25 @@ const Onboard = () => {
       if (isUpdate) {
         // Update existing company
         console.log('Updating existing company...');
-        response = await makeAuthenticatedRequest(`http://localhost:8000/api/companies/${companyId}/`, {
+        response = await fetch(`http://localhost:8000/api/companies/${companyId}/`, {
           method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify(companyData)
         });
       } else {
         // Create new company
         console.log('Creating new company...');
-        response = await makeAuthenticatedRequest(`http://localhost:8000/api/companies/`, {
+        response = await fetch(`http://localhost:8000/api/companies/`, {
           method: 'POST',
-          body: JSON.stringify(companyData)
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...companyData,
+            id: companyId // Ensure we use the expected ID
+          })
         });
       }
 
@@ -455,77 +397,63 @@ const Onboard = () => {
         const companyResult = await response.json();
         console.log('Company data saved successfully:', companyResult);
         
-        // Step 2: Ensure all custom activities exist in the database
-        const customActivities = formData.activities.filter(
-          activity => !businessActivities.some(ba => ba.name === activity)
-        );
-        
-        for (const customActivity of customActivities) {
-          try {
-            await fetch('http://localhost:8000/api/activities/add_custom/', {
+        // Step 2: Save activities using the new API endpoint
+        if (formData.activities.length > 0) {
+          console.log('Saving activities:', formData.activities);
+          
+          // First, get all available activities to map names to IDs
+          const activitiesResponse = await fetch('http://localhost:8000/api/activities/');
+          if (activitiesResponse.ok) {
+            const allActivitiesData = await activitiesResponse.json();
+            const allActivities = allActivitiesData.results || allActivitiesData;
+            
+            console.log('All available activities:', allActivities);
+            console.log('Selected activity names:', formData.activities);
+            
+            const activityIds = [];
+            const unmappedActivities = [];
+            
+            formData.activities.forEach(activityName => {
+              const found = allActivities.find(a => a.name === activityName);
+              if (found) {
+                console.log(`✓ Found "${activityName}" with ID ${found.id}`);
+                activityIds.push(found.id);
+              } else {
+                console.warn(`✗ Could not find activity "${activityName}" in database`);
+                unmappedActivities.push(activityName);
+              }
+            });
+            
+            if (unmappedActivities.length > 0) {
+              console.warn('Unmapped activities:', unmappedActivities);
+            }
+            
+            console.log('Final activity IDs to save:', activityIds);
+            
+            // Save activities
+            const saveActivitiesResponse = await fetch(`http://localhost:8000/api/companies/${companyId}/save_activities/`, {
               method: 'POST',
-              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                name: customActivity,
-                company_id: companyId
+                activity_ids: activityIds
               })
             });
-          } catch (error) {
-            console.error(`Error creating custom activity "${customActivity}":`, error);
-          }
-        }
-        
-        // Step 3: Get all activities to map names to IDs
-        const activitiesResponse = await fetch('http://localhost:8000/api/activities/');
-        if (activitiesResponse.ok) {
-          const allActivitiesData = await activitiesResponse.json();
-          const allActivities = allActivitiesData.results || allActivitiesData;
-          
-          console.log('All available activities:', allActivities);
-          console.log('Selected activity names:', formData.activities);
-          
-          const activityIds = [];
-          
-          formData.activities.forEach(activityName => {
-            const found = allActivities.find(a => a.name === activityName);
-            if (found) {
-              console.log(`✓ Found "${activityName}" with ID ${found.id}`);
-              activityIds.push(found.id);
-            } else {
-              console.warn(`✗ Could not find activity "${activityName}" in database`);
-            }
-          });
-          
-          console.log('Final activity IDs to save:', activityIds);
-          
-          // Save activities
-          const saveActivitiesResponse = await makeAuthenticatedRequest(`http://localhost:8000/api/companies/${companyId}/save_activities/`, {
-            method: 'POST',
-            body: JSON.stringify({
-              activity_ids: activityIds
-            })
-          });
 
-          if (saveActivitiesResponse.ok) {
-            const activitiesResult = await saveActivitiesResponse.json();
-            console.log('Activities saved successfully:', activitiesResult);
-            
-            // Update last saved data
-            lastSavedData.current = {
-              companyName: formData.companyName,
-              emirate: formData.emirate,
-              primarySector: formData.primarySector,
-              activities: formData.activities
-            };
-            
-            // Removed alert message - data saves silently
-          } else {
-            console.error('Failed to save activities');
-            const errorText = await saveActivitiesResponse.text();
-            console.error('Activities save error:', errorText);
+            if (saveActivitiesResponse.ok) {
+              const activitiesResult = await saveActivitiesResponse.json();
+              console.log('Activities saved successfully:', activitiesResult);
+              
+              // Verify all activities were saved
+              if (activitiesResult.length !== activityIds.length) {
+                console.warn(`Warning: Expected to save ${activityIds.length} activities, but only ${activitiesResult.length} were saved`);
+              }
+            } else {
+              console.error('Failed to save activities');
+              const errorText = await saveActivitiesResponse.text();
+              console.error('Activities save error:', errorText);
+            }
           }
         }
         
@@ -543,7 +471,7 @@ const Onboard = () => {
 
   // Main continue function
   const handleContinue = async () => {
-    await saveData(true);
+    await saveData();
     navigate('/rame');
   };
 
@@ -585,11 +513,9 @@ const Onboard = () => {
                 value={formData.companyName}
                 onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
               />
-              {formData.companyName && (
-                <div className="absolute right-3 top-3 text-green-500">
-                  <i className="fas fa-check-circle"></i>
-                </div>
-              )}
+              <div className="absolute right-3 top-3 text-green-500">
+                <i className="fas fa-check-circle"></i>
+              </div>
             </div>
           </div>
 
@@ -600,14 +526,14 @@ const Onboard = () => {
               value={formData.emirate}
               onChange={(e) => setFormData(prev => ({ ...prev, emirate: e.target.value }))}
             >
-              <option value="">Select Emirate</option>
-              <option value="Dubai">Dubai</option>
-              <option value="Abu Dhabi">Abu Dhabi</option>
-              <option value="Sharjah">Sharjah</option>
-              <option value="Ajman">Ajman</option>
-              <option value="Umm Al Quwain">Umm Al Quwain</option>
-              <option value="Ras Al Khaimah">Ras Al Khaimah</option>
-              <option value="Fujairah">Fujairah</option>
+              <option>Select Emirate</option>
+              <option>Dubai</option>
+              <option>Abu Dhabi</option>
+              <option>Sharjah</option>
+              <option>Ajman</option>
+              <option>Umm Al Quwain</option>
+              <option>Ras Al Khaimah</option>
+              <option>Fujairah</option>
             </select>
           </div>
 
@@ -618,15 +544,15 @@ const Onboard = () => {
               value={formData.primarySector}
               onChange={(e) => setFormData(prev => ({ ...prev, primarySector: e.target.value }))}
             >
-              <option value="">Select Primary Sector</option>
-              <option value="Hospitality & Tourism">Hospitality & Tourism</option>
-              <option value="Real Estate">Real Estate</option>
-              <option value="Financial Services">Financial Services</option>
-              <option value="Manufacturing">Manufacturing</option>
-              <option value="Technology">Technology</option>
-              <option value="Healthcare">Healthcare</option>
-              <option value="Education">Education</option>
-              <option value="Retail">Retail</option>
+              <option>Select Primary Sector</option>
+              <option>Hospitality & Tourism</option>
+              <option>Real Estate</option>
+              <option>Financial Services</option>
+              <option>Manufacturing</option>
+              <option>Technology</option>
+              <option>Healthcare</option>
+              <option>Education</option>
+              <option>Retail</option>
             </select>
           </div>
         </div>
@@ -725,11 +651,6 @@ const Onboard = () => {
               className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               value={formData.customActivity}
               onChange={(e) => setFormData(prev => ({ ...prev, customActivity: e.target.value }))}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleAddCustomActivity();
-                }
-              }}
             />
             <button 
               className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
@@ -746,13 +667,13 @@ const Onboard = () => {
         <div className="flex items-center space-x-4">
           <div className="text-sm text-gray-600">
             <i className="fas fa-info-circle mr-2"></i>
-            {saving ? 'Saving...' : 'Progress will be automatically saved'}
+            Progress will be automatically saved
           </div>
         </div>
         <div className="flex space-x-4">
           <button 
             className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
-            onClick={() => saveData(true)}
+            onClick={() => saveData()}
             disabled={saving}
           >
             <i className={`fas ${saving ? 'fa-spinner fa-spin' : 'fa-save'} mr-2`}></i>

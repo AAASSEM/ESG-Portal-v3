@@ -17,11 +17,18 @@ class FrameworkService:
     """Service for handling framework assignment logic"""
     
     @staticmethod
-    def assign_mandatory_frameworks(company):
+    def assign_mandatory_frameworks(company, user=None):
         """
         Assign mandatory frameworks based on company profile
         Core ESG is mandatory for all, conditional frameworks based on emirate/sector
         """
+        # First, clear existing auto-assigned frameworks to ensure clean assignment
+        CompanyFramework.objects.filter(
+            user=user,
+            company=company, 
+            is_auto_assigned=True
+        ).delete()
+        
         frameworks_to_assign = []
         
         # Core ESG framework is mandatory for all
@@ -35,7 +42,7 @@ class FrameworkService:
         )
         frameworks_to_assign.append(esg_framework)
         
-        # Dubai Sustainable Tourism (DST) - mandatory if Dubai + Hospitality
+        # Dubai Sustainable Tourism (DST) - mandatory ONLY if Dubai + Hospitality
         if company.emirate == 'dubai' and company.sector == 'hospitality':
             dst_framework, _ = Framework.objects.get_or_create(
                 framework_id='DST',
@@ -49,12 +56,27 @@ class FrameworkService:
             )
             frameworks_to_assign.append(dst_framework)
         
+        # Dubai Energy Regulations - mandatory for all Dubai establishments
+        if company.emirate == 'dubai':
+            energy_framework, _ = Framework.objects.get_or_create(
+                framework_id='DUBAI_ENERGY_REGULATIONS',
+                defaults={
+                    'name': 'Dubai Supreme Council of Energy Regulations',
+                    'type': 'mandatory_conditional',
+                    'description': 'Mandatory compliance - Dubai Supreme Council of Energy',
+                    'condition_emirate': 'dubai',
+                    'condition_sector': ''
+                }
+            )
+            frameworks_to_assign.append(energy_framework)
+        
         # UAE ESG Reporting Requirements - mandatory for listed companies
         # For now, we'll make it conditional based on a future profiling question
         
         # Assign frameworks to company
         for framework in frameworks_to_assign:
             CompanyFramework.objects.get_or_create(
+                user=user,
                 company=company,
                 framework=framework,
                 defaults={'is_auto_assigned': True}
@@ -342,7 +364,7 @@ class DataCollectionService:
     
     @staticmethod
     def calculate_progress(company, year, month=None):
-        """Calculate data collection progress"""
+        """Calculate data collection progress - counts data and evidence as separate tasks"""
         filters = {'company': company, 'reporting_year': year}
         
         if month:
@@ -353,26 +375,42 @@ class DataCollectionService:
         
         total_submissions = submissions.count()
         if total_submissions == 0:
-            return {'data_progress': 0, 'evidence_progress': 0}
+            return {
+                'data_progress': 0, 
+                'evidence_progress': 0, 
+                'total_points': 0, 
+                'completed_points': 0,
+                'items_remaining': 0
+            }
         
+        # Count completed data entries and evidence files separately
         data_complete = submissions.exclude(value='').count()
         evidence_complete = submissions.exclude(evidence_file='').count()
         
-        # Calculate remaining tasks: count items that need either data OR evidence (or both)
-        incomplete_items = submissions.filter(
-            Q(value='') | Q(evidence_file='')
-        ).count()
-        items_remaining = incomplete_items
+        # Total tasks = submissions × 2 (data + evidence for each submission)
+        total_tasks = total_submissions * 2
         
-        # An item is fully complete only when it has both data AND evidence
-        fully_complete = submissions.exclude(value='').exclude(evidence_file='').count()
+        # Completed tasks = data entries + evidence uploads
+        completed_tasks = data_complete + evidence_complete
+        
+        # Remaining tasks = total tasks - completed tasks
+        items_remaining = total_tasks - completed_tasks
+        
+        # Calculate percentages based on separate task counting
+        overall_progress = (completed_tasks / total_tasks) * 100 if total_tasks > 0 else 0
+        data_progress = (data_complete / total_submissions) * 100
+        evidence_progress = (evidence_complete / total_submissions) * 100
         
         return {
-            'data_progress': (data_complete / total_submissions) * 100,
-            'evidence_progress': (evidence_complete / total_submissions) * 100,
-            'total_points': total_submissions,
-            'completed_points': fully_complete,
-            'items_remaining': items_remaining
+            'data_progress': data_progress,
+            'evidence_progress': evidence_progress,
+            'overall_progress': overall_progress,  # New field for combined progress
+            'total_points': total_tasks,  # Now counts both data and evidence tasks
+            'completed_points': completed_tasks,  # Data entries + evidence files
+            'items_remaining': items_remaining,  # Tasks still needed
+            'total_submissions': total_submissions,  # Original submission count for reference
+            'data_complete': data_complete,  # Data entries completed
+            'evidence_complete': evidence_complete  # Evidence files uploaded
         }
 
 

@@ -1,10 +1,12 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const TopNavbar = () => {
   console.log('TopNavbar rendering');
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout, selectedCompany, companies, switchCompany } = useAuth();
   console.log('Current location:', location.pathname);
 
   const modules = [
@@ -78,6 +80,26 @@ const TopNavbar = () => {
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
+            {/* Company Selector */}
+            {companies && companies.length > 1 && (
+              <div className="relative">
+                <select
+                  value={selectedCompany?.id || ''}
+                  onChange={(e) => {
+                    const company = companies.find(c => c.id === parseInt(e.target.value));
+                    if (company) switchCompany(company);
+                  }}
+                  className="text-sm bg-white border border-purple-200 rounded-md px-3 py-1 text-gray-700 hover:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  {companies.map(company => (
+                    <option key={company.id} value={company.id}>
+                      {company.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            
             <button className="text-gray-500 hover:text-purple-600 transition-colors">
               <i className="fas fa-question-circle"></i>
             </button>
@@ -85,14 +107,29 @@ const TopNavbar = () => {
               <i className="fas fa-bell"></i>
               <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
             </button>
-            <div className="flex items-center space-x-2">
-              {/* <img 
-                src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg" 
-                alt="User" 
-                className="w-7 h-7 rounded-full ring-2 ring-purple-200"
-              /> */}
-              <div className="w-7 h-7 rounded-full ring-2 ring-purple-200 bg-purple-500"></div>
-              <span className="text-sm font-medium text-gray-700">Sarah Johnson</span>
+            
+            {/* User Profile with Logout Button */}
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-7 h-7 rounded-full ring-2 ring-purple-200 bg-purple-500 flex items-center justify-center">
+                  <span className="text-white text-xs font-medium">
+                    {user?.username?.charAt(0)?.toUpperCase() || 'U'}
+                  </span>
+                </div>
+                <span className="text-sm font-medium text-gray-700">
+                  {user?.username || 'User'}
+                </span>
+              </div>
+              
+              {/* Logout Button */}
+              <button
+                onClick={logout}
+                className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 border border-gray-300 hover:border-red-300 rounded-md transition-all duration-200 flex items-center"
+                title="Sign Out"
+              >
+                <i className="fas fa-sign-out-alt mr-1"></i>
+                Logout
+              </button>
             </div>
           </div>
         </div>

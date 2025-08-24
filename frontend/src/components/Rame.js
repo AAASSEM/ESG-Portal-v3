@@ -1,30 +1,108 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Rame = () => {
   const navigate = useNavigate();
+  const { selectedCompany } = useAuth();
   const [selectedVoluntaryFrameworks, setSelectedVoluntaryFrameworks] = useState([]);
+  const [mandatoryFrameworks, setMandatoryFrameworks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const companyId = selectedCompany?.id;
 
-  const mandatoryFrameworks = [
-    {
-      id: 'dst',
-      name: 'Dubai Sustainable Tourism (DST)',
-      description: 'Dubai Department of Economy and Tourism sustainability requirements for all hotels in Dubai',
-      icon: 'fas fa-building',
-      color: 'green',
-      coverage: 'Energy, Water, Waste, Community',
-      reason: 'Mandatory for all Dubai hospitality entities'
-    },
-    {
-      id: 'esg',
-      name: 'ESG Framework',
-      description: 'Core Environmental, Social, and Governance reporting framework',
-      icon: 'fas fa-chart-line',
-      color: 'blue',
-      coverage: 'Environmental, Social, Governance',
-      reason: 'Core framework for all businesses'
+  // Fetch company's assigned mandatory frameworks
+  useEffect(() => {
+    if (!companyId) {
+      console.log('⏸️ No company selected, skipping framework fetch');
+      setLoading(false);
+      return;
     }
-  ];
+    
+    const fetchMandatoryFrameworks = async () => {
+      try {
+        console.log('🔍 Fetching mandatory frameworks for company:', companyId);
+        
+        // Get company frameworks from backend
+        const response = await fetch(`http://localhost:8000/api/companies/${companyId}/frameworks/`, {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const frameworks = await response.json();
+          console.log('📋 Backend frameworks:', frameworks);
+          
+          // Map backend frameworks to frontend format
+          const mappedFrameworks = frameworks.map(framework => {
+            if (framework.framework_id === 'DST') {
+              return {
+                id: 'dst',
+                name: 'Dubai Sustainable Tourism (DST)',
+                description: 'Dubai Department of Economy and Tourism sustainability requirements for all hotels in Dubai',
+                icon: 'fas fa-building',
+                color: 'green',
+                coverage: 'Energy, Water, Waste, Community',
+                reason: 'Mandatory for all Dubai hospitality entities'
+              };
+            } else if (framework.framework_id === 'ESG') {
+              return {
+                id: 'esg',
+                name: 'ESG Framework',
+                description: 'Core Environmental, Social, and Governance reporting framework',
+                icon: 'fas fa-chart-line',
+                color: 'blue',
+                coverage: 'Environmental, Social, Governance',
+                reason: 'Core framework for all businesses'
+              };
+            }
+            // Default mapping for other frameworks
+            return {
+              id: framework.framework_id.toLowerCase(),
+              name: framework.name,
+              description: framework.description || 'Framework description',
+              icon: 'fas fa-chart-line',
+              color: 'blue',
+              coverage: 'Various sustainability aspects',
+              reason: 'Required for your business profile'
+            };
+          });
+          
+          console.log('✅ Mapped mandatory frameworks:', mappedFrameworks);
+          setMandatoryFrameworks(mappedFrameworks);
+        } else {
+          console.error('Failed to fetch frameworks, using fallback');
+          // Fallback to ESG only
+          setMandatoryFrameworks([
+            {
+              id: 'esg',
+              name: 'ESG Framework',
+              description: 'Core Environmental, Social, and Governance reporting framework',
+              icon: 'fas fa-chart-line',
+              color: 'blue',
+              coverage: 'Environmental, Social, Governance',
+              reason: 'Core framework for all businesses'
+            }
+          ]);
+        }
+      } catch (error) {
+        console.error('Error fetching mandatory frameworks:', error);
+        // Fallback to ESG only
+        setMandatoryFrameworks([
+          {
+            id: 'esg',
+            name: 'ESG Framework',
+            description: 'Core Environmental, Social, and Governance reporting framework',
+            icon: 'fas fa-chart-line',
+            color: 'blue',
+            coverage: 'Environmental, Social, Governance',
+            reason: 'Core framework for all businesses'
+          }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMandatoryFrameworks();
+  }, [companyId]);
 
   const voluntaryFrameworks = [
     {

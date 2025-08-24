@@ -1,22 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
 
 const List = () => {
   const navigate = useNavigate();
+  const { user, selectedCompany } = useAuth();
   const [answers, setAnswers] = useState({});
   const [showChecklist, setShowChecklist] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [profilingQuestions, setProfilingQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Get company ID (should come from auth context)
-  const companyId = 1;
+  // Get company ID from auth context
+  const companyId = selectedCompany?.id;
+  
+  // Debug logging
+  console.log('List component - selectedCompany:', selectedCompany);
+  console.log('List component - companyId:', companyId);
+  console.log('List component - user:', user);
 
   // Fetch profiling questions from backend
   const fetchProfilingQuestions = async () => {
+      if (!companyId) {
+        console.log('No company selected, skipping profiling questions fetch');
+        return;
+      }
+      
       try {
         console.log('Fetching profiling questions for company:', companyId);
-        const response = await fetch(`http://localhost:8000/api/profiling-questions/for_company/?company_id=${companyId}`);
+        const response = await makeAuthenticatedRequest(`http://localhost:8000/api/profiling-questions/for_company/?company_id=${companyId}`);
         console.log('Response status:', response.status, 'Response ok:', response.ok);
         
         if (response.ok) {
@@ -60,14 +72,18 @@ const List = () => {
       setLoading(false);
     };
     
-    fetchData();
-  }, []); // Run on component mount
+    if (companyId) {
+      fetchData();
+    }
+  }, [companyId]); // Re-run when companyId changes
 
   // Fetch existing answers from database
   const fetchExistingAnswers = async () => {
+    if (!companyId) return;
+    
     try {
       console.log('Fetching existing profile answers for company:', companyId);
-      const response = await fetch(`http://localhost:8000/api/companies/${companyId}/profile_answers/`);
+      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/companies/${companyId}/profile_answers/`);
       
       if (response.ok) {
         const answersData = await response.json();
@@ -96,12 +112,14 @@ const List = () => {
 
   // Check if wizard has been completed
   const checkWizardCompletion = async () => {
+    if (!companyId) return;
+    
     try {
       // Check if company has answered all questions (wizard completed)
-      const response = await fetch(`http://localhost:8000/api/companies/${companyId}/profile_answers/`);
+      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/companies/${companyId}/profile_answers/`);
       if (response.ok) {
         const answersData = await response.json();
-        const questionsResponse = await fetch(`http://localhost:8000/api/profiling-questions/for_company/?company_id=${companyId}`);
+        const questionsResponse = await makeAuthenticatedRequest(`http://localhost:8000/api/profiling-questions/for_company/?company_id=${companyId}`);
         if (questionsResponse.ok) {
           const questionsData = await questionsResponse.json();
           
@@ -216,11 +234,8 @@ const List = () => {
     // Save to database
     try {
       console.log('Saving profiling answer to database:', questionId, answer);
-      const response = await fetch(`http://localhost:8000/api/companies/${companyId}/save_profile_answer/`, {
+      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/companies/${companyId}/save_profile_answer/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           question: questionId,
           answer: answer
@@ -251,11 +266,8 @@ const List = () => {
     try {
       console.log('Saving all profiling answers to database:', answer);
       const promises = profilingQuestions.map(question => 
-        fetch(`http://localhost:8000/api/companies/${companyId}/save_profile_answer/`, {
+        makeAuthenticatedRequest(`http://localhost:8000/api/companies/${companyId}/save_profile_answer/`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
           body: JSON.stringify({
             question: question.id,
             answer: answer
@@ -306,11 +318,8 @@ const List = () => {
       console.log('Sending answers to backend:', backendAnswers);
 
       // Save answers to backend
-      const response = await fetch('http://localhost:8000/api/profiling-questions/save_answers/', {
+      const response = await makeAuthenticatedRequest('http://localhost:8000/api/profiling-questions/save_answers/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           company_id: companyId,
           answers: backendAnswers
@@ -319,7 +328,7 @@ const List = () => {
 
       if (response.ok) {
         // Fetch the generated checklist
-        const checklistResponse = await fetch(`http://localhost:8000/api/checklist/?company_id=${companyId}`);
+        const checklistResponse = await makeAuthenticatedRequest(`http://localhost:8000/api/checklist/?company_id=${companyId}`);
         if (checklistResponse.ok) {
           const checklistData = await checklistResponse.json();
           
@@ -503,6 +512,19 @@ const List = () => {
               <i className="fas fa-arrow-right ml-2"></i>
             </button>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!companyId) {
+    return (
+      <div className="max-w-6xl mx-auto">
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-8">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">No Company Selected</h3>
+          <p className="text-gray-600 mb-4">
+            Please select a company from the navigation bar to continue with profiling.
+          </p>
         </div>
       </div>
     );

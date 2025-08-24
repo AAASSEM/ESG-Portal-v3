@@ -2,12 +2,17 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from django.core.exceptions import PermissionDenied
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from datetime import datetime
 
 from .models import (
-    Company, Activity, Framework, DataElement, ProfilingQuestion,
+    Company, Activity, CompanyActivity, Framework, CompanyFramework, DataElement, ProfilingQuestion,
     CompanyProfileAnswer, Meter, CompanyDataSubmission, CompanyChecklist
 )
 from .serializers import (
@@ -23,10 +28,16 @@ from .services import (
 )
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class CompanyViewSet(viewsets.ModelViewSet):
     """ViewSet for company management"""
-    queryset = Company.objects.all()
-    permission_classes = [permissions.AllowAny]  # For development
+    serializer_class = CompanySerializer
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        # CRITICAL: Always filter by authenticated user
+        return Company.objects.filter(user=self.request.user)
     
     def get_serializer_class(self):
         if self.action == 'create':
@@ -34,10 +45,18 @@ class CompanyViewSet(viewsets.ModelViewSet):
         return CompanySerializer
     
     def perform_create(self, serializer):
-        company = serializer.save()
+        # CRITICAL: Set user when creating
+        company = serializer.save(user=self.request.user)
         # Auto-assign mandatory frameworks
-        FrameworkService.assign_mandatory_frameworks(company)
+        FrameworkService.assign_mandatory_frameworks(company, self.request.user)
         return company
+    
+    def get_object(self):
+        # CRITICAL: Additional security check
+        obj = super().get_object()
+        if obj.user != self.request.user:
+            raise PermissionDenied("You don't have permission to access this company")
+        return obj
     
     @action(detail=True, methods=['get'])
     def progress(self, request, pk=None):
@@ -62,11 +81,75 @@ class CompanyViewSet(viewsets.ModelViewSet):
         return Response(progress)
     
     @action(detail=True, methods=['get'])
-    def profile_answers(self, request, pk=None):
-        """Get company's profiling wizard answers"""
+    def activities(self, request, pk=None):
+        """Get company's selected activities"""
         company = get_object_or_404(Company, pk=pk)
         
-        answers = CompanyProfileAnswer.objects.filter(company=company)
+        activities = Activity.objects.filter(companyactivity__company=company)
+        serializer = ActivitySerializer(activities, many=True)
+        
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'])
+    def save_activities(self, request, pk=None):
+        """Save company's selected activities and re-assign mandatory frameworks"""
+        company = get_object_or_404(Company, pk=pk, user=request.user)
+        activity_ids = request.data.get('activity_ids', [])
+        
+        with transaction.atomic():
+            # Clear existing activities for this user's company
+            CompanyActivity.objects.filter(
+                user=request.user,
+                company=company
+            ).delete()
+            
+            # Add new activities
+            for activity_id in activity_ids:
+                try:
+                    activity = Activity.objects.get(id=activity_id)
+                    CompanyActivity.objects.create(
+                        user=request.user,
+                        company=company,
+                        activity=activity
+                    )
+                except Activity.DoesNotExist:
+                    continue
+            
+            # Re-assign mandatory frameworks based on updated company profile
+            FrameworkService.assign_mandatory_frameworks(company, request.user)
+        
+        # Return updated activities
+        activities = Activity.objects.filter(
+            companyactivity__user=request.user,
+            companyactivity__company=company
+        )
+        serializer = ActivitySerializer(activities, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'])
+    def frameworks(self, request, pk=None):
+        """Get company's assigned mandatory frameworks"""
+        company = get_object_or_404(Company, pk=pk, user=request.user)
+        
+        # Get company's assigned frameworks (filtered by user)
+        company_frameworks = CompanyFramework.objects.filter(
+            user=request.user,
+            company=company
+        )
+        frameworks = [cf.framework for cf in company_frameworks]
+        serializer = FrameworkSerializer(frameworks, many=True)
+        
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'])
+    def profile_answers(self, request, pk=None):
+        """Get company's profiling wizard answers"""
+        company = get_object_or_404(Company, pk=pk, user=request.user)
+        
+        answers = CompanyProfileAnswer.objects.filter(
+            user=request.user,
+            company=company
+        )
         serializer = CompanyProfileAnswerSerializer(answers, many=True)
         
         return Response(serializer.data)
@@ -74,7 +157,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def save_profile_answer(self, request, pk=None):
         """Save a single profiling wizard answer"""
-        company = get_object_or_404(Company, pk=pk)
+        company = get_object_or_404(Company, pk=pk, user=request.user)
         
         question_id = request.data.get('question')
         answer = request.data.get('answer')
@@ -90,6 +173,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
             
             # Update or create the answer
             profile_answer, created = CompanyProfileAnswer.objects.update_or_create(
+                user=request.user,
                 company=company,
                 question=question,
                 defaults={'answer': answer}
@@ -105,6 +189,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
             )
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for business activities"""
     queryset = Activity.objects.all().order_by('name')
@@ -113,8 +198,10 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=False, methods=['post'])
     def add_custom(self, request):
-        """Add a custom activity"""
+        """Add a custom activity and auto-select it for the company"""
         activity_name = request.data.get('name')
+        company_id = request.data.get('company_id')
+        
         if not activity_name:
             return Response(
                 {'error': 'Activity name is required'}, 
@@ -126,8 +213,22 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
             defaults={'is_custom': True}
         )
         
+        # If company_id provided, automatically select this activity for the company
+        if company_id:
+            try:
+                company = Company.objects.get(id=company_id)
+                CompanyActivity.objects.get_or_create(
+                    company=company, 
+                    activity=activity
+                )
+            except Company.DoesNotExist:
+                pass
+        
         serializer = self.get_serializer(activity)
-        return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+        response_data = serializer.data
+        response_data['auto_selected'] = bool(company_id)
+        
+        return Response(response_data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
 
 class FrameworkViewSet(viewsets.ReadOnlyModelViewSet):
@@ -167,11 +268,13 @@ class FrameworkViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class ProfilingQuestionViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for profiling questions"""
     queryset = ProfilingQuestion.objects.all()
     serializer_class = ProfilingQuestionSerializer
-    permission_classes = [permissions.AllowAny]
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
     
     @action(detail=False, methods=['get'])
     def for_company(self, request):
@@ -184,7 +287,8 @@ class ProfilingQuestionViewSet(viewsets.ReadOnlyModelViewSet):
             )
         
         try:
-            company = Company.objects.get(pk=company_id)
+            # CRITICAL: Ensure user can only access their own company
+            company = Company.objects.get(pk=company_id, user=request.user)
             questions = ProfilingService.get_profiling_questions(company)
             serializer = self.get_serializer(questions, many=True)
             return Response(serializer.data)
@@ -201,7 +305,8 @@ class ProfilingQuestionViewSet(viewsets.ReadOnlyModelViewSet):
         answers = request.data.get('answers', [])
         
         try:
-            company = Company.objects.get(pk=company_id)
+            # CRITICAL: Ensure user can only save answers for their own company
+            company = Company.objects.get(pk=company_id, user=request.user)
             ProfilingService.save_profiling_answers(company, answers)
             
             # Generate personalized checklist after saving answers
@@ -218,15 +323,18 @@ class ProfilingQuestionViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class CompanyChecklistViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for company's personalized checklist"""
     serializer_class = CompanyChecklistSerializer
-    permission_classes = [permissions.AllowAny]
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         company_id = self.request.query_params.get('company_id')
         if company_id:
-            return CompanyChecklist.objects.filter(company_id=company_id)
+            # CRITICAL: Filter by user to ensure data isolation
+            return CompanyChecklist.objects.filter(company_id=company_id, company__user=self.request.user)
         return CompanyChecklist.objects.none()
     
     @action(detail=False, methods=['post'])
@@ -235,7 +343,8 @@ class CompanyChecklistViewSet(viewsets.ReadOnlyModelViewSet):
         company_id = request.data.get('company_id')
         
         try:
-            company = Company.objects.get(pk=company_id)
+            # CRITICAL: Ensure user can only generate checklist for their own company
+            company = Company.objects.get(pk=company_id, user=request.user)
             checklist = ChecklistService.generate_personalized_checklist(company)
             
             # Auto-create meters for metered data elements
@@ -250,15 +359,18 @@ class CompanyChecklistViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class MeterViewSet(viewsets.ModelViewSet):
     """ViewSet for meter management"""
     serializer_class = MeterSerializer
-    permission_classes = [permissions.AllowAny]
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         company_id = self.request.query_params.get('company_id')
         if company_id:
-            return Meter.objects.filter(company_id=company_id)
+            # CRITICAL: Filter by user to ensure data isolation
+            return Meter.objects.filter(company_id=company_id, company__user=self.request.user)
         return Meter.objects.none()
     
     def create(self, request, *args, **kwargs):
@@ -272,9 +384,9 @@ class MeterViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Validate company exists
+        # Validate company exists and belongs to authenticated user
         try:
-            company = Company.objects.get(pk=company_id)
+            company = Company.objects.get(pk=company_id, user=request.user)
         except Company.DoesNotExist:
             return Response(
                 {'error': 'Company not found'}, 

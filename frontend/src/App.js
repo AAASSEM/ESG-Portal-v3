@@ -1,5 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import Login from './components/Login';
+import Signup from './components/Signup';
 import TopNavbar from './components/TopNavbar';
 import Onboard from './components/Onboard';
 import Rame from './components/Rame';
@@ -16,25 +20,91 @@ console.log('App.js loaded');
 function App() {
   console.log('App component rendering');
   
-  // Test WITH TopNavbar now
   return (
     <Router>
-      <div className="App min-h-screen bg-gray-50">
-        <TopNavbar />
-        <div className="container mx-auto p-8">
+      <AuthProvider>
+        <div className="App min-h-screen bg-gray-50">
           <Routes>
-            <Route path="/" element={<Onboard />} />
-            <Route path="/onboard" element={<Onboard />} />
-            <Route path="/rame" element={<Rame />} />
-            <Route path="/list" element={<List />} />
-            <Route path="/meter" element={<Meter />} />
-            <Route path="/data" element={<Data />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard-test" element={<DashboardTest />} />
-            <Route path="/dashboard-full" element={<Dashboard />} />
+            {/* Public routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            
+            {/* Protected routes */}
+            <Route path="/" element={
+              <ProtectedRoute>
+                <TopNavbar />
+                <div className="container mx-auto p-8">
+                  <Onboard />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/onboard" element={
+              <ProtectedRoute>
+                <TopNavbar />
+                <div className="container mx-auto p-8">
+                  <Onboard />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/rame" element={
+              <ProtectedRoute>
+                <TopNavbar />
+                <div className="container mx-auto p-8">
+                  <Rame />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/list" element={
+              <ProtectedRoute>
+                <TopNavbar />
+                <div className="container mx-auto p-8">
+                  <List />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/meter" element={
+              <ProtectedRoute>
+                <TopNavbar />
+                <div className="container mx-auto p-8">
+                  <Meter />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/data" element={
+              <ProtectedRoute>
+                <TopNavbar />
+                <div className="container mx-auto p-8">
+                  <Data />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <TopNavbar />
+                <div className="container mx-auto p-8">
+                  <Dashboard />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard-test" element={
+              <ProtectedRoute>
+                <TopNavbar />
+                <div className="container mx-auto p-8">
+                  <DashboardTest />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard-full" element={
+              <ProtectedRoute>
+                <TopNavbar />
+                <div className="container mx-auto p-8">
+                  <Dashboard />
+                </div>
+              </ProtectedRoute>
+            } />
           </Routes>
         </div>
-      </div>
+      </AuthProvider>
     </Router>
   );
 }

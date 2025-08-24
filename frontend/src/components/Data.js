@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Data = () => {
   const navigate = useNavigate();
+  const { selectedCompany } = useAuth();
   const [selectedYear, setSelectedYear] = useState(2025); // Use 2025 to match backend data
   const [selectedMonth, setSelectedMonth] = useState(8); // Use August to match current backend data
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,12 +21,27 @@ const Data = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadResults, setUploadResults] = useState(null);
   const [progressData, setProgressData] = useState({
-    annual: { data_progress: 0, evidence_progress: 0, total_points: 0 },
-    monthly: { data_progress: 0, evidence_progress: 0, items_remaining: 0 }
+    annual: { 
+      data_progress: 0, 
+      evidence_progress: 0, 
+      overall_progress: 0,
+      total_points: 0, 
+      completed_points: 0,
+      data_complete: 0,
+      evidence_complete: 0
+    },
+    monthly: { 
+      data_progress: 0, 
+      evidence_progress: 0, 
+      overall_progress: 0,
+      items_remaining: 0,
+      completed_points: 0,
+      total_points: 0
+    }
   });
 
-  // Get current company ID (you may want to get this from context or props)
-  const companyId = 1; // This should come from your auth context or route params
+  // Get current company ID from auth context
+  const companyId = selectedCompany?.id;
 
   // Format number with thousand separators
   const formatNumber = (value) => {
@@ -270,12 +287,19 @@ const Data = () => {
           annual: { 
             data_progress: annualProgress.data_progress || 0,
             evidence_progress: annualProgress.evidence_progress || 0,
-            total_points: annualProgress.total_points || 0
+            overall_progress: annualProgress.overall_progress || 0,
+            total_points: annualProgress.total_points || 0,
+            completed_points: annualProgress.completed_points || 0,
+            data_complete: annualProgress.data_complete || 0,
+            evidence_complete: annualProgress.evidence_complete || 0
           },
           monthly: { 
             data_progress: monthlyProgress.data_progress || 0,
             evidence_progress: monthlyProgress.evidence_progress || 0,
-            items_remaining: monthlyProgress.items_remaining || 0
+            overall_progress: monthlyProgress.overall_progress || 0,
+            items_remaining: monthlyProgress.items_remaining || 0,
+            completed_points: monthlyProgress.completed_points || 0,
+            total_points: monthlyProgress.total_points || 0
           }
         });
 
@@ -568,12 +592,19 @@ const Data = () => {
         annual: { 
           data_progress: annualProgress.data_progress || 0,
           evidence_progress: annualProgress.evidence_progress || 0,
-          total_points: annualProgress.total_points || 0
+          overall_progress: annualProgress.overall_progress || 0,
+          total_points: annualProgress.total_points || 0,
+          completed_points: annualProgress.completed_points || 0,
+          data_complete: annualProgress.data_complete || 0,
+          evidence_complete: annualProgress.evidence_complete || 0
         },
         monthly: { 
           data_progress: monthlyProgress.data_progress || 0,
           evidence_progress: monthlyProgress.evidence_progress || 0,
-          items_remaining: monthlyProgress.items_remaining || 0
+          overall_progress: monthlyProgress.overall_progress || 0,
+          items_remaining: monthlyProgress.items_remaining || 0,
+          completed_points: monthlyProgress.completed_points || 0,
+          total_points: monthlyProgress.total_points || 0
         }
       });
 
@@ -679,7 +710,10 @@ const Data = () => {
           monthly: { 
             data_progress: monthlyProgress.data_progress || 0,
             evidence_progress: monthlyProgress.evidence_progress || 0,
-            items_remaining: monthlyProgress.items_remaining || 0
+            overall_progress: monthlyProgress.overall_progress || 0,
+            items_remaining: monthlyProgress.items_remaining || 0,
+            completed_points: monthlyProgress.completed_points || 0,
+            total_points: monthlyProgress.total_points || 0
           }
         }));
       } catch (error) {
@@ -766,9 +800,23 @@ const Data = () => {
                 <div className="bg-green-500 h-3 rounded-full" style={{ width: `${progressData.annual.evidence_progress}%` }}></div>
               </div>
             </div>
+            {/* Overall Progress */}
             <div className="pt-4 border-t border-gray-200">
-              <div className="text-2xl font-bold text-gray-900">{progressData.annual.total_points}</div>
-              <div className="text-sm text-gray-500">Total Data Points YTD</div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-gray-700">Overall Progress</span>
+                <span className="text-sm font-bold text-indigo-600">{Math.round(progressData.annual.overall_progress || 0)}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-4">
+                <div className="bg-indigo-500 h-4 rounded-full" style={{ width: `${progressData.annual.overall_progress || 0}%` }}></div>
+              </div>
+            </div>
+            
+            <div className="pt-4 border-t border-gray-200 text-center">
+              <div className="text-2xl font-bold text-gray-900">{progressData.annual.completed_points || 0} / {progressData.annual.total_points || 0}</div>
+              <div className="text-sm text-gray-500">Tasks Completed (Data + Evidence)</div>
+              <div className="text-xs text-gray-400 mt-1">
+                Data Entries: {progressData.annual.data_complete || 0} | Evidence Files: {progressData.annual.evidence_complete || 0}
+              </div>
             </div>
           </div>
         </div>
@@ -796,9 +844,23 @@ const Data = () => {
                 <div className="bg-purple-500 h-3 rounded-full" style={{ width: `${progressData.monthly.evidence_progress}%` }}></div>
               </div>
             </div>
+            {/* Overall Monthly Progress */}
             <div className="pt-4 border-t border-gray-200">
-              <div className="text-2xl font-bold text-gray-900">{progressData.monthly.items_remaining}</div>
-              <div className="text-sm text-gray-500">Items Remaining</div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-gray-700">Overall Progress</span>
+                <span className="text-sm font-bold text-indigo-600">{Math.round(progressData.monthly.overall_progress || 0)}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-4">
+                <div className="bg-indigo-500 h-4 rounded-full" style={{ width: `${progressData.monthly.overall_progress || 0}%` }}></div>
+              </div>
+            </div>
+            
+            <div className="pt-4 border-t border-gray-200 text-center">
+              <div className="text-2xl font-bold text-gray-900">{progressData.monthly.completed_points || 0} / {progressData.monthly.total_points || 0}</div>
+              <div className="text-sm text-gray-500">Tasks Completed This Month</div>
+              <div className="text-xs text-red-500 mt-1">
+                {progressData.monthly.items_remaining || 0} Tasks Remaining
+              </div>
             </div>
           </div>
         </div>

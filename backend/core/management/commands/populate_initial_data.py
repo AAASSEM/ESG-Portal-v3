@@ -46,47 +46,68 @@ class Command(BaseCommand):
         self.stdout.write(f'Created {len(activities)} predefined activities')
 
     def create_frameworks(self):
-        """Create ESG frameworks"""
+        """Create ESG frameworks based on UAE hospitality sector requirements"""
         frameworks = [
+            # Mandatory Frameworks
             {
                 'framework_id': 'ESG',
                 'name': 'ESG Standards',
                 'type': 'mandatory',
-                'description': 'Core Environmental, Social, and Governance standards'
+                'description': 'Core Environmental, Social, and Governance standards - mandatory for all users'
             },
+            
+            # Mandatory Conditional Frameworks
             {
                 'framework_id': 'DST',
-                'name': 'Dubai Sustainable Tourism',
+                'name': 'Dubai Sustainable Tourism (DST)',
                 'type': 'mandatory_conditional',
-                'description': 'Dubai Department of Economy and Tourism sustainability requirements',
+                'description': 'Mandatory for all hotels in Dubai - Dubai Department of Economy and Tourism (DET) - 19 Sustainability Requirements',
                 'condition_emirate': 'dubai',
                 'condition_sector': 'hospitality'
             },
             {
-                'framework_id': 'UAE_ESG',
+                'framework_id': 'UAE_ESG_REPORTING',
                 'name': 'UAE ESG Reporting Requirements',
                 'type': 'mandatory_conditional',
-                'description': 'UAE Securities and Commodities Authority ESG reporting',
+                'description': 'Mandatory for listed companies - Securities and Commodities Authority (SCA) - Annual sustainability report submission within 90 days',
                 'condition_emirate': '',
                 'condition_sector': 'listed_company'
             },
             {
+                'framework_id': 'DUBAI_ENERGY_REGULATIONS',
+                'name': 'Dubai Supreme Council of Energy Regulations',
+                'type': 'mandatory_conditional',
+                'description': 'Mandatory compliance - Dubai Supreme Council of Energy - Energy regulations, guidelines, and directives',
+                'condition_emirate': 'dubai',
+                'condition_sector': ''
+            },
+            {
+                'framework_id': 'CLIMATE_REPORTING_MANDATE',
+                'name': 'Climate Reporting Mandate (High Emitters)',
+                'type': 'mandatory_conditional',
+                'description': 'Mandatory for high emitters - UAE Ministry of Climate Change - Scope 1 and Scope 2 emissions reporting',
+                'condition_emirate': '',
+                'condition_sector': 'high_emitter'
+            },
+            
+            # Voluntary Frameworks
+            {
                 'framework_id': 'GREEN_KEY',
                 'name': 'Green Key Certification',
                 'type': 'voluntary',
-                'description': 'International eco-label for tourism industry'
+                'description': 'Voluntary eco-label - Emirates Green Building Council (EGBC) - 13 criteria areas with imperative and guideline criteria'
             },
             {
                 'framework_id': 'GRI',
-                'name': 'Global Reporting Initiative',
+                'name': 'Global Reporting Initiative (GRI)',
                 'type': 'voluntary',
-                'description': 'International standards for sustainability reporting'
+                'description': 'Voluntary international standard - Global Sustainability Standards Board (GSSB) - Comprehensive sustainability reporting standards'
             },
             {
-                'framework_id': 'TCFD',
-                'name': 'Task Force on Climate-related Financial Disclosures',
+                'framework_id': 'ADX_ESG',
+                'name': 'ADX ESG Disclosure Guidance',
                 'type': 'voluntary',
-                'description': 'Climate-related financial risk disclosures'
+                'description': 'Voluntary guidance (becoming mandatory) - Abu Dhabi Securities Exchange - 31 ESG indicators'
             }
         ]
         

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
 
 const Meter = () => {
   const navigate = useNavigate();
+  const { selectedCompany } = useAuth();
   const [selectedMeter, setSelectedMeter] = useState(null);
   const [showAddMeter, setShowAddMeter] = useState(false);
   const [showEditMeter, setShowEditMeter] = useState(false);
@@ -33,13 +35,18 @@ const Meter = () => {
   };
 
   // Get company ID (should come from auth context)
-  const companyId = 1;
+  const companyId = selectedCompany?.id;
 
   // API functions
   const fetchMeters = async () => {
+    if (!companyId) {
+      console.log('No company selected, skipping meters fetch');
+      return;
+    }
+    
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/meters/?company_id=${companyId}`);
+      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/meters/?company_id=${companyId}`);
       const data = await response.json();
       
       // Transform backend data to frontend format
@@ -54,7 +61,8 @@ const Meter = () => {
         lastUpdate: new Date(meter.created_at).toLocaleString(),
         dataPoints: ['Primary Measurement'],
         frameworks: ['Auto-assigned'],
-        isAutoCreated: meter.has_data // Use has_data to indicate if it's system-generated
+        has_data: meter.has_data, // Track if meter has data (prevents deletion)
+        isAutoCreated: true // All meters are auto-created from checklist
       }));
       
       setMeters(transformedMeters);
@@ -67,11 +75,8 @@ const Meter = () => {
 
   const createMeter = async (meterData) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/meters/?company_id=${companyId}`, {
+      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/meters/?company_id=${companyId}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           company: companyId,
           name: meterData.name,
@@ -95,11 +100,8 @@ const Meter = () => {
 
   const updateMeter = async (meterId, meterData) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/meters/${meterId}/?company_id=${companyId}`, {
+      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/meters/${meterId}/?company_id=${companyId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           name: meterData.name,
           type: meterData.type,
@@ -121,26 +123,73 @@ const Meter = () => {
   };
 
   const deleteMeter = async (meterId) => {
+    // Check if meter has data before attempting deletion
+    const meter = meters.find(m => m.id === meterId);
+    if (!meter) {
+      alert('Meter not found');
+      return false;
+    }
+    
+    if (meter.has_data) {
+      alert('Cannot delete this meter because it has associated data. You can deactivate it instead.');
+      return false;
+    }
+    
+    // Confirm deletion
+    if (!window.confirm(`Are you sure you want to delete the meter "${meter.name}" (${meter.type})?`)) {
+      return false;
+    }
+    
     try {
-      const response = await fetch(`http://localhost:8000/api/meters/${meterId}/?company_id=${companyId}`, {
+      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/meters/${meterId}/?company_id=${companyId}`, {
         method: 'DELETE',
       });
       
       if (response.ok) {
         await fetchMeters(); // Refresh the list
+        alert('Meter deleted successfully');
         return true;
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        alert(`Failed to delete meter: ${errorData.error || 'Unknown error'}`);
+        return false;
       }
-      return false;
     } catch (error) {
       console.error('Error deleting meter:', error);
+      alert('Error deleting meter. Please try again.');
       return false;
     }
   };
 
+  const deactivateMeter = async (meterId) => {
+    const meter = meters.find(m => m.id === meterId);
+    if (!meter) return false;
+    
+    const newStatus = meter.status === 'Active' ? 'Inactive' : 'Active';
+    const action = newStatus === 'Inactive' ? 'deactivate' : 'activate';
+    
+    if (!window.confirm(`Are you sure you want to ${action} the meter "${meter.name}" (${meter.type})?`)) {
+      return false;
+    }
+    
+    const success = await updateMeter(meterId, {
+      ...meter,
+      status: newStatus
+    });
+    
+    if (success) {
+      alert(`Meter ${action}d successfully`);
+    }
+    
+    return success;
+  };
+
   // Load meters on component mount
   useEffect(() => {
-    fetchMeters();
-  }, []);
+    if (companyId) {
+      fetchMeters();
+    }
+  }, [companyId]);
 
   const meterTypes = [
     {
@@ -245,19 +294,14 @@ const Meter = () => {
 
   const handleToggleMeterStatus = async (meterId) => {
     const meter = meters.find(m => m.id === meterId);
-    if (meter?.isAutoCreated) {
-      // Auto-created meters can only be activated/deactivated
-      const newStatus = meter.status === 'Active' ? 'Inactive' : 'Active';
-      const success = await updateMeter(meterId, { ...meter, status: newStatus });
-      if (!success) {
-        alert('Failed to update meter status. Please try again.');
-      }
+    if (!meter) return;
+    
+    if (meter.isAutoCreated) {
+      // Auto-created meters can only be activated/deactivated (never deleted)
+      await deactivateMeter(meterId);
     } else {
-      // Manual meters can be deleted
-      const success = await deleteMeter(meterId);
-      if (!success) {
-        alert('Failed to delete meter. Please try again.');
-      }
+      // Manual meters can be deleted, but only if they don't have data
+      await deleteMeter(meterId);
     }
   };
 
@@ -661,22 +705,30 @@ const Meter = () => {
                                 ? meter.status === 'Active'
                                   ? 'text-red-600 hover:text-red-900' 
                                   : 'text-green-600 hover:text-green-900'
-                                : 'text-red-600 hover:text-red-900'
+                                : meter.has_data
+                                  ? 'text-gray-400 cursor-not-allowed'
+                                  : 'text-red-600 hover:text-red-900'
                             }`}
                             onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleToggleMeterStatus(meter.id);
-                    }}
-                            title={meter.isAutoCreated 
-                              ? meter.status === 'Active' ? 'Deactivate Meter' : 'Activate Meter'
-                              : 'Delete Meter'
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleToggleMeterStatus(meter.id);
+                            }}
+                            title={
+                              meter.isAutoCreated 
+                                ? meter.status === 'Active' ? 'Deactivate Meter' : 'Activate Meter'
+                                : meter.has_data
+                                  ? 'Cannot delete - meter has data'
+                                  : 'Delete Meter'
                             }
+                            disabled={!meter.isAutoCreated && meter.has_data}
                           >
                             <i className={`fas ${
                               meter.isAutoCreated 
                                 ? meter.status === 'Active' ? 'fa-power-off' : 'fa-play'
-                                : 'fa-trash'
+                                : meter.has_data
+                                  ? 'fa-lock'
+                                  : 'fa-trash'
                             }`}></i>
                           </button>
                         </div>

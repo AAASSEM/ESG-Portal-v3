@@ -26,39 +26,44 @@ class Company(models.Model):
         ('retail', 'Retail'),
     ]
     
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=255)
     emirate = models.CharField(max_length=100, choices=EMIRATE_CHOICES)
     sector = models.CharField(max_length=100, choices=SECTOR_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
-    
-    def __str__(self):
-        return self.name
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
+        # Ensure unique company names per user
+        unique_together = ['user', 'name']
         verbose_name_plural = "Companies"
+    
+    def __str__(self):
+        return f"{self.name} (User: {self.user.username})"
 
 
 class Activity(models.Model):
     """Stores all possible business activities"""
     name = models.CharField(max_length=255, unique=True)
     is_custom = models.BooleanField(default=False)  # Track custom activities added by users
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return self.name
     
     class Meta:
         verbose_name_plural = "Activities"
+    
+    def __str__(self):
+        return self.name
 
 
 class CompanyActivity(models.Model):
     """Links companies to their selected activities (Many-to-Many)"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     
     class Meta:
-        unique_together = ('company', 'activity')
+        unique_together = ('user', 'company', 'activity')
         verbose_name_plural = "Company Activities"
 
 
@@ -85,13 +90,14 @@ class Framework(models.Model):
 
 class CompanyFramework(models.Model):
     """Stores the frameworks a company has adopted"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     framework = models.ForeignKey(Framework, on_delete=models.CASCADE)
     is_auto_assigned = models.BooleanField(default=False)
     assigned_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        unique_together = ('company', 'framework')
+        unique_together = ('user', 'company', 'framework')
 
 
 class DataElement(models.Model):
@@ -148,13 +154,14 @@ class ProfilingQuestion(models.Model):
 
 class CompanyProfileAnswer(models.Model):
     """Stores a company's answers to the profiling questions"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     question = models.ForeignKey(ProfilingQuestion, on_delete=models.CASCADE)
     answer = models.BooleanField()
     answered_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        unique_together = ('company', 'question')
+        unique_together = ('user', 'company', 'question')
 
 
 class Meter(models.Model):
@@ -164,6 +171,7 @@ class Meter(models.Model):
         ('inactive', 'Inactive'),
     ]
     
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     type = models.CharField(max_length=100)  # e.g., 'Electricity', 'Water'
     name = models.CharField(max_length=255)  # e.g., 'Main', 'Kitchen Meter'
@@ -173,7 +181,7 @@ class Meter(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f"{self.company.name} - {self.type} - {self.name}"
+        return f"{self.company.name} - {self.type} - {self.name} (User: {self.user.username})"
     
     def has_data(self):
         """Check if meter has any data submissions"""
@@ -188,18 +196,19 @@ class CompanyDataSubmission(models.Model):
         ('complete', 'Complete'),
     ]
     
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     element = models.ForeignKey(DataElement, on_delete=models.CASCADE)
     meter = models.ForeignKey(Meter, on_delete=models.CASCADE, null=True, blank=True)
     reporting_year = models.PositiveIntegerField()
     reporting_period = models.CharField(max_length=50)  # e.g., 'Jan', 'Q1', '2025'
     value = models.TextField(blank=True)
-    evidence_file = models.FileField(upload_to='evidence/', blank=True)
+    evidence_file = models.FileField(upload_to='evidence/%Y/%m/%d/', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        unique_together = ('company', 'element', 'meter', 'reporting_year', 'reporting_period')
+        unique_together = ('user', 'company', 'element', 'meter', 'reporting_year', 'reporting_period')
     
     @property
     def status(self):
@@ -220,6 +229,7 @@ class CompanyDataSubmission(models.Model):
 
 class CompanyChecklist(models.Model):
     """Stores the personalized checklist for each company"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     element = models.ForeignKey(DataElement, on_delete=models.CASCADE)
     is_required = models.BooleanField(default=True)
@@ -228,7 +238,7 @@ class CompanyChecklist(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        unique_together = ('company', 'element')
+        unique_together = ('user', 'company', 'element')
     
     def __str__(self):
         return f"{self.company.name} - {self.element.name}"
