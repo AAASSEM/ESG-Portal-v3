@@ -1,0 +1,53 @@
+Access to fetch at 'http://localhost:8000/api/data-collection/available_months/?year=2025' from origin 'http://localhost:7701' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+:8000/api/data-collection/available_months/?year=2025:1   Failed to load resource: net::ERR_FAILED
+AuthContext.js:72  ❌ Request failed: http://localhost:8000/api/data-collection/available_months/?year=2025 Error: Failed to fetch
+makeAuthenticatedRequest @ AuthContext.js:72
+Data.js:147  Error fetching available months: TypeError: Failed to fetch
+    at makeAuthenticatedRequest (AuthContext.js:64:1)
+    at async fetchAvailableMonths (Data.js:143:1)
+    at async loadInitialData (Data.js:281:1)
+fetchAvailableMonths @ Data.js:147
+AuthContext.js:43 🔄 Making request to: http://localhost:8000/api/data-collection/progress/?company_id=2&year=2025
+AuthContext.js:49 🔑 CSRF token: obtained
+data:1  Access to fetch at 'http://localhost:8000/api/data-collection/tasks/?company_id=2&year=2025&month=8' from origin 'http://localhost:7701' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+:8000/api/data-collection/tasks/?company_id=2&year=2025&month=8:1   Failed to load resource: net::ERR_FAILED
+AuthContext.js:72  ❌ Request failed: http://localhost:8000/api/data-collection/tasks/?company_id=2&year=2025&month=8 Error: Failed to fetch
+makeAuthenticatedRequest @ AuthContext.js:72
+Data.js:160  Error fetching data entries: TypeError: Failed to fetch
+    at makeAuthenticatedRequest (AuthContext.js:64:1)
+    at async fetchDataEntries (Data.js:154:1)
+    at async refreshDataEntries (Data.js:375:1)
+fetchDataEntries @ Data.js:160
+Data.js:392 ✅ Data entries refreshed, found 0 tasks
+data:1  Access to fetch at 'http://localhost:8000/api/data-collection/progress/?company_id=2&year=2025' from origin 'http://localhost:7701' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+:8000/api/data-collection/progress/?company_id=2&year=2025:1   Failed to load resource: net::ERR_FAILED
+AuthContext.js:72  ❌ Request failed: http://localhost:8000/api/data-collection/progress/?company_id=2&year=2025 Error: Failed to fetch
+makeAuthenticatedRequest @ AuthContext.js:72
+Data.js:175  Error fetching progress: TypeError: Failed to fetch
+    at makeAuthenticatedRequest (AuthContext.js:64:1)
+    at async fetchProgress (Data.js:171:1)
+    at async loadInitialData (Data.js:287:1)
+fetchProgress @ Data.js:175
+AuthContext.js:43 🔄 Making request to: http://localhost:8000/api/data-collection/progress/?company_id=2&year=2025&month=8
+AuthContext.js:49 🔑 CSRF token: obtained
+data:1  Access to fetch at 'http://localhost:8000/api/data-collection/progress/?company_id=2&year=2025&month=8' from origin 'http://localhost:7701' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+:8000/api/data-collection/progress/?company_id=2&year=2025&month=8:1   Failed to load resource: net::ERR_FAILED
+AuthContext.js:72  ❌ Request failed: http://localhost:8000/api/data-collection/progress/?company_id=2&year=2025&month=8 Error: Failed to fetch
+makeAuthenticatedRequest @ AuthContext.js:72
+Data.js:175  Error fetching progress: TypeError: Failed to fetch
+    at makeAuthenticatedRequest (AuthContext.js:64:1)
+    at async fetchProgress (Data.js:171:1)
+    at async loadInitialData (Data.js:288:1)
+fetchProgress @ Data.js:175
+Data.js:311 Loading data entries for company: 2 year: 2025 month: 8
+AuthContext.js:43 🔄 Making request to: http://localhost:8000/api/data-collection/tasks/?company_id=2&year=2025&month=8
+AuthContext.js:49 🔑 CSRF token: obtained
+data:1  Access to fetch at 'http://localhost:8000/api/data-collection/tasks/?company_id=2&year=2025&month=8' from origin 'http://localhost:7701' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+:8000/api/data-collection/tasks/?company_id=2&year=2025&month=8:1   Failed to load resource: net::ERR_FAILED
+AuthContext.js:72  ❌ Request failed: http://localhost:8000/api/data-collection/tasks/?company_id=2&year=2025&month=8 Error: Failed to fetch
+makeAuthenticatedRequest @ AuthContext.js:72
+Data.js:160  Error fetching data entries: TypeError: Failed to fetch
+    at makeAuthenticatedRequest (AuthContext.js:64:1)
+    at async fetchDataEntries (Data.js:154:1)
+    at async loadInitialData (Data.js:312:1)
+fetchDataEntries @ Data.js:160

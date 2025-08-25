@@ -324,10 +324,6 @@ const Dashboard = () => {
   const [selectedEmissionScope, setSelectedEmissionScope] = useState('Scope 2');
   const [modalData, setModalData] = useState({ isOpen: false, type: '', data: {} });
   const [showDeadlineModal, setShowDeadlineModal] = useState(false);
-  const [showFormatModal, setShowFormatModal] = useState(false);
-  const [selectedFormat, setSelectedFormat] = useState('excel');
-  const [showNotificationModal, setShowNotificationModal] = useState(false);
-  const [notificationData, setNotificationData] = useState(null);
   
   // Get company ID from auth context
   const companyId = selectedCompany?.id;
@@ -865,34 +861,19 @@ const Dashboard = () => {
         row.map(cell => `"${cell}"`).join(',')
       ).join('\n');
       
-      // Create filename with time range and format
+      // Create filename with time range
       const timeRangeSuffix = selectedTimeRange.toLowerCase().replace(/ /g, '-');
-      const fileExtension = selectedFormat === 'pdf' ? 'pdf' : 'csv';
-      const filename = `esg-report-${timeRangeSuffix}-${timestamp}.${fileExtension}`;
+      const filename = `esg-report-${timeRangeSuffix}-${timestamp}.csv`;
       
-      if (selectedFormat === 'pdf') {
-        // Show PDF notification modal
-        setNotificationData({
-          type: 'info',
-          title: 'PDF Generation Coming Soon',
-          message: 'PDF report generation is currently in development. Please use the Excel/CSV format for now, which provides all the same data in a format that can be easily imported into any spreadsheet application.',
-          icon: 'fas fa-info-circle',
-          buttonText: 'Got it'
-        });
-        setShowNotificationModal(true);
-        return;
-      } else {
-        // Generate Excel/CSV
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      }
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
 
       // Show success modal
       setModalData({
@@ -927,13 +908,6 @@ const Dashboard = () => {
   };
 
   const handleExportData = async () => {
-    // Show format selection modal first
-    setShowFormatModal(true);
-  };
-
-  const handleFormatSelected = () => {
-    setShowFormatModal(false);
-    
     // Check data completeness and warn user if incomplete
     const dataCompleteness = Math.round(dashboardData?.data_completeness_percentage || 0);
     const evidenceCompleteness = Math.round(dashboardData?.evidence_completeness_percentage || 0);
@@ -987,15 +961,6 @@ const Dashboard = () => {
   const confirmExport = () => {
     closeModal();
     performExport();
-  };
-
-  const closeFormatModal = () => {
-    setShowFormatModal(false);
-  };
-
-  const closeNotificationModal = () => {
-    setShowNotificationModal(false);
-    setNotificationData(null);
   };
 
   const handleAddDeadline = () => {
@@ -1516,142 +1481,6 @@ const Dashboard = () => {
           ))}
         </div>
       </div>
-
-      {/* Format Selection Modal */}
-      {showFormatModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full shadow-2xl">
-            <div className="p-6 border-b">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <i className="fas fa-file-export text-blue-600 text-xl"></i>
-                  </div>
-                  <h2 className="text-xl font-bold text-gray-900">Choose Export Format</h2>
-                </div>
-                <button onClick={closeFormatModal} className="text-gray-400 hover:text-gray-600">
-                  <i className="fas fa-times text-xl"></i>
-                </button>
-              </div>
-            </div>
-            
-            <div className="p-6">
-              <p className="text-gray-700 mb-6">Select the format you'd like for your ESG report:</p>
-              
-              <div className="space-y-3">
-                <label className="flex items-center p-3 border-2 border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="format"
-                    value="excel"
-                    checked={selectedFormat === 'excel'}
-                    onChange={(e) => setSelectedFormat(e.target.value)}
-                    className="mr-3"
-                  />
-                  <div className="flex items-center space-x-3 flex-1">
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                      <i className="fas fa-file-excel text-green-600"></i>
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900">Excel/CSV Format</div>
-                      <div className="text-sm text-gray-500">Compatible with Excel, Google Sheets, and other spreadsheet applications</div>
-                    </div>
-                  </div>
-                </label>
-                
-                <label className="flex items-center p-3 border-2 border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="format"
-                    value="pdf"
-                    checked={selectedFormat === 'pdf'}
-                    onChange={(e) => setSelectedFormat(e.target.value)}
-                    className="mr-3"
-                  />
-                  <div className="flex items-center space-x-3 flex-1">
-                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                      <i className="fas fa-file-pdf text-red-600"></i>
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900">PDF Format</div>
-                      <div className="text-sm text-gray-500">Professional formatted report ready for sharing and printing</div>
-                    </div>
-                  </div>
-                </label>
-              </div>
-            </div>
-            
-            <div className="p-6 border-t bg-gray-50 flex justify-end space-x-3">
-              <button
-                onClick={closeFormatModal}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleFormatSelected}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Notification Modal */}
-      {showNotificationModal && notificationData && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full shadow-2xl">
-            <div className={`p-6 border-b ${
-              notificationData.type === 'info' ? 'bg-blue-50' : 
-              notificationData.type === 'success' ? 'bg-green-50' : 
-              notificationData.type === 'warning' ? 'bg-yellow-50' : 
-              'bg-red-50'
-            }`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    notificationData.type === 'info' ? 'bg-blue-100' : 
-                    notificationData.type === 'success' ? 'bg-green-100' : 
-                    notificationData.type === 'warning' ? 'bg-yellow-100' : 
-                    'bg-red-100'
-                  }`}>
-                    <i className={`${notificationData.icon} ${
-                      notificationData.type === 'info' ? 'text-blue-600' : 
-                      notificationData.type === 'success' ? 'text-green-600' : 
-                      notificationData.type === 'warning' ? 'text-yellow-600' : 
-                      'text-red-600'
-                    } text-xl`}></i>
-                  </div>
-                  <h2 className="text-xl font-bold text-gray-900">{notificationData.title}</h2>
-                </div>
-                <button onClick={closeNotificationModal} className="text-gray-400 hover:text-gray-600">
-                  <i className="fas fa-times text-xl"></i>
-                </button>
-              </div>
-            </div>
-            
-            <div className="p-6">
-              <p className="text-gray-700 leading-relaxed">{notificationData.message}</p>
-            </div>
-            
-            <div className="p-6 border-t bg-gray-50 flex justify-end">
-              <button
-                onClick={closeNotificationModal}
-                className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                  notificationData.type === 'info' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 
-                  notificationData.type === 'success' ? 'bg-green-600 hover:bg-green-700 text-white' : 
-                  notificationData.type === 'warning' ? 'bg-yellow-600 hover:bg-yellow-700 text-white' : 
-                  'bg-red-600 hover:bg-red-700 text-white'
-                }`}
-              >
-                {notificationData.buttonText || 'OK'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Export Modal */}
       <ExportModal

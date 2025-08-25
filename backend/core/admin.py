@@ -94,8 +94,7 @@ class CompanyChecklistAdmin(admin.ModelAdmin):
     list_display = ['company', 'element', 'is_required', 'cadence', 'created_at']
     list_filter = ['is_required', 'cadence', 'created_at']
     search_fields = ['company__name', 'element__name']
-    # Removed: filter_horizontal = ['frameworks']
-    # Cannot use filter_horizontal with ManyToMany fields that have a custom through model
+    filter_horizontal = ['frameworks']
 
 
 @admin.register(ChecklistFrameworkMapping)

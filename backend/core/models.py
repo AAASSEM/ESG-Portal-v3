@@ -185,10 +185,10 @@ class Meter(models.Model):
         return f"{self.company.name} - {self.type} - {self.name} (User: {self.user.username})"
     
     def has_data(self):
-        """Check if meter has any actual data values entered (not just empty submissions)"""
+        """Check if meter has any data submissions with actual data or evidence"""
         return self.companydatasubmission_set.filter(
-            models.Q(value__isnull=False) & ~models.Q(value='') |
-            models.Q(evidence_file__isnull=False) & ~models.Q(evidence_file='')
+            models.Q(value__isnull=False, value__gt='') | 
+            models.Q(evidence_file__isnull=False, evidence_file__gt='')
         ).exists()
 
 

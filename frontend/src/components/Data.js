@@ -313,7 +313,7 @@ const Data = () => {
         console.log('Raw entries from API:', entries);
         const transformedEntries = entries.map(entry => ({
           id: entry.submission.id,
-          name: entry.meter ? `${entry.element_name} - ${entry.meter.name}` : entry.element_name,
+          name: entry.element_name,
           meter: entry.meter ? `${entry.meter.name} (${entry.meter.type})` : 'N/A',
           meter_id: entry.meter ? entry.meter.id : null,
           meter_type: entry.meter ? entry.meter.type : null,
@@ -366,13 +366,48 @@ const Data = () => {
     }
   }, [location.pathname, companyId, selectedYear, selectedMonth]);
 
-  // Helper function to refresh data entries
+  // Add periodic refresh to catch meter changes
+  useEffect(() => {
+    if (!companyId) return;
+    
+    console.log('Setting up periodic refresh every 10 seconds');
+    const interval = setInterval(() => {
+      if (location.pathname === '/data') {
+        console.log('Periodic refresh - checking for meter changes');
+        refreshDataEntries();
+      }
+    }, 10000); // Refresh every 10 seconds when on Data page
+    
+    return () => {
+      console.log('Clearing periodic refresh interval');
+      clearInterval(interval);
+    };
+  }, [location.pathname, companyId, selectedYear, selectedMonth]);
+
+  // Helper function to refresh data entries and progress
   const refreshDataEntries = async () => {
     if (!companyId) return;
     
-    console.log('Refreshing data entries for company:', companyId);
+    console.log('🔄 REFRESH START - Company:', companyId, 'Year:', selectedYear, 'Month:', selectedMonth);
     try {
-      const entries = await fetchDataEntries(selectedYear, selectedMonth);
+      // Refresh both data entries and progress simultaneously
+      const [entries, annualProgress, monthlyProgress] = await Promise.all([
+        fetchDataEntries(selectedYear, selectedMonth),
+        fetchProgress(selectedYear),
+        fetchProgress(selectedYear, selectedMonth)
+      ]);
+
+      console.log('📊 Raw API responses:');
+      console.log('- Data entries count:', entries.length);
+      console.log('- Annual progress:', annualProgress);
+      console.log('- Monthly progress:', monthlyProgress);
+
+      // Update progress data
+      setProgressData({
+        annual: annualProgress,
+        monthly: monthlyProgress
+      });
+
       const transformedEntries = entries.map(entry => ({
         id: entry.submission.id,
         name: entry.element_name,
@@ -389,11 +424,15 @@ const Data = () => {
         evidence_file: entry.submission.evidence_file || null
       }));
       setDataEntries(transformedEntries);
-      console.log('✅ Data entries refreshed, found', transformedEntries.length, 'tasks');
+      console.log('✅ REFRESH COMPLETE - Found', transformedEntries.length, 'tasks');
+      console.log('- Total points (should be', transformedEntries.length * 2, '):', monthlyProgress.total_points);
+      console.log('- Completed points:', monthlyProgress.completed_points);
+      console.log('- Items remaining:', monthlyProgress.items_remaining);
     } catch (error) {
-      console.error('Error refreshing data entries:', error);
+      console.error('❌ Error refreshing data entries:', error);
     }
   };
+
 
   const handleValueChange = (entryId, value) => {
     setEntryValues(prev => ({
@@ -743,7 +782,7 @@ const Data = () => {
         const entries = await fetchDataEntries(selectedYear, monthId);
         const transformedEntries = entries.map(entry => ({
           id: entry.submission.id,
-          name: entry.meter ? `${entry.element_name} - ${entry.meter.name}` : entry.element_name,
+          name: entry.element_name,
           meter: entry.meter ? `${entry.meter.name} (${entry.meter.type})` : 'N/A',
           meter_id: entry.meter ? entry.meter.id : null,
           meter_type: entry.meter ? entry.meter.type : null,
@@ -1039,7 +1078,8 @@ const Data = () => {
                                 <div className="flex items-center space-x-2 mt-1">
                                   {entry.meter_id && (
                                     <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
-                                      {entry.meter_type}
+                                      <i className="fas fa-gauge mr-1"></i>
+                                      {entry.meter.split(' (')[0]} ({entry.meter_type})
                                     </span>
                                   )}
                                   <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700">

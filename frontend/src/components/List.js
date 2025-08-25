@@ -319,7 +319,7 @@ const List = () => {
       console.log('Sending answers to backend:', backendAnswers);
 
       // Save answers to backend
-      const response = await makeAuthenticatedRequest('${API_BASE_URL}/api/profiling-questions/save_answers/', {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/profiling-questions/save_answers/`, {
         method: 'POST',
         body: JSON.stringify({
           company_id: companyId,

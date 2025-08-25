@@ -8,6 +8,9 @@
       "Bash(python3 manage.py migrate:*)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "/mnt/c/Users/20100/vsim1.0/ESG-Portal-2cdd1033e890665bf459c56e83058767b16eaec4/backend"
+    ]
   }
 }

@@ -381,15 +381,15 @@ class DataCollectionService:
             month_name = datetime(year, month, 1).strftime('%b')
             filters['reporting_period'] = month_name
         
-        # Only count submissions from active meters (or non-metered elements)
-        submissions = CompanyDataSubmission.objects.filter(
-            **filters
-        ).filter(
-            Q(meter__status='active') |  # Active meters
-            Q(meter__isnull=True)       # Non-metered elements (no meter)
+        submissions = CompanyDataSubmission.objects.filter(**filters)
+        
+        # Filter out submissions from inactive meters
+        # Include submissions without meters (non-metered tasks) and submissions from active meters only
+        active_submissions = submissions.filter(
+            Q(meter__isnull=True) | Q(meter__status='active')
         )
         
-        total_submissions = submissions.count()
+        total_submissions = active_submissions.count()
         if total_submissions == 0:
             return {
                 'data_progress': 0, 
@@ -399,9 +399,9 @@ class DataCollectionService:
                 'items_remaining': 0
             }
         
-        # Count completed data entries and evidence files separately
-        data_complete = submissions.exclude(value='').count()
-        evidence_complete = submissions.exclude(evidence_file='').count()
+        # Count completed data entries and evidence files separately (only from active meters)
+        data_complete = active_submissions.exclude(value='').count()
+        evidence_complete = active_submissions.exclude(evidence_file='').count()
         
         # Total tasks = submissions × 2 (data + evidence for each submission)
         total_tasks = total_submissions * 2

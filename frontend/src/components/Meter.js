@@ -10,16 +10,48 @@ const Meter = () => {
   const [showAddMeter, setShowAddMeter] = useState(false);
   const [showEditMeter, setShowEditMeter] = useState(false);
   const [editingMeter, setEditingMeter] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteModalData, setDeleteModalData] = useState(null);
-  const [showStatusModal, setShowStatusModal] = useState(false);
-  const [statusModalData, setStatusModalData] = useState(null);
   const [meters, setMeters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('All Types');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  
+  // Modal state
+  const [modal, setModal] = useState({ show: false, type: 'info', title: '', message: '', onConfirm: null, onCancel: null });
+
+  // Modal helper functions
+  const showAlert = (title, message, type = 'info') => {
+    setModal({ 
+      show: true, 
+      type, 
+      title, 
+      message, 
+      onConfirm: () => setModal({ show: false, type: 'info', title: '', message: '', onConfirm: null, onCancel: null }), 
+      onCancel: null 
+    });
+  };
+
+  const showConfirm = (title, message, onConfirm, onCancel = null) => {
+    setModal({ 
+      show: true, 
+      type: 'confirm', 
+      title, 
+      message, 
+      onConfirm: () => {
+        setModal({ show: false, type: 'info', title: '', message: '', onConfirm: null, onCancel: null });
+        onConfirm();
+      }, 
+      onCancel: onCancel ? () => {
+        setModal({ show: false, type: 'info', title: '', message: '', onConfirm: null, onCancel: null });
+        onCancel();
+      } : () => setModal({ show: false, type: 'info', title: '', message: '', onConfirm: null, onCancel: null })
+    });
+  };
+
+  const hideModal = () => {
+    setModal({ show: false, type: 'info', title: '', message: '', onConfirm: null, onCancel: null });
+  };
 
   // Get required meter types from finalized checklist
   const getRequiredMeterTypes = () => {
@@ -163,107 +195,71 @@ const Meter = () => {
     // Check if meter has data before attempting deletion
     const meter = meters.find(m => m.id === meterId);
     if (!meter) {
-      alert('Meter not found');
+      showAlert('Error', 'Meter not found', 'error');
       return false;
     }
     
     if (meter.has_data) {
-      alert('Cannot delete this meter because it has associated data. You can deactivate it instead.');
+      showAlert('Cannot Delete Meter', 'Cannot delete this meter because it has associated data. You can deactivate it instead.', 'warning');
       return false;
     }
     
-    // Confirm deletion
-    if (!window.confirm(`Are you sure you want to delete the meter "${meter.name}" (${meter.type})?`)) {
-      return false;
-    }
-    
-    try {
-      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/meters/${meterId}/?company_id=${companyId}`, {
-        method: 'DELETE',
-      });
-      
-      if (response.ok) {
-        await fetchMeters(); // Refresh the list
-        alert('Meter deleted successfully');
-        return true;
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        alert(`Failed to delete meter: ${errorData.error || 'Unknown error'}`);
-        return false;
-      }
-    } catch (error) {
-      console.error('Error deleting meter:', error);
-      alert('Error deleting meter. Please try again.');
-      return false;
-    }
+    // Return promise to handle confirmation asynchronously
+    return new Promise((resolve) => {
+      showConfirm(
+        'Delete Meter', 
+        `Are you sure you want to delete the meter "${meter.name}" (${meter.type})?`,
+        async () => {
+          try {
+            const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/meters/${meterId}/?company_id=${companyId}`, {
+              method: 'DELETE',
+            });
+            
+            if (response.ok) {
+              await fetchMeters(); // Refresh the list
+              showAlert('Success', 'Meter deleted successfully', 'success');
+              resolve(true);
+            } else {
+              const errorData = await response.json().catch(() => ({}));
+              showAlert('Delete Failed', `Failed to delete meter: ${errorData.error || 'Unknown error'}`, 'error');
+              resolve(false);
+            }
+          } catch (error) {
+            console.error('Error deleting meter:', error);
+            showAlert('Error', 'Error deleting meter. Please try again.', 'error');
+            resolve(false);
+          }
+        },
+        () => resolve(false)
+      );
+    });
   };
 
   const deactivateMeter = async (meterId) => {
     const meter = meters.find(m => m.id === meterId);
-    if (!meter) {
-      setStatusModalData({
-        type: 'error',
-        title: 'Error',
-        message: 'Meter not found.',
-        meterId: null
-      });
-      setShowStatusModal(true);
-      return false;
-    }
+    if (!meter) return false;
     
     const newStatus = meter.status === 'Active' ? 'Inactive' : 'Active';
     const action = newStatus === 'Inactive' ? 'deactivate' : 'activate';
     
-    // Show confirmation modal
-    setStatusModalData({
-      type: 'confirm',
-      title: `Confirm ${action.charAt(0).toUpperCase() + action.slice(1)}`,
-      message: `Are you sure you want to ${action} the meter "${meter.name}" (${meter.type})?`,
-      meterId: meterId,
-      newStatus: newStatus,
-      action: action
+    return new Promise((resolve) => {
+      showConfirm(
+        `${action.charAt(0).toUpperCase() + action.slice(1)} Meter`,
+        `Are you sure you want to ${action} the meter "${meter.name}" (${meter.type})?`,
+        async () => {
+          const success = await updateMeter(meterId, {
+            ...meter,
+            status: newStatus
+          });
+          
+          if (success) {
+            showAlert('Success', `Meter ${action}d successfully`, 'success');
+          }
+          resolve(success);
+        },
+        () => resolve(false)
+      );
     });
-    setShowStatusModal(true);
-    
-    return false; // Return false since we're showing modal instead of immediate action
-  };
-
-  const confirmStatusChange = async () => {
-    if (!statusModalData?.meterId) return;
-    
-    const meter = meters.find(m => m.id === statusModalData.meterId);
-    if (!meter) return;
-    
-    try {
-      const success = await updateMeter(statusModalData.meterId, {
-        ...meter,
-        status: statusModalData.newStatus
-      });
-      
-      if (success) {
-        setStatusModalData({
-          type: 'success',
-          title: 'Success',
-          message: `Meter ${statusModalData.action}d successfully.`,
-          meterId: null
-        });
-      } else {
-        setStatusModalData({
-          type: 'error',
-          title: 'Error',
-          message: `Failed to ${statusModalData.action} meter. Please try again.`,
-          meterId: null
-        });
-      }
-    } catch (error) {
-      console.error(`Error ${statusModalData.action}ing meter:`, error);
-      setStatusModalData({
-        type: 'error',
-        title: 'Network Error',
-        message: `Network error occurred while ${statusModalData.action}ing meter. Please try again.`,
-        meterId: null
-      });
-    }
   };
 
   // Load meters on component mount
@@ -355,7 +351,7 @@ const Meter = () => {
     if (success) {
       setShowAddMeter(false);
     } else {
-      alert('Failed to create meter. Please try again.');
+      showAlert('Creation Failed', 'Failed to create meter. Please try again.', 'error');
     }
   };
 
@@ -382,76 +378,42 @@ const Meter = () => {
     await deactivateMeter(meterId);
   };
 
-  const handleDeleteMeter = (meterId) => {
+  const handleDeleteMeter = async (meterId) => {
     const meter = meters.find(m => m.id === meterId);
     if (!meter) {
-      setDeleteModalData({
-        type: 'error',
-        title: 'Error',
-        message: 'Meter not found.',
-        meterId: null
-      });
-      setShowDeleteModal(true);
+      showAlert('Error', 'Meter not found', 'error');
       return;
     }
     
     // Check if meter has data - prevent deletion if it has data
     if (meter.has_data) {
-      setDeleteModalData({
-        type: 'warning',
-        title: 'Cannot Delete Meter',
-        message: `Cannot delete meter "${meter.name}" because it has data entries. Please remove all data entries first, or deactivate the meter instead.`,
-        meterId: null
-      });
-      setShowDeleteModal(true);
+      showAlert('Cannot Delete', `Cannot delete meter "${meter.name}" because it has data entries. Please remove all data entries first, or deactivate the meter instead.`, 'warning');
       return;
     }
     
-    // Show confirmation modal
-    setDeleteModalData({
-      type: 'confirm',
-      title: 'Confirm Deletion',
-      message: `Are you sure you want to permanently delete the meter "${meter.name}" (${meter.type})?\n\nThis action cannot be undone.`,
-      meterId: meterId,
-      meterName: meter.name
-    });
-    setShowDeleteModal(true);
-  };
-
-  const confirmDeleteMeter = async () => {
-    if (!deleteModalData?.meterId) return;
-    
-    try {
-      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/meters/${deleteModalData.meterId}/?company_id=${companyId}`, {
-        method: 'DELETE',
-      });
-      
-      if (response.ok) {
-        await fetchMeters(); // Refresh the list
-        setDeleteModalData({
-          type: 'success',
-          title: 'Success',
-          message: `Meter "${deleteModalData.meterName}" has been deleted successfully.`,
-          meterId: null
-        });
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        setDeleteModalData({
-          type: 'error',
-          title: 'Deletion Failed',
-          message: `Failed to delete meter: ${errorData.error || errorData.detail || 'Unknown error'}`,
-          meterId: null
-        });
+    // Confirm deletion
+    showConfirm(
+      'Delete Meter',
+      `Are you sure you want to permanently delete the meter "${meter.name}" (${meter.type})?\n\nThis action cannot be undone.`,
+      async () => {
+        try {
+          const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/meters/${meterId}/?company_id=${companyId}`, {
+            method: 'DELETE',
+          });
+          
+          if (response.ok) {
+            await fetchMeters(); // Refresh the list
+            showAlert('Success', `Meter "${meter.name}" has been deleted successfully.`, 'success');
+          } else {
+            const errorData = await response.json().catch(() => ({}));
+            showAlert('Delete Failed', `Failed to delete meter: ${errorData.error || errorData.detail || 'Unknown error'}`, 'error');
+          }
+        } catch (error) {
+          console.error('Error deleting meter:', error);
+          showAlert('Network Error', 'Network error occurred while deleting meter. Please try again.', 'error');
+        }
       }
-    } catch (error) {
-      console.error('Error deleting meter:', error);
-      setDeleteModalData({
-        type: 'error',
-        title: 'Network Error',
-        message: 'Network error occurred while deleting meter. Please try again.',
-        meterId: null
-      });
-    }
+    );
   };
 
   const handleSaveEditMeter = async (updatedMeter) => {
@@ -459,14 +421,14 @@ const Meter = () => {
       // This is a new meter from copy
       const success = await createMeter(updatedMeter);
       if (!success) {
-        alert('Failed to create meter. Please try again.');
+        showAlert('Creation Failed', 'Failed to create meter. Please try again.', 'error');
         return;
       }
     } else {
       // This is an existing meter being edited
       const success = await updateMeter(updatedMeter.id, updatedMeter);
       if (!success) {
-        alert('Failed to update meter. Please try again.');
+        showAlert('Update Failed', 'Failed to update meter. Please try again.', 'error');
         return;
       }
     }
@@ -987,126 +949,6 @@ const Meter = () => {
         }}
       />}
 
-      {/* Delete Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    deleteModalData?.type === 'error' ? 'bg-red-100' :
-                    deleteModalData?.type === 'warning' ? 'bg-yellow-100' :
-                    deleteModalData?.type === 'success' ? 'bg-green-100' :
-                    'bg-blue-100'
-                  }`}>
-                    <i className={`${
-                      deleteModalData?.type === 'error' ? 'fas fa-exclamation-triangle text-red-600' :
-                      deleteModalData?.type === 'warning' ? 'fas fa-exclamation-triangle text-yellow-600' :
-                      deleteModalData?.type === 'success' ? 'fas fa-check-circle text-green-600' :
-                      'fas fa-question-circle text-blue-600'
-                    }`}></i>
-                  </div>
-                  <h3 className="text-lg font-medium text-gray-900">
-                    {deleteModalData?.title || 'Confirm Action'}
-                  </h3>
-                </div>
-                <button 
-                  className="text-gray-400 hover:text-gray-600"
-                  onClick={() => setShowDeleteModal(false)}
-                >
-                  <i className="fas fa-times"></i>
-                </button>
-              </div>
-              
-              <div className="mb-6">
-                <p className="text-gray-600 whitespace-pre-line">
-                  {deleteModalData?.message}
-                </p>
-              </div>
-              
-              <div className="flex justify-end space-x-3">
-                <button 
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-                  onClick={() => setShowDeleteModal(false)}
-                >
-                  {deleteModalData?.type === 'confirm' ? 'Cancel' : 'Close'}
-                </button>
-                {deleteModalData?.type === 'confirm' && (
-                  <button 
-                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                    onClick={confirmDeleteMeter}
-                  >
-                    Delete Meter
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Status Modal */}
-      {showStatusModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    statusModalData?.type === 'error' ? 'bg-red-100' :
-                    statusModalData?.type === 'success' ? 'bg-green-100' :
-                    'bg-blue-100'
-                  }`}>
-                    <i className={`${
-                      statusModalData?.type === 'error' ? 'fas fa-exclamation-triangle text-red-600' :
-                      statusModalData?.type === 'success' ? 'fas fa-check-circle text-green-600' :
-                      'fas fa-question-circle text-blue-600'
-                    }`}></i>
-                  </div>
-                  <h3 className="text-lg font-medium text-gray-900">
-                    {statusModalData?.title || 'Confirm Action'}
-                  </h3>
-                </div>
-                <button 
-                  className="text-gray-400 hover:text-gray-600"
-                  onClick={() => setShowStatusModal(false)}
-                >
-                  <i className="fas fa-times"></i>
-                </button>
-              </div>
-              
-              <div className="mb-6">
-                <p className="text-gray-600 whitespace-pre-line">
-                  {statusModalData?.message}
-                </p>
-              </div>
-              
-              <div className="flex justify-end space-x-3">
-                <button 
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-                  onClick={() => setShowStatusModal(false)}
-                >
-                  {statusModalData?.type === 'confirm' ? 'Cancel' : 'Close'}
-                </button>
-                {statusModalData?.type === 'confirm' && (
-                  <button 
-                    className={`px-4 py-2 rounded-md text-white ${
-                      statusModalData?.action === 'deactivate' 
-                        ? 'bg-red-600 hover:bg-red-700' 
-                        : 'bg-green-600 hover:bg-green-700'
-                    }`}
-                    onClick={confirmStatusChange}
-                  >
-                    {statusModalData?.action === 'deactivate' ? 'Deactivate' : 'Activate'}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Installation Guide */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-8">
         <div className="flex items-center space-x-3 mb-4">
@@ -1173,6 +1015,67 @@ const Meter = () => {
           </button>
         </div>
       </div>
+
+      {/* Alert/Confirm Modal */}
+      {modal.show && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    modal.type === 'success' ? 'bg-green-100' :
+                    modal.type === 'error' ? 'bg-red-100' :
+                    modal.type === 'warning' ? 'bg-yellow-100' :
+                    modal.type === 'confirm' ? 'bg-blue-100' :
+                    'bg-blue-100'
+                  }`}>
+                    <i className={`fas ${
+                      modal.type === 'success' ? 'fa-check text-green-600' :
+                      modal.type === 'error' ? 'fa-times text-red-600' :
+                      modal.type === 'warning' ? 'fa-exclamation-triangle text-yellow-600' :
+                      modal.type === 'confirm' ? 'fa-question text-blue-600' :
+                      'fa-info text-blue-600'
+                    }`}></i>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900">{modal.title}</h3>
+                </div>
+              </div>
+              <p className="text-gray-600 mb-6 whitespace-pre-line">{modal.message}</p>
+              <div className="flex justify-end space-x-3">
+                {modal.type === 'confirm' ? (
+                  <>
+                    <button 
+                      className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                      onClick={modal.onCancel || hideModal}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                      onClick={modal.onConfirm}
+                    >
+                      Confirm
+                    </button>
+                  </>
+                ) : (
+                  <button 
+                    className={`px-4 py-2 text-white rounded-md hover:opacity-90 ${
+                      modal.type === 'success' ? 'bg-green-600' :
+                      modal.type === 'error' ? 'bg-red-600' :
+                      modal.type === 'warning' ? 'bg-yellow-600' :
+                      'bg-blue-600'
+                    }`}
+                    onClick={modal.onConfirm || hideModal}
+                  >
+                    OK
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -1186,6 +1089,7 @@ const MeterFormModal = ({ isOpen, title, meter, meterTypes, onSave, onClose }) =
     location: '',
     account_number: ''
   });
+  const [alert, setAlert] = useState({ show: false, message: '', type: 'error' });
 
   // Initialize form data when meter changes
   React.useEffect(() => {
@@ -1206,12 +1110,14 @@ const MeterFormModal = ({ isOpen, title, meter, meterTypes, onSave, onClose }) =
       });
       setShowTypeSelection(true); // Show type selection for new meters
     }
-  }, [meter]);
+    // Clear any alerts when modal opens/changes
+    setAlert({ show: false, message: '', type: 'error' });
+  }, [meter, isOpen]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.type) {
-      alert('Please fill in required fields (Name and Type)');
+      setAlert({ show: true, message: 'Please fill in required fields (Name and Type)', type: 'error' });
       return;
     }
 
@@ -1220,11 +1126,16 @@ const MeterFormModal = ({ isOpen, title, meter, meterTypes, onSave, onClose }) =
       ...(meter && { id: meter.id, isAutoCreated: meter.isAutoCreated })
     };
     
+    setAlert({ show: false, message: '', type: 'error' });
     onSave(meterData);
   };
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear any existing alerts when user starts typing
+    if (alert.show) {
+      setAlert({ show: false, message: '', type: 'error' });
+    }
   };
 
   const handleTypeSelect = (selectedType) => {
@@ -1268,6 +1179,19 @@ const MeterFormModal = ({ isOpen, title, meter, meterTypes, onSave, onClose }) =
               <i className="fas fa-times"></i>
             </button>
           </div>
+
+          {/* Alert Message */}
+          {alert.show && (
+            <div className={`p-3 rounded-lg mb-4 ${
+              alert.type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+              'bg-blue-100 text-blue-800 border border-blue-200'
+            }`}>
+              <div className="flex items-center space-x-2">
+                <i className={`fas ${alert.type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} text-sm`}></i>
+                <span className="text-sm font-medium">{alert.message}</span>
+              </div>
+            </div>
+          )}
           
           {/* Type Selection Screen */}
           {showTypeSelection && (

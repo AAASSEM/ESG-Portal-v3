@@ -471,16 +471,28 @@ class MeterViewSet(viewsets.ModelViewSet):
             )
     
     def destroy(self, request, *args, **kwargs):
-        """Override destroy to check if meter can be deleted"""
+        """Override destroy to check if meter can be deleted and clean up associated data"""
         meter = self.get_object()
         
-        if not MeterService.can_delete_meter(meter):
+        # Check if meter has actual data (not just empty submissions)
+        if meter.has_data():
             return Response(
-                {'error': 'Cannot delete meter with associated data. Deactivate instead.'},
+                {'error': f'Cannot delete meter "{meter.name}" because it has data entries. Please remove all data entries first, or deactivate the meter instead.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        return super().destroy(request, *args, **kwargs)
+        # Clean up associated empty submissions before deleting meter
+        from .models import CompanyDataSubmission
+        deleted_submissions = CompanyDataSubmission.objects.filter(meter=meter).count()
+        CompanyDataSubmission.objects.filter(meter=meter).delete()
+        
+        # Now delete the meter
+        response = super().destroy(request, *args, **kwargs)
+        
+        # Log for debugging
+        print(f"Deleted meter {meter.name} and cleaned up {deleted_submissions} empty submissions")
+        
+        return response
 
 
 class DataCollectionViewSet(viewsets.ModelViewSet):
@@ -594,6 +606,45 @@ class DataCollectionViewSet(viewsets.ModelViewSet):
             return Response(
                 {'error': 'Company not found'}, 
                 status=status.HTTP_404_NOT_FOUND
+            )
+    
+    @action(detail=False, methods=['post'], url_path='cleanup-orphaned')
+    def cleanup_orphaned_submissions(self, request):
+        """Clean up orphaned submissions from deleted meters"""
+        company_id = request.data.get('company_id')
+        
+        if not company_id:
+            return Response(
+                {'error': 'company_id is required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            from .models import CompanyDataSubmission, Meter
+            
+            # Find submissions that reference non-existent meters
+            orphaned_count = 0
+            all_submissions = CompanyDataSubmission.objects.filter(company_id=company_id)
+            
+            for submission in all_submissions:
+                if submission.meter_id:  # Only check metered submissions
+                    try:
+                        # Try to access the meter - this will fail if meter doesn't exist
+                        _ = submission.meter
+                    except Meter.DoesNotExist:
+                        # Meter doesn't exist, delete the orphaned submission
+                        submission.delete()
+                        orphaned_count += 1
+            
+            return Response({
+                'message': f'Cleaned up {orphaned_count} orphaned submissions',
+                'deleted_count': orphaned_count
+            })
+            
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
     def update(self, request, *args, **kwargs):

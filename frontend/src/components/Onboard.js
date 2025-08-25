@@ -38,9 +38,7 @@ const Onboard = () => {
         console.log('📡 Fetching company data for ID:', companyId);
         
         // Fetch company basic info
-        const companyResponse = await fetch(`${API_BASE_URL}/api/companies/${companyId}/`, {
-          credentials: 'include'
-        });
+        const companyResponse = await makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/`);
         console.log('Company API Response status:', companyResponse.status);
         
         if (companyResponse.ok) {
@@ -48,9 +46,7 @@ const Onboard = () => {
           console.log('Loaded company data from API:', companyData);
           
           // Fetch company activities separately
-          const activitiesResponse = await fetch(`${API_BASE_URL}/api/companies/${companyId}/activities/`, {
-            credentials: 'include'
-          });
+          const activitiesResponse = await makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/activities/`);
           let activityNames = [];
           
           if (activitiesResponse.ok) {
@@ -359,9 +355,8 @@ const Onboard = () => {
       
       // Then add to backend (will be saved with next auto-save)
       try {
-        const response = await fetch('${API_BASE_URL}/api/activities/add_custom/', {
+        const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/activities/add_custom/`, {
           method: 'POST',
-          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -401,9 +396,7 @@ const Onboard = () => {
     
     try {
       // Step 1: Save/Update company basic info
-      let response = await fetch(`${API_BASE_URL}/api/companies/${companyId}/`, {
-        credentials: 'include'
-      });
+      let response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/`);
       let isUpdate = response.ok;
       
       // Convert frontend values to backend format
@@ -463,9 +456,8 @@ const Onboard = () => {
         
         for (const customActivity of customActivities) {
           try {
-            await fetch('${API_BASE_URL}/api/activities/add_custom/', {
+            await makeAuthenticatedRequest(`${API_BASE_URL}/api/activities/add_custom/`, {
               method: 'POST',
-              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
               },
@@ -480,7 +472,7 @@ const Onboard = () => {
         }
         
         // Step 3: Get all activities to map names to IDs
-        const activitiesResponse = await fetch('${API_BASE_URL}/api/activities/');
+        const activitiesResponse = await makeAuthenticatedRequest(`${API_BASE_URL}/api/activities/`);
         if (activitiesResponse.ok) {
           const allActivitiesData = await activitiesResponse.json();
           const allActivities = allActivitiesData.results || allActivitiesData;

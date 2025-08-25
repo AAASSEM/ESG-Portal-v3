@@ -14,6 +14,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "start:http": "HTTPS=false PORT=7701 react-scripts start",
+    "start:https": "HTTPS=true PORT=7701 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -40,5 +42,6 @@
     "tailwindcss": "^3.1.0",
     "autoprefixer": "^10.4.7",
     "postcss": "^8.4.14"
-  }
+  },
+  "proxy": "http://localhost:8000"
 }
