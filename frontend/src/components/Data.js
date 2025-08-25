@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
+import { API_BASE_URL } from '../config';
 
 const Data = () => {
   const navigate = useNavigate();
@@ -139,7 +140,7 @@ const Data = () => {
   // API functions
   const fetchAvailableMonths = async (year) => {
     try {
-      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/data-collection/available_months/?year=${year}`);
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/data-collection/available_months/?year=${year}`);
       const data = await response.json();
       return data.months || [];
     } catch (error) {
@@ -151,7 +152,7 @@ const Data = () => {
   const fetchDataEntries = async (year, month) => {
     try {
       const response = await makeAuthenticatedRequest(
-        `http://localhost:8000/api/data-collection/tasks/?company_id=${companyId}&year=${year}&month=${month}`
+        `${API_BASE_URL}/api/data-collection/tasks/?company_id=${companyId}&year=${year}&month=${month}`
       );
       const data = await response.json();
       return data || [];
@@ -164,8 +165,8 @@ const Data = () => {
   const fetchProgress = async (year, month = null) => {
     try {
       const url = month 
-        ? `http://localhost:8000/api/data-collection/progress/?company_id=${companyId}&year=${year}&month=${month}`
-        : `http://localhost:8000/api/data-collection/progress/?company_id=${companyId}&year=${year}`;
+        ? `${API_BASE_URL}/api/data-collection/progress/?company_id=${companyId}&year=${year}&month=${month}`
+        : `${API_BASE_URL}/api/data-collection/progress/?company_id=${companyId}&year=${year}`;
       
       const response = await makeAuthenticatedRequest(url);
       const data = await response.json();
@@ -182,7 +183,7 @@ const Data = () => {
       if (value) formData.append('value', value);
       if (file) formData.append('evidence_file', file);
 
-      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/data-collection/${submissionId}/`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/data-collection/${submissionId}/`, {
         method: 'PATCH',
         body: formData, // Use FormData for file uploads
       });
@@ -479,7 +480,7 @@ const Data = () => {
       const formData = new FormData();
       formData.append('remove_evidence', 'true'); // Signal to remove file
       
-      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/data-collection/${entryId}/`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/data-collection/${entryId}/`, {
         method: 'PATCH',
         body: formData,
       });
@@ -523,7 +524,7 @@ const Data = () => {
         // If file was uploaded, we need to get the updated entry data to get the actual file URL
         if (file) {
           // Fetch the updated entry data from backend to get the actual evidence_file URL
-          const response = await makeAuthenticatedRequest(`http://localhost:8000/api/data-collection/${entryId}/`);
+          const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/data-collection/${entryId}/`);
           if (response.ok) {
             const updatedSubmission = await response.json();
             

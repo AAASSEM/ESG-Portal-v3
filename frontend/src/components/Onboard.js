@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
+import { API_BASE_URL } from '../config';
 
 const Onboard = () => {
   console.log('🚀 Onboard component loaded/re-rendered at', new Date().toLocaleTimeString());
@@ -37,7 +38,7 @@ const Onboard = () => {
         console.log('📡 Fetching company data for ID:', companyId);
         
         // Fetch company basic info
-        const companyResponse = await fetch(`http://localhost:8000/api/companies/${companyId}/`, {
+        const companyResponse = await fetch(`${API_BASE_URL}/api/companies/${companyId}/`, {
           credentials: 'include'
         });
         console.log('Company API Response status:', companyResponse.status);
@@ -47,7 +48,7 @@ const Onboard = () => {
           console.log('Loaded company data from API:', companyData);
           
           // Fetch company activities separately
-          const activitiesResponse = await fetch(`http://localhost:8000/api/companies/${companyId}/activities/`, {
+          const activitiesResponse = await fetch(`${API_BASE_URL}/api/companies/${companyId}/activities/`, {
             credentials: 'include'
           });
           let activityNames = [];
@@ -358,7 +359,7 @@ const Onboard = () => {
       
       // Then add to backend (will be saved with next auto-save)
       try {
-        const response = await fetch('http://localhost:8000/api/activities/add_custom/', {
+        const response = await fetch('${API_BASE_URL}/api/activities/add_custom/', {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -400,7 +401,7 @@ const Onboard = () => {
     
     try {
       // Step 1: Save/Update company basic info
-      let response = await fetch(`http://localhost:8000/api/companies/${companyId}/`, {
+      let response = await fetch(`${API_BASE_URL}/api/companies/${companyId}/`, {
         credentials: 'include'
       });
       let isUpdate = response.ok;
@@ -438,14 +439,14 @@ const Onboard = () => {
       if (isUpdate) {
         // Update existing company
         console.log('Updating existing company...');
-        response = await makeAuthenticatedRequest(`http://localhost:8000/api/companies/${companyId}/`, {
+        response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/`, {
           method: 'PUT',
           body: JSON.stringify(companyData)
         });
       } else {
         // Create new company
         console.log('Creating new company...');
-        response = await makeAuthenticatedRequest(`http://localhost:8000/api/companies/`, {
+        response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/`, {
           method: 'POST',
           body: JSON.stringify(companyData)
         });
@@ -462,7 +463,7 @@ const Onboard = () => {
         
         for (const customActivity of customActivities) {
           try {
-            await fetch('http://localhost:8000/api/activities/add_custom/', {
+            await fetch('${API_BASE_URL}/api/activities/add_custom/', {
               method: 'POST',
               credentials: 'include',
               headers: {
@@ -479,7 +480,7 @@ const Onboard = () => {
         }
         
         // Step 3: Get all activities to map names to IDs
-        const activitiesResponse = await fetch('http://localhost:8000/api/activities/');
+        const activitiesResponse = await fetch('${API_BASE_URL}/api/activities/');
         if (activitiesResponse.ok) {
           const allActivitiesData = await activitiesResponse.json();
           const allActivities = allActivitiesData.results || allActivitiesData;
@@ -502,7 +503,7 @@ const Onboard = () => {
           console.log('Final activity IDs to save:', activityIds);
           
           // Save activities
-          const saveActivitiesResponse = await makeAuthenticatedRequest(`http://localhost:8000/api/companies/${companyId}/save_activities/`, {
+          const saveActivitiesResponse = await makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/save_activities/`, {
             method: 'POST',
             body: JSON.stringify({
               activity_ids: activityIds

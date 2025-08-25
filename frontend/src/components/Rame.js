@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config';
 
 const Rame = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const Rame = () => {
         console.log('🔍 Fetching mandatory frameworks for company:', companyId);
         
         // Get company frameworks from backend
-        const response = await fetch(`http://localhost:8000/api/companies/${companyId}/frameworks/`, {
+        const response = await fetch(`${API_BASE_URL}/api/companies/${companyId}/frameworks/`, {
           credentials: 'include'
         });
         if (response.ok) {

@@ -1,11 +1,12 @@
 import { makeAuthenticatedRequest } from '../context/AuthContext';
+import { API_BASE_URL } from '../config';
 
 // Simple API helper for company operations with CSRF support
 export const createCompany = async (companyData) => {
   console.log('🏢 Creating company with CSRF support:', companyData);
   
   try {
-    const response = await makeAuthenticatedRequest('http://localhost:8000/api/companies/', {
+    const response = await makeAuthenticatedRequest('${API_BASE_URL}/api/companies/', {
       method: 'POST',
       body: JSON.stringify(companyData)
     });
@@ -29,7 +30,7 @@ export const updateCompany = async (companyId, companyData) => {
   console.log('🏢 Updating company with CSRF support:', companyId, companyData);
   
   try {
-    const response = await makeAuthenticatedRequest(`http://localhost:8000/api/companies/${companyId}/`, {
+    const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/`, {
       method: 'PUT', 
       body: JSON.stringify(companyData)
     });

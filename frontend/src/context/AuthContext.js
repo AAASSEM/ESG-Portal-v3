@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 // CSRF Token utility
 const getCsrfToken = async () => {
@@ -15,7 +16,7 @@ const getCsrfToken = async () => {
   
   // If no cookie, fetch CSRF token from Django
   try {
-    const response = await fetch('http://localhost:8000/api/auth/csrf/', {
+    const response = await fetch('${API_BASE_URL}/api/auth/csrf/', {
       method: 'GET',
       credentials: 'include',
     });
@@ -84,7 +85,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/auth/user/', {
+      const response = await fetch('${API_BASE_URL}/api/auth/user/', {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -113,7 +114,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserCompanies = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/companies/', {
+      const response = await fetch('${API_BASE_URL}/api/companies/', {
         credentials: 'include'
       });
       
@@ -153,7 +154,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      const response = await fetch('http://localhost:8000/api/auth/login/', {
+      const response = await fetch('${API_BASE_URL}/api/auth/login/', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -189,7 +190,7 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (username, email, password) => {
     try {
-      const response = await fetch('http://localhost:8000/api/auth/signup/', {
+      const response = await fetch('${API_BASE_URL}/api/auth/signup/', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -217,7 +218,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch('http://localhost:8000/api/auth/logout/', {
+      await fetch('${API_BASE_URL}/api/auth/logout/', {
         method: 'POST',
         credentials: 'include'
       });

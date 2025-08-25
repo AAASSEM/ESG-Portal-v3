@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
+import { API_BASE_URL } from '../config';
 
 // Simple chart components
 const EnergyChart = ({ chartData, meterType }) => {
@@ -340,9 +341,9 @@ const Dashboard = () => {
     
     try {
       const [dashboardResponse, progressResponse, frameworksResponse] = await Promise.all([
-        makeAuthenticatedRequest(`http://localhost:8000/api/dashboard/?company_id=${companyId}`),
-        makeAuthenticatedRequest(`http://localhost:8000/api/companies/${companyId}/progress/`),
-        makeAuthenticatedRequest(`http://localhost:8000/api/companies/${companyId}/frameworks/`)
+        makeAuthenticatedRequest(`${API_BASE_URL}/api/dashboard/?company_id=${companyId}`),
+        makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/progress/`),
+        makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/frameworks/`)
       ]);
       
       const dashboard = await dashboardResponse.json();
@@ -369,8 +370,8 @@ const Dashboard = () => {
     
     try {
       const [metersResponse, dataResponse] = await Promise.all([
-        makeAuthenticatedRequest(`http://localhost:8000/api/meters/?company_id=${companyId}`),
-        makeAuthenticatedRequest(`http://localhost:8000/api/data-collection/tasks/?company_id=${companyId}&year=2025&month=8`)
+        makeAuthenticatedRequest(`${API_BASE_URL}/api/meters/?company_id=${companyId}`),
+        makeAuthenticatedRequest(`${API_BASE_URL}/api/data-collection/tasks/?company_id=${companyId}&year=2025&month=8`)
       ]);
       
       const meters = await metersResponse.json();

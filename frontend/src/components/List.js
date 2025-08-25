@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
+import { API_BASE_URL } from '../config';
 
 const List = () => {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ const List = () => {
       
       try {
         console.log('Fetching profiling questions for company:', companyId);
-        const response = await makeAuthenticatedRequest(`http://localhost:8000/api/profiling-questions/for_company/?company_id=${companyId}`);
+        const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/profiling-questions/for_company/?company_id=${companyId}`);
         console.log('Response status:', response.status, 'Response ok:', response.ok);
         
         if (response.ok) {
@@ -83,7 +84,7 @@ const List = () => {
     
     try {
       console.log('Fetching existing profile answers for company:', companyId);
-      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/companies/${companyId}/profile_answers/`);
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/profile_answers/`);
       
       if (response.ok) {
         const answersData = await response.json();
@@ -116,10 +117,10 @@ const List = () => {
     
     try {
       // Check if company has answered all questions (wizard completed)
-      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/companies/${companyId}/profile_answers/`);
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/profile_answers/`);
       if (response.ok) {
         const answersData = await response.json();
-        const questionsResponse = await makeAuthenticatedRequest(`http://localhost:8000/api/profiling-questions/for_company/?company_id=${companyId}`);
+        const questionsResponse = await makeAuthenticatedRequest(`${API_BASE_URL}/api/profiling-questions/for_company/?company_id=${companyId}`);
         if (questionsResponse.ok) {
           const questionsData = await questionsResponse.json();
           
@@ -234,7 +235,7 @@ const List = () => {
     // Save to database
     try {
       console.log('Saving profiling answer to database:', questionId, answer);
-      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/companies/${companyId}/save_profile_answer/`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/save_profile_answer/`, {
         method: 'POST',
         body: JSON.stringify({
           question: questionId,
@@ -266,7 +267,7 @@ const List = () => {
     try {
       console.log('Saving all profiling answers to database:', answer);
       const promises = profilingQuestions.map(question => 
-        makeAuthenticatedRequest(`http://localhost:8000/api/companies/${companyId}/save_profile_answer/`, {
+        makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/save_profile_answer/`, {
           method: 'POST',
           body: JSON.stringify({
             question: question.id,
@@ -318,7 +319,7 @@ const List = () => {
       console.log('Sending answers to backend:', backendAnswers);
 
       // Save answers to backend
-      const response = await makeAuthenticatedRequest('http://localhost:8000/api/profiling-questions/save_answers/', {
+      const response = await makeAuthenticatedRequest('${API_BASE_URL}/api/profiling-questions/save_answers/', {
         method: 'POST',
         body: JSON.stringify({
           company_id: companyId,
@@ -328,7 +329,7 @@ const List = () => {
 
       if (response.ok) {
         // Fetch the generated checklist
-        const checklistResponse = await makeAuthenticatedRequest(`http://localhost:8000/api/checklist/?company_id=${companyId}`);
+        const checklistResponse = await makeAuthenticatedRequest(`${API_BASE_URL}/api/checklist/?company_id=${companyId}`);
         if (checklistResponse.ok) {
           const checklistData = await checklistResponse.json();
           

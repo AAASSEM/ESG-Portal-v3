@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
+import { API_BASE_URL } from '../config';
 
 const Meter = () => {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ const Meter = () => {
     
     setLoading(true);
     try {
-      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/meters/?company_id=${companyId}`);
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/meters/?company_id=${companyId}`);
       const data = await response.json();
       
       // Transform backend data to frontend format
@@ -98,9 +99,9 @@ const Meter = () => {
       };
       
       console.log('📤 Request body being sent:', requestBody);
-      console.log('🌐 Request URL:', `http://localhost:8000/api/meters/?company_id=${companyId}`);
+      console.log('🌐 Request URL:', `${API_BASE_URL}/api/meters/?company_id=${companyId}`);
       
-      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/meters/?company_id=${companyId}`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/meters/?company_id=${companyId}`, {
         method: 'POST',
         body: JSON.stringify(requestBody),
       });
@@ -136,7 +137,7 @@ const Meter = () => {
 
   const updateMeter = async (meterId, meterData) => {
     try {
-      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/meters/${meterId}/?company_id=${companyId}`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/meters/${meterId}/?company_id=${companyId}`, {
         method: 'PATCH',
         body: JSON.stringify({
           name: meterData.name,
@@ -177,7 +178,7 @@ const Meter = () => {
     }
     
     try {
-      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/meters/${meterId}/?company_id=${companyId}`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/meters/${meterId}/?company_id=${companyId}`, {
         method: 'DELETE',
       });
       
@@ -421,7 +422,7 @@ const Meter = () => {
     if (!deleteModalData?.meterId) return;
     
     try {
-      const response = await makeAuthenticatedRequest(`http://localhost:8000/api/meters/${deleteModalData.meterId}/?company_id=${companyId}`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/meters/${deleteModalData.meterId}/?company_id=${companyId}`, {
         method: 'DELETE',
       });
       
