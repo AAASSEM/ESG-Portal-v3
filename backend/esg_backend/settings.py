@@ -20,7 +20,11 @@ ALLOWED_HOSTS = [
     '127.0.0.1', 
     '0.0.0.0',
     '.onrender.com',  # Allow all Render subdomains
-    '.render.com',     # Alternative Render domain
+    '.render.com',    # Alternative Render domain
+    '.ngrok-free.app',  # ngrok free tier
+    '.ngrok.io',        # ngrok legacy domain
+    '.ngrok.app',       # ngrok new domain
+    '.ngrok.dev',       # ngrok dev domain
 ]
 
 # Add your specific Render app URL if known
@@ -211,10 +215,14 @@ if os.environ.get('RENDER_EXTERNAL_HOSTNAME'):
         f"http://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}",
     ])
 
-# Allow all origins with .onrender.com in production
+# Allow all origins with production domains
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://.*\.onrender\.com$",
     r"^http://.*\.onrender\.com$",
+    r"^https://.*\.ngrok-free\.app$",
+    r"^https://.*\.ngrok\.io$",
+    r"^https://.*\.ngrok\.app$",
+    r"^https://.*\.ngrok\.dev$",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -249,6 +257,10 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:7702',
     'https://*.onrender.com',
     'http://*.onrender.com',
+    'https://*.ngrok-free.app',
+    'https://*.ngrok.io',
+    'https://*.ngrok.app',
+    'https://*.ngrok.dev',
 ]
 
 # Add specific Render app URL if known

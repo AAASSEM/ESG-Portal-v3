@@ -1,9 +1,12 @@
 const getApiUrl = () => {
-  // Production: If deployed (onrender, vercel, netlify, etc.)
+  // Production/Deployed environments
   if (process.env.NODE_ENV === 'production' || 
       window.location.hostname.includes('.onrender.com') ||
       window.location.hostname.includes('.vercel.app') ||
-      window.location.hostname.includes('.netlify.app')) {
+      window.location.hostname.includes('.netlify.app') ||
+      window.location.hostname.includes('.ngrok-free.app') ||
+      window.location.hostname.includes('.ngrok.io') ||
+      window.location.hostname.includes('.ngrok.app')) {
     return window.location.origin;
   }
   

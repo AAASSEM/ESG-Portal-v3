@@ -31,7 +31,6 @@ from .services import (
 )
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class CompanyViewSet(viewsets.ModelViewSet):
     """ViewSet for company management"""
     serializer_class = CompanySerializer
@@ -466,7 +465,6 @@ class CompanyChecklistViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class MeterViewSet(viewsets.ModelViewSet):
     """ViewSet for meter management"""
     serializer_class = MeterSerializer
