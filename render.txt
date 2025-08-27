@@ -1,0 +1,50 @@
+2025-08-27T07:55:38.259118725Z   Downloading Pillow-10.0.0.tar.gz (50.5 MB)
+2025-08-27T07:55:38.624265275Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 50.5/50.5 MB 139.5 MB/s eta 0:00:00
+2025-08-27T07:55:39.787383185Z   Installing build dependencies: started
+2025-08-27T07:55:41.378211398Z   Installing build dependencies: finished with status 'done'
+2025-08-27T07:55:41.379019082Z   Getting requirements to build wheel: started
+2025-08-27T07:55:41.858051056Z   Getting requirements to build wheel: finished with status 'error'
+2025-08-27T07:55:41.863867403Z   error: subprocess-exited-with-error
+2025-08-27T07:55:41.863894814Z   
+2025-08-27T07:55:41.863899384Z   × Getting requirements to build wheel did not run successfully.
+2025-08-27T07:55:41.863903014Z   │ exit code: 1
+2025-08-27T07:55:41.863906484Z   ╰─> [21 lines of output]
+2025-08-27T07:55:41.863910035Z       Traceback (most recent call last):
+2025-08-27T07:55:41.863913725Z         File "/opt/render/project/src/.venv/lib/python3.13/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 389, in <module>
+2025-08-27T07:55:41.863917155Z           main()
+2025-08-27T07:55:41.863920535Z           ~~~~^^
+2025-08-27T07:55:41.863924105Z         File "/opt/render/project/src/.venv/lib/python3.13/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 373, in main
+2025-08-27T07:55:41.863927665Z           json_out["return_val"] = hook(**hook_input["kwargs"])
+2025-08-27T07:55:41.863931065Z                                    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+2025-08-27T07:55:41.863936265Z         File "/opt/render/project/src/.venv/lib/python3.13/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 143, in get_requires_for_build_wheel
+2025-08-27T07:55:41.863939765Z           return hook(config_settings)
+2025-08-27T07:55:41.863943225Z         File "/tmp/pip-build-env-6i45y2jp/overlay/lib/python3.13/site-packages/setuptools/build_meta.py", line 331, in get_requires_for_build_wheel
+2025-08-27T07:55:41.863956706Z           return self._get_build_requires(config_settings, requirements=[])
+2025-08-27T07:55:41.863959036Z                  ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-08-27T07:55:41.863961356Z         File "/tmp/pip-build-env-6i45y2jp/overlay/lib/python3.13/site-packages/setuptools/build_meta.py", line 301, in _get_build_requires
+2025-08-27T07:55:41.863963506Z           self.run_setup()
+2025-08-27T07:55:41.863965546Z           ~~~~~~~~~~~~~~^^
+2025-08-27T07:55:41.863967796Z         File "/tmp/pip-build-env-6i45y2jp/overlay/lib/python3.13/site-packages/setuptools/build_meta.py", line 317, in run_setup
+2025-08-27T07:55:41.863969926Z           exec(code, locals())
+2025-08-27T07:55:41.863971996Z           ~~~~^^^^^^^^^^^^^^^^
+2025-08-27T07:55:41.863974126Z         File "<string>", line 30, in <module>
+2025-08-27T07:55:41.863976317Z         File "<string>", line 27, in get_version
+2025-08-27T07:55:41.863978477Z       KeyError: '__version__'
+2025-08-27T07:55:41.863980517Z       [end of output]
+2025-08-27T07:55:41.863982597Z   
+2025-08-27T07:55:41.863985227Z   note: This error originates from a subprocess, and is likely not a problem with pip.
+2025-08-27T07:55:42.126368104Z 
+2025-08-27T07:55:42.126391534Z [notice] A new release of pip is available: 25.1.1 -> 25.2
+2025-08-27T07:55:42.126394604Z [notice] To update, run: pip install --upgrade pip
+2025-08-27T07:55:42.127863887Z error: subprocess-exited-with-error
+2025-08-27T07:55:42.127876917Z 
+2025-08-27T07:55:42.127881407Z × Getting requirements to build wheel did not run successfully.
+2025-08-27T07:55:42.127884687Z │ exit code: 1
+2025-08-27T07:55:42.127888457Z ╰─> See above for output.
+2025-08-27T07:55:42.127891617Z 
+2025-08-27T07:55:42.127895397Z note: This error originates from a subprocess, and is likely not a problem with pip.
+2025-08-27T07:55:42.341300651Z ==> Build failed 😞
+2025-08-27T07:55:42.341322842Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+2025-08-27T07:55:42.407328515Z ==> Requesting Node.js version >=16.0.0
+2025-08-27T07:55:42.54376163Z ==> Using Node.js version 24.6.0 via /opt/render/project/src/package.json
+2025-08-27T07:55:42.56978918Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version

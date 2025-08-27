@@ -21,7 +21,7 @@ services:
       - key: DEBUG
         value: "False"
       - key: PYTHON_VERSION
-        value: "3.11.0"
+        value: "3.11.7"
       - key: RENDER_EXTERNAL_HOSTNAME
         fromService:
           type: web
