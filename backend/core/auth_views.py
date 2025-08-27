@@ -108,6 +108,8 @@ class SignupView(APIView):
                     'id': user.id,
                     'username': user.username,
                     'email': user.email,
+                    'name': f"{user.first_name} {user.last_name}".strip() or user.username,
+                    'role': 'super_user',
                     'is_superuser': True,
                     'company': {
                         'id': company.id,

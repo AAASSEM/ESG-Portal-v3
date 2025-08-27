@@ -324,6 +324,11 @@ export const AuthProvider = ({ children }) => {
       
       if (response.ok) {
         setUser(data.user);
+        // Set the company that was created during signup
+        if (data.user.company) {
+          setSelectedCompany(data.user.company);
+          setCompanies([data.user.company]);
+        }
         console.log('✅ Signup successful:', data.user);
         navigate('/onboard'); // Go to onboarding for new users
         return { success: true };

@@ -555,12 +555,18 @@ const Onboard = () => {
 
   // Check if user has permission to access company onboarding (moved after hooks)
   const canAccessOnboarding = () => {
-    if (!user) return false;
+    console.log('🔍 Checking onboarding access:', { user, role: user?.role, selectedCompany });
+    if (!user) {
+      console.log('❌ No user found');
+      return false;
+    }
     // Module 1-2 (Company Setup & Frameworks): CORRECTED
     // ✅ Super User, Admin: Full edit access
     // 👁️ Site Manager, Viewer: View-only access
     // ❌ Uploader, Meter Manager: NO ACCESS (completely blocked)
-    return ['super_user', 'admin', 'site_manager', 'viewer'].includes(user.role);
+    const hasAccess = ['super_user', 'admin', 'site_manager', 'viewer'].includes(user.role);
+    console.log('✅ Access check result:', hasAccess, 'for role:', user.role);
+    return hasAccess;
   };
 
   // If no permission, show permission denied message
