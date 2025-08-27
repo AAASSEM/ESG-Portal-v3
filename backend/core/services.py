@@ -272,7 +272,7 @@ class DataCollectionService:
     
     @staticmethod
     def get_data_collection_tasks(company, year, month, user=None):
-        """Get all data collection tasks for a specific month"""
+        """Get all data collection tasks for a specific month - shared data visibility"""
         month_name = datetime(year, month, 1).strftime('%b')
         
         # Get all checklist items
@@ -339,15 +339,26 @@ class DataCollectionService:
                         status='active'
                     )
                 for meter in meters:
-                    # Get or create submission record
-                    submission, created = CompanyDataSubmission.objects.get_or_create(
-                        user=user,
+                    # Find existing submission from ANY user, or create new one for current user
+                    submission = CompanyDataSubmission.objects.filter(
                         company=company,
                         element=item.element,
                         meter=meter,
                         reporting_year=year,
                         reporting_period=month_name
-                    )
+                    ).first()
+                    
+                    if not submission:
+                        # Create new submission record with current user
+                        submission = CompanyDataSubmission.objects.create(
+                            user=user,
+                            company=company,
+                            element=item.element,
+                            meter=meter,
+                            reporting_year=year,
+                            reporting_period=month_name
+                        )
+                    
                     tasks.append({
                         'type': 'metered',
                         'element': item.element,
@@ -356,15 +367,26 @@ class DataCollectionService:
                         'cadence': item.cadence
                     })
             else:
-                # For non-metered elements, create single task
-                submission, created = CompanyDataSubmission.objects.get_or_create(
-                    user=user,
+                # For non-metered elements, find existing submission from ANY user or create new
+                submission = CompanyDataSubmission.objects.filter(
                     company=company,
                     element=item.element,
                     meter=None,
                     reporting_year=year,
                     reporting_period=month_name
-                )
+                ).first()
+                
+                if not submission:
+                    # Create new submission record with current user
+                    submission = CompanyDataSubmission.objects.create(
+                        user=user,
+                        company=company,
+                        element=item.element,
+                        meter=None,
+                        reporting_year=year,
+                        reporting_period=month_name
+                    )
+                
                 tasks.append({
                     'type': 'non_metered',
                     'element': item.element,
@@ -384,51 +406,13 @@ class DataCollectionService:
             month_name = datetime(year, month, 1).strftime('%b')
             filters['reporting_period'] = month_name
         else:
-            # For yearly progress, calculate from user's first submission month to December
-            if user:
-                user_submissions = CompanyDataSubmission.objects.filter(
-                    company=company, 
-                    reporting_year=year, 
-                    user=user
-                )
-                if user_submissions.exists():
-                    # Get the earliest month the user has submissions
-                    earliest_period = user_submissions.order_by('reporting_period').first().reporting_period
-                    
-                    # Convert month name to number to determine range
-                    month_mapping = {
-                        'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
-                        'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
-                    }
-                    start_month_num = month_mapping.get(earliest_period)
-                    current_month = datetime.now().month
-                    
-                    if start_month_num:
-                        # Create submissions for the FULL year (Jan-Dec)
-                        # But mark pre-user months (Jan to start_month-1) as inactive period
-                        
-                        # Create tasks for all 12 months
-                        for month_num in range(1, 13):
-                            tasks = DataCollectionService.get_data_collection_tasks(company, year, month_num, user=user)
-                            
-                            # If this month is before user's start month, mark submissions as "inactive_period"
-                            if month_num < start_month_num:
-                                month_name = datetime(year, month_num, 1).strftime('%b')
-                                inactive_submissions = CompanyDataSubmission.objects.filter(
-                                    company=company,
-                                    user=user, 
-                                    reporting_year=year,
-                                    reporting_period=month_name
-                                )
-                                # Add a flag to mark these as inactive period
-                                for submission in inactive_submissions:
-                                    # We can use the value field to mark inactive periods
-                                    if not submission.value:
-                                        submission.value = 'INACTIVE_PERIOD'
-                                        submission.save()
+            # For yearly progress, ensure all tasks are created for all 12 months
+            # Create submissions for the FULL year (Jan-Dec)
+            for month_num in range(1, 13):
+                tasks = DataCollectionService.get_data_collection_tasks(company, year, month_num, user=user)
         
-        if user:
-            filters['user'] = user
+        # Remove user filtering to allow shared data visibility
+        # All users can see data entered by any user for the same company
         
         submissions = CompanyDataSubmission.objects.filter(**filters)
         
