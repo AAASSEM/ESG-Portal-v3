@@ -61,6 +61,13 @@ class SignupView(APIView):
                 is_superuser=True   # Has all permissions
             )
             
+            # Create UserProfile for the new user
+            from .models import UserProfile
+            UserProfile.objects.create(
+                user=user,
+                role='super_user'
+            )
+            
             # Auto-login after signup
             login(request, user)
             
@@ -171,11 +178,19 @@ class LogoutView(APIView):
 class UserProfileView(APIView):
     def get(self, request):
         if request.user.is_authenticated:
-            # Get user role from UserProfile
+            # Get or create user profile
             try:
-                user_role = request.user.userprofile.role
-            except:
-                user_role = 'viewer'  # Default fallback role
+                from .models import UserProfile
+                profile, created = UserProfile.objects.get_or_create(
+                    user=request.user,
+                    defaults={
+                        'role': 'super_user' if request.user.is_superuser else 'viewer'
+                    }
+                )
+                user_role = profile.role
+            except Exception as e:
+                print(f"Error getting user profile: {e}")
+                user_role = 'super_user' if request.user.is_superuser else 'viewer'
             
             return Response({
                 'user': {
@@ -183,7 +198,8 @@ class UserProfileView(APIView):
                     'username': request.user.username,
                     'email': request.user.email,
                     'name': f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username,
-                    'role': user_role
+                    'role': user_role,
+                    'is_superuser': request.user.is_superuser
                 }
             })
         else:
@@ -216,14 +232,21 @@ class RoleSwitchView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            # Update user's role in UserProfile
-            profile = request.user.userprofile
+            # Get or create user's profile
+            from .models import UserProfile
+            profile, created = UserProfile.objects.get_or_create(
+                user=request.user,
+                defaults={'role': 'super_user'}  # Default role for new profiles
+            )
+            
+            # Update role
             profile.role = new_role
             profile.save()
             
             return Response({
                 'message': 'Role switched successfully',
-                'new_role': new_role
+                'new_role': new_role,
+                'profile_created': created
             })
         except Exception as e:
             return Response({
