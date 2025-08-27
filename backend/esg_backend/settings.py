@@ -46,12 +46,14 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Add whitenoise for static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # CSRF middleware disabled for development multi-user frontend
-    # 'django.middleware.csrf.CsrfViewMiddleware',  
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Add CSRF middleware only in production
+if not DEBUG:
+    MIDDLEWARE.insert(4, 'django.middleware.csrf.CsrfViewMiddleware')
 
 ROOT_URLCONF = 'esg_backend.urls'
 
@@ -157,10 +159,20 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Completely disable CSRF for development
-CSRF_USE_SESSIONS = False
-CSRF_COOKIE_SECURE = False  
-CSRF_COOKIE_HTTPONLY = False
+# CSRF Configuration
+# Enable CSRF in production, disable in development for API testing
+if DEBUG:
+    # Development: Disable CSRF for easier API testing
+    CSRF_USE_SESSIONS = False
+    CSRF_COOKIE_SECURE = False  
+    CSRF_COOKIE_HTTPONLY = False
+else:
+    # Production: Enable CSRF but configure properly for SPA
+    CSRF_USE_SESSIONS = True
+    CSRF_COOKIE_SECURE = True  # HTTPS only in production
+    CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access for SPA
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_NAME = 'csrftoken'
 
 # CORS settings - Allow React frontend
 CORS_ALLOWED_ORIGINS = [
@@ -206,15 +218,8 @@ CORS_ALLOWED_HEADERS = [
     'x-requested-with',
 ]
 
-# Disable CSRF completely for development
-CSRF_COOKIE_SECURE = False
-CSRF_COOKIE_HTTPONLY = False
-CSRF_USE_SESSIONS = False
-CSRF_FAILURE_VIEW = lambda request, reason="": None
-
-# Completely disable CSRF
+# Time zone settings
 USE_TZ = True
-CSRF_TRUSTED_ORIGINS_ENABLED = False
 
 # CSRF Trusted Origins for Render
 CSRF_TRUSTED_ORIGINS = [

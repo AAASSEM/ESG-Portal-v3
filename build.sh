@@ -22,10 +22,18 @@ pip install -r requirements.txt
 
 # Collect static files (includes React build files)
 echo "Collecting static files..."
-python manage.py collectstatic --no-input
+python3 manage.py collectstatic --no-input
 
 # Run migrations
 echo "Running database migrations..."
-python manage.py migrate
+python3 manage.py migrate
+
+# Initialize production data
+echo "Initializing production data..."
+python3 init_production_data.py
+
+# Fix user company associations
+echo "Fixing user company associations..."
+python3 fix_user_companies.py
 
 echo "Build complete!"
