@@ -99,14 +99,14 @@ const RoleSwitcherDropdown = ({ currentRole }) => {
             : currentRoleInfo?.color || 'bg-purple-100 text-purple-700'
         } hover:shadow-sm`}
       >
-        {/* <span>{isChanging ? 'Switching...' : currentRole.replace('_', ' ')}</span> */}
+        <span className="text-xs">{isChanging ? 'Switching...' : (currentRoleInfo?.label || currentRole?.replace('_', ' '))}</span>
         <i className={`fas fa-chevron-${isOpen ? 'up' : 'down'} text-xs`}></i>
       </button>
 
       {isOpen && createPortal(
         <div 
           ref={portalDropdownRef}
-          className="fixed bg-white border border-gray-200 rounded-lg shadow-xl z-[99999] min-w-[140px]"
+          className="fixed bg-white border border-gray-200 rounded-lg shadow-xl z-[999999] min-w-[160px]"
           style={{
             top: `${dropdownPosition.top}px`,
             left: `${dropdownPosition.left}px`,
@@ -321,11 +321,13 @@ const TopNavbar = () => {
                     {user?.name || user?.username || 'User'}
                   </span>
                   {user?.role && (
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${getRoleColor(user.role)}`}>
-                      {user.role.replace('_', ' ')}
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${getRoleColor(user.role)}`}>
+                        {user.role.replace('_', ' ')}
+                      </span>
+                      <RoleSwitcherDropdown currentRole={user.role} />
+                    </div>
                   )}
-                  {/* <RoleSwitcherDropdown currentRole={user.role} /> */}
                 </div>
               </div>
 
