@@ -160,19 +160,21 @@ REST_FRAMEWORK = {
 }
 
 # CSRF Configuration
-# Enable CSRF in production, disable in development for API testing
+# Different settings for development vs production
 if DEBUG:
-    # Development: Disable CSRF for easier API testing
+    # Development: Relaxed CSRF settings
     CSRF_USE_SESSIONS = False
     CSRF_COOKIE_SECURE = False  
     CSRF_COOKIE_HTTPONLY = False
-else:
-    # Production: Enable CSRF but configure properly for SPA
-    CSRF_USE_SESSIONS = True
-    CSRF_COOKIE_SECURE = True  # HTTPS only in production
-    CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access for SPA
     CSRF_COOKIE_SAMESITE = 'Lax'
+else:
+    # Production: Secure CSRF settings for HTTPS/SPA
+    CSRF_USE_SESSIONS = False  # Don't tie to sessions for API
+    CSRF_COOKIE_SECURE = True  # HTTPS only
+    CSRF_COOKIE_HTTPONLY = False  # Allow JS access for SPA
+    CSRF_COOKIE_SAMESITE = 'None'  # Allow cross-site for API calls
     CSRF_COOKIE_NAME = 'csrftoken'
+    CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
 
 # CORS settings - Allow React frontend
 CORS_ALLOWED_ORIGINS = [
@@ -189,6 +191,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:7701",  # Current frontend port
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
 ]
 
 # Add Render URLs to CORS if in production
@@ -225,6 +229,8 @@ USE_TZ = True
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
+    'http://localhost:8080',
+    'http://127.0.0.1:8080',
     'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:3002',

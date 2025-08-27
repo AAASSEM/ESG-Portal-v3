@@ -1,15 +1,24 @@
 const getApiUrl = () => {
-  // Production deployment
-  if (window.location.hostname.includes('onrender.com')) {
+  // Production: If deployed (onrender, vercel, netlify, etc.)
+  if (process.env.NODE_ENV === 'production' || 
+      window.location.hostname.includes('.onrender.com') ||
+      window.location.hostname.includes('.vercel.app') ||
+      window.location.hostname.includes('.netlify.app')) {
     return window.location.origin;
   }
   
-  // ALWAYS force HTTP for localhost development - prevents HTTPS upgrade
+  // Development: Dynamic port detection
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return 'http://localhost:8000';
+    // If React is running on port 3000, assume Django is on 8000
+    if (window.location.port === '3000') {
+      const backendPort = process.env.REACT_APP_BACKEND_PORT || '8000';
+      return `http://${window.location.hostname}:${backendPort}`;
+    }
+    // If accessing Django directly (same port), use same origin
+    return window.location.origin;
   }
   
-  // Fallback
+  // Fallback: use same origin
   return window.location.origin;
 };
 
