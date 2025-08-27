@@ -52,22 +52,25 @@ class SignupView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            # Create user
+            # Create superuser by default
             user = User.objects.create_user(
                 username=username,
                 email=email or '',
-                password=password
+                password=password,
+                is_staff=True,      # Can access Django admin
+                is_superuser=True   # Has all permissions
             )
             
             # Auto-login after signup
             login(request, user)
             
             return Response({
-                'message': 'User created successfully',
+                'message': 'Superuser created successfully',
                 'user': {
                     'id': user.id,
                     'username': user.username,
-                    'email': user.email
+                    'email': user.email,
+                    'is_superuser': True
                 }
             }, status=status.HTTP_201_CREATED)
             
