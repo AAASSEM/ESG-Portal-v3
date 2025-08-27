@@ -1,6 +1,7 @@
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -10,6 +11,8 @@ from django.core.exceptions import PermissionDenied
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from datetime import datetime
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
 
 from .models import (
     Company, Activity, CompanyActivity, Framework, CompanyFramework, DataElement, ProfilingQuestion,
@@ -20,7 +23,7 @@ from .serializers import (
     FrameworkSerializer, DataElementSerializer, ProfilingQuestionSerializer,
     CompanyProfileAnswerSerializer, MeterSerializer, 
     CompanyDataSubmissionSerializer, CompanyChecklistSerializer,
-    DashboardStatsSerializer
+    DashboardStatsSerializer, ProgressSerializer
 )
 from .services import (
     FrameworkService, ProfilingService, ChecklistService,
@@ -36,7 +39,12 @@ class CompanyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        # CRITICAL: Always filter by authenticated user
+        # Return the company associated with the user's profile
+        user_profile = getattr(self.request.user, 'userprofile', None)
+        if user_profile and user_profile.company:
+            return Company.objects.filter(id=user_profile.company.id)
+        
+        # Fallback: return companies owned by the user (for super users who might own companies)
         return Company.objects.filter(user=self.request.user)
     
     def get_serializer_class(self):
@@ -54,9 +62,30 @@ class CompanyViewSet(viewsets.ModelViewSet):
     def get_object(self):
         # CRITICAL: Additional security check
         obj = super().get_object()
-        if obj.user != self.request.user:
-            raise PermissionDenied("You don't have permission to access this company")
+        
+        # Check if user has access to this company through their profile
+        user_profile = getattr(self.request.user, 'userprofile', None)
+        if user_profile and user_profile.company and user_profile.company.id == obj.id:
+            return obj
+        
+        # Fallback: check if user owns this company (for super users)
+        if obj.user == self.request.user:
+            return obj
+            
+        raise PermissionDenied("You don't have permission to access this company")
         return obj
+    
+    def _get_user_company(self, company_id):
+        """Helper method to get company that user has access to"""
+        user_profile = getattr(self.request.user, 'userprofile', None)
+        if user_profile and user_profile.company and user_profile.company.id == int(company_id):
+            return user_profile.company
+        
+        # Fallback: check if user owns this company (for super users)
+        try:
+            return Company.objects.get(pk=company_id, user=self.request.user)
+        except Company.DoesNotExist:
+            raise PermissionDenied("You don't have permission to access this company")
     
     @action(detail=True, methods=['get'])
     def progress(self, request, pk=None):
@@ -93,7 +122,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def save_activities(self, request, pk=None):
         """Save company's selected activities and re-assign mandatory frameworks"""
-        company = get_object_or_404(Company, pk=pk, user=request.user)
+        company = self._get_user_company(pk)
         activity_ids = request.data.get('activity_ids', [])
         
         with transaction.atomic():
@@ -129,7 +158,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def frameworks(self, request, pk=None):
         """Get company's assigned mandatory frameworks"""
-        company = get_object_or_404(Company, pk=pk, user=request.user)
+        company = self._get_user_company(pk)
         
         # Get company's assigned frameworks (filtered by user)
         company_frameworks = CompanyFramework.objects.filter(
@@ -144,12 +173,31 @@ class CompanyViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def profile_answers(self, request, pk=None):
         """Get company's profiling wizard answers"""
-        company = get_object_or_404(Company, pk=pk, user=request.user)
+        company = self._get_user_company(pk)
         
-        answers = CompanyProfileAnswer.objects.filter(
-            user=request.user,
+        # Get the most recent answers for each question for this company
+        # Users should see company-wide answers, not just their own
+        from django.db.models import Max
+        
+        # Get the latest answer for each question
+        latest_answers = CompanyProfileAnswer.objects.filter(
             company=company
+        ).values('question').annotate(
+            latest_time=Max('answered_at')
         )
+        
+        # Get the actual answer records
+        answer_ids = []
+        for item in latest_answers:
+            latest_answer = CompanyProfileAnswer.objects.filter(
+                company=company,
+                question=item['question'],
+                answered_at=item['latest_time']
+            ).first()
+            if latest_answer:
+                answer_ids.append(latest_answer.id)
+        
+        answers = CompanyProfileAnswer.objects.filter(id__in=answer_ids)
         serializer = CompanyProfileAnswerSerializer(answers, many=True)
         
         return Response(serializer.data)
@@ -157,7 +205,17 @@ class CompanyViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def save_profile_answer(self, request, pk=None):
         """Save a single profiling wizard answer"""
-        company = get_object_or_404(Company, pk=pk, user=request.user)
+        company = self._get_user_company(pk)
+        
+        # Check if user has permission to edit profiling answers
+        user_role = getattr(request.user.userprofile, 'role', 'viewer')
+        allowed_edit_roles = ['super_user', 'admin']
+        
+        if user_role not in allowed_edit_roles:
+            return Response(
+                {'error': f'Role "{user_role}" does not have permission to edit profiling answers'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
         
         question_id = request.data.get('question')
         answer = request.data.get('answer')
@@ -288,26 +346,57 @@ class ProfilingQuestionViewSet(viewsets.ReadOnlyModelViewSet):
         
         try:
             # CRITICAL: Ensure user can only access their own company
-            company = Company.objects.get(pk=company_id, user=request.user)
+            user_profile = getattr(request.user, 'userprofile', None)
+            if user_profile and user_profile.company and user_profile.company.id == int(company_id):
+                company = user_profile.company
+            else:
+                # Fallback: check if user owns this company (for super users)
+                try:
+                    company = Company.objects.get(pk=company_id, user=request.user)
+                except Company.DoesNotExist:
+                    return Response(
+                        {'error': 'Company not found'}, 
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                    
             questions = ProfilingService.get_profiling_questions(company)
             serializer = self.get_serializer(questions, many=True)
             return Response(serializer.data)
-        except Company.DoesNotExist:
+        except Exception as e:
             return Response(
-                {'error': 'Company not found'}, 
-                status=status.HTTP_404_NOT_FOUND
+                {'error': f'Error retrieving questions: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
     @action(detail=False, methods=['post'])
     def save_answers(self, request):
         """Save profiling wizard answers"""
+        # Check if user has permission to edit profiling answers
+        user_role = getattr(request.user.userprofile, 'role', 'viewer')
+        allowed_edit_roles = ['super_user', 'admin']
+        
+        if user_role not in allowed_edit_roles:
+            return Response(
+                {'error': f'Role "{user_role}" does not have permission to edit profiling answers'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
         company_id = request.data.get('company_id')
         answers = request.data.get('answers', [])
         
         try:
             # CRITICAL: Ensure user can only save answers for their own company
-            company = Company.objects.get(pk=company_id, user=request.user)
-            ProfilingService.save_profiling_answers(company, answers)
+            user_profile = getattr(request.user, 'userprofile', None)
+            if user_profile and user_profile.company and user_profile.company.id == int(company_id):
+                company = user_profile.company
+            else:
+                # Fallback: check if user owns this company (for super users)
+                try:
+                    company = Company.objects.get(pk=company_id, user=request.user)
+                except Company.DoesNotExist:
+                    raise PermissionDenied("You don't have permission to access this company")
+                    
+            ProfilingService.save_profiling_answers(company, answers, request.user)
             
             # Generate personalized checklist after saving answers
             ChecklistService.generate_personalized_checklist(company)
@@ -333,8 +422,17 @@ class CompanyChecklistViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         company_id = self.request.query_params.get('company_id')
         if company_id:
-            # CRITICAL: Filter by user to ensure data isolation
-            return CompanyChecklist.objects.filter(company_id=company_id, company__user=self.request.user)
+            # CRITICAL: Ensure user can only access checklists for their own company
+            user_profile = getattr(self.request.user, 'userprofile', None)
+            if user_profile and user_profile.company and user_profile.company.id == int(company_id):
+                return CompanyChecklist.objects.filter(company_id=company_id)
+            else:
+                # Fallback: check if user owns this company (for super users)
+                try:
+                    Company.objects.get(pk=company_id, user=self.request.user)
+                    return CompanyChecklist.objects.filter(company_id=company_id)
+                except Company.DoesNotExist:
+                    return CompanyChecklist.objects.none()
         return CompanyChecklist.objects.none()
     
     @action(detail=False, methods=['post'])
@@ -344,7 +442,16 @@ class CompanyChecklistViewSet(viewsets.ReadOnlyModelViewSet):
         
         try:
             # CRITICAL: Ensure user can only generate checklist for their own company
-            company = Company.objects.get(pk=company_id, user=request.user)
+            user_profile = getattr(request.user, 'userprofile', None)
+            if user_profile and user_profile.company and user_profile.company.id == int(company_id):
+                company = user_profile.company
+            else:
+                # Fallback: check if user owns this company (for super users)
+                try:
+                    company = Company.objects.get(pk=company_id, user=request.user)
+                except Company.DoesNotExist:
+                    raise PermissionDenied("You don't have permission to access this company")
+                    
             checklist = ChecklistService.generate_personalized_checklist(company)
             
             # Auto-create meters for metered data elements
@@ -369,8 +476,17 @@ class MeterViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         company_id = self.request.query_params.get('company_id')
         if company_id:
-            # CRITICAL: Filter by user to ensure data isolation
-            return Meter.objects.filter(company_id=company_id, company__user=self.request.user)
+            # CRITICAL: Filter by user's company to ensure data isolation
+            user_profile = getattr(self.request.user, 'userprofile', None)
+            if user_profile and user_profile.company and user_profile.company.id == int(company_id):
+                return Meter.objects.filter(company_id=company_id)
+            else:
+                # Fallback: check if user owns this company (for super users)
+                try:
+                    Company.objects.get(pk=company_id, user=self.request.user)
+                    return Meter.objects.filter(company_id=company_id)
+                except Company.DoesNotExist:
+                    return Meter.objects.none()
         return Meter.objects.none()
     
     def create(self, request, *args, **kwargs):
@@ -498,7 +614,8 @@ class MeterViewSet(viewsets.ModelViewSet):
 class DataCollectionViewSet(viewsets.ModelViewSet):
     """ViewSet for data collection and submissions"""
     serializer_class = CompanyDataSubmissionSerializer
-    permission_classes = [permissions.AllowAny]
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         company_id = self.request.query_params.get('company_id')
@@ -545,8 +662,9 @@ class DataCollectionViewSet(viewsets.ModelViewSet):
         
         try:
             company = Company.objects.get(pk=company_id)
+            print(f"🔐 Tasks request from user: {request.user} (ID: {request.user.id if hasattr(request.user, 'id') else 'N/A'})")
             tasks = DataCollectionService.get_data_collection_tasks(
-                company, int(year), int(month)
+                company, int(year), int(month), user=request.user
             )
             
             # Serialize the tasks
@@ -598,9 +716,11 @@ class DataCollectionViewSet(viewsets.ModelViewSet):
         try:
             company = Company.objects.get(pk=company_id)
             progress = DataCollectionService.calculate_progress(
-                company, int(year), int(month) if month else None
+                company, int(year), int(month) if month else None, user=request.user
             )
-            return Response(progress)
+            serializer = ProgressSerializer(data=progress)
+            serializer.is_valid(raise_exception=True)
+            return Response(serializer.data)
             
         except Company.DoesNotExist:
             return Response(
@@ -661,6 +781,60 @@ class DataCollectionViewSet(viewsets.ModelViewSet):
         
         # Otherwise, use the default update behavior
         return super().update(request, *args, **kwargs)
+    
+    @action(detail=False, methods=['post'], url_path='assign-task')
+    def assign_task(self, request):
+        """Assign a data collection task to a user"""
+        task_id = request.data.get('task_id')
+        assigned_user_id = request.data.get('assigned_user_id')
+        
+        if not task_id or not assigned_user_id:
+            return Response(
+                {'error': 'task_id and assigned_user_id are required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            # Get the task (CompanyDataSubmission)
+            task = CompanyDataSubmission.objects.get(id=task_id)
+            
+            # Get the user to assign to
+            from django.contrib.auth.models import User
+            assigned_user = User.objects.get(id=assigned_user_id)
+            
+            # Update assignment fields
+            task.assigned_to = assigned_user
+            task.assigned_by = request.user
+            task.assigned_at = timezone.now()
+            task.save()
+            
+            return Response({
+                'message': 'Task assigned successfully',
+                'task_id': task_id,
+                'assigned_to': {
+                    'id': assigned_user.id,
+                    'name': f"{assigned_user.first_name} {assigned_user.last_name}".strip() or assigned_user.username,
+                    'email': assigned_user.email
+                },
+                'assigned_by': request.user.username,
+                'assigned_at': task.assigned_at.isoformat()
+            })
+            
+        except CompanyDataSubmission.DoesNotExist:
+            return Response(
+                {'error': 'Task not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'User not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to assign task: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class DashboardView(APIView):
@@ -677,7 +851,7 @@ class DashboardView(APIView):
         
         try:
             company = Company.objects.get(pk=company_id)
-            stats = DashboardService.get_dashboard_stats(company)
+            stats = DashboardService.get_dashboard_stats(company, user=request.user)
             serializer = DashboardStatsSerializer(data=stats)
             serializer.is_valid(raise_exception=True)
             return Response(serializer.data)

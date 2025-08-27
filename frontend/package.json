@@ -14,6 +14,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "dev": "HTTPS=false PORT=3000 react-scripts start",
     "start:http": "HTTPS=false PORT=7701 react-scripts start",
     "start:https": "HTTPS=true PORT=7701 react-scripts start",
     "build": "react-scripts build",

@@ -3,6 +3,34 @@ from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
+class UserProfile(models.Model):
+    """Extended user profile with role-based access control"""
+    ROLE_CHOICES = [
+        ('super_user', 'Super User'),
+        ('admin', 'Admin'),
+        ('site_manager', 'Site Manager'), 
+        ('uploader', 'Uploader'),
+        ('viewer', 'Viewer'),
+        ('meter_manager', 'Meter Manager'),
+    ]
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='viewer')
+    email = models.EmailField(help_text="Required business email address")
+    company = models.ForeignKey('Company', on_delete=models.CASCADE, null=True, blank=True)
+    site = models.ForeignKey('Site', on_delete=models.CASCADE, null=True, blank=True)
+    must_reset_password = models.BooleanField(default=False, help_text="User must reset password on next login")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.user.username} ({self.get_role_display()})"
+    
+    class Meta:
+        verbose_name = "User Profile"
+        verbose_name_plural = "User Profiles"
+
+
 class Company(models.Model):
     """Stores core company information"""
     EMIRATE_CHOICES = [
@@ -28,6 +56,7 @@ class Company(models.Model):
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=255)
+    company_code = models.CharField(max_length=10, unique=True, help_text="Unique company identifier code (e.g., DXB001)")
     emirate = models.CharField(max_length=100, choices=EMIRATE_CHOICES)
     sector = models.CharField(max_length=100, choices=SECTOR_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -40,6 +69,24 @@ class Company(models.Model):
     
     def __str__(self):
         return f"{self.name} (User: {self.user.username})"
+
+
+class Site(models.Model):
+    """Company sites/locations for data collection"""
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sites')
+    name = models.CharField(max_length=255)
+    location = models.CharField(max_length=255, blank=True)
+    address = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['company', 'name']
+        verbose_name_plural = "Sites"
+    
+    def __str__(self):
+        return f"{self.name} ({self.company.name})"
 
 
 class Activity(models.Model):
@@ -208,6 +255,9 @@ class CompanyDataSubmission(models.Model):
     reporting_period = models.CharField(max_length=50)  # e.g., 'Jan', 'Q1', '2025'
     value = models.TextField(blank=True)
     evidence_file = models.FileField(upload_to='evidence/%Y/%m/%d/', blank=True)
+    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_tasks')
+    assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks_assigned')
+    assigned_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -217,7 +267,11 @@ class CompanyDataSubmission(models.Model):
     @property
     def status(self):
         """Calculate status based on data and evidence availability"""
-        has_value = bool(self.value)
+        # Special handling for inactive period placeholder
+        if self.value == "INACTIVE_PERIOD":
+            return 'inactive'
+        
+        has_value = bool(self.value and self.value.strip())
         has_evidence = bool(self.evidence_file)
         
         if has_value and has_evidence:

@@ -11,7 +11,13 @@ import List from './components/List';
 import Meter from './components/Meter';
 import Data from './components/Data';
 import Dashboard from './components/Dashboard';
+import DashboardNew from './components/DashboardNew';
 import DashboardTest from './components/DashboardTest';
+import UserManagement from './components/UserManagement';
+import SiteManagement from './components/SiteManagement';
+import TaskAssignment from './components/TaskAssignment';
+import ResetPassword from './components/ResetPassword';
+import ChangePassword from './components/ChangePassword';
 // import DashboardSimple from './components/DashboardSimple'; // Unused
 import './App.css';
 
@@ -28,6 +34,13 @@ function App() {
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            
+            {/* Password reset route (semi-public, requires authentication but no navbar) */}
+            <Route path="/reset-password" element={
+              <ProtectedRoute>
+                <ResetPassword />
+              </ProtectedRoute>
+            } />
             
             {/* Protected routes */}
             <Route path="/" element={
@@ -81,9 +94,7 @@ function App() {
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <TopNavbar />
-                <div className="container mx-auto p-8">
-                  <Dashboard />
-                </div>
+                <DashboardNew />
               </ProtectedRoute>
             } />
             <Route path="/dashboard-test" element={
@@ -94,11 +105,43 @@ function App() {
                 </div>
               </ProtectedRoute>
             } />
-            <Route path="/dashboard-full" element={
+            <Route path="/dashboard-old" element={
               <ProtectedRoute>
                 <TopNavbar />
                 <div className="container mx-auto p-8">
                   <Dashboard />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/team" element={
+              <ProtectedRoute>
+                <TopNavbar />
+                <div className="container mx-auto p-8">
+                  <UserManagement />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/sites" element={
+              <ProtectedRoute>
+                <TopNavbar />
+                <div className="container mx-auto p-8">
+                  <SiteManagement />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/tasks" element={
+              <ProtectedRoute>
+                <TopNavbar />
+                <div className="container mx-auto p-8">
+                  <TaskAssignment />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/change-password" element={
+              <ProtectedRoute>
+                <TopNavbar />
+                <div className="container mx-auto p-8">
+                  <ChangePassword />
                 </div>
               </ProtectedRoute>
             } />

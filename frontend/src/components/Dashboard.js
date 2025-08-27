@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
 
 // Simple chart components
@@ -181,8 +182,11 @@ const EmissionsChart = ({ emissionsData, selectedScope }) => {
 const ExportModal = ({ isOpen, onClose, onConfirm, data }) => {
   if (!isOpen) return null;
   
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  const modalContent = (
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 z-[100000] flex items-center justify-center p-4"
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh' }}
+    >
       <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
         {/* Modal Header */}
         <div className={`p-6 border-b ${data.type === 'warning' ? 'bg-yellow-50' : 'bg-green-50'}`}>
@@ -311,11 +315,396 @@ const ExportModal = ({ isOpen, onClose, onConfirm, data }) => {
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
+
+// Role-specific dashboard components
+const SuperUserDashboard = ({ user, companies = [] }) => (
+  <div className="p-6">
+    <h2 className="text-2xl font-bold text-gray-800 mb-6">System Overview</h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-building text-blue-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Total Companies</p>
+            <p className="text-2xl font-bold text-gray-800">{companies.length}</p>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-users text-green-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Active Users</p>
+            <p className="text-2xl font-bold text-gray-800">24</p>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-chart-line text-orange-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Data Points</p>
+            <p className="text-2xl font-bold text-gray-800">1,247</p>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-shield-alt text-purple-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Compliance Rate</p>
+            <p className="text-2xl font-bold text-gray-800">94%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">Company Performance Comparison</h3>
+      <div className="text-center text-gray-500 py-8">
+        <i className="fas fa-chart-bar text-4xl mb-4"></i>
+        <p>Cross-company analytics dashboard coming soon</p>
+      </div>
+    </div>
+  </div>
+);
+
+const AdminDashboard = ({ user, selectedCompany, sites = [] }) => (
+  <div className="p-6">
+    <h2 className="text-2xl font-bold text-gray-800 mb-6">
+      Company Overview - {selectedCompany?.name || 'Select Company'}
+    </h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-map-marker-alt text-blue-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Active Sites</p>
+            <p className="text-2xl font-bold text-gray-800">{sites.length}</p>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-tasks text-green-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Data Completion</p>
+            <p className="text-2xl font-bold text-gray-800">78%</p>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-exclamation-triangle text-orange-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Pending Tasks</p>
+            <p className="text-2xl font-bold text-gray-800">12</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">Site Comparison</h3>
+      <div className="text-center text-gray-500 py-8">
+        <i className="fas fa-building text-4xl mb-4"></i>
+        <p>Site performance comparison dashboard coming soon</p>
+      </div>
+    </div>
+  </div>
+);
+
+const SiteManagerDashboard = ({ user, selectedSite }) => (
+  <div className="p-6">
+    <h2 className="text-2xl font-bold text-gray-800 mb-6">
+      Site Metrics - {selectedSite?.name || 'Select Site'}
+    </h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-users text-blue-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Team Members</p>
+            <p className="text-2xl font-bold text-gray-800">8</p>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-chart-line text-green-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Site Performance</p>
+            <p className="text-2xl font-bold text-gray-800">85%</p>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-clock text-orange-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Avg Response Time</p>
+            <p className="text-2xl font-bold text-gray-800">2.3 days</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">Team Performance</h3>
+      <div className="text-center text-gray-500 py-8">
+        <i className="fas fa-chart-pie text-4xl mb-4"></i>
+        <p>Team performance metrics coming soon</p>
+      </div>
+    </div>
+  </div>
+);
+
+const UploaderDashboard = ({ user }) => (
+  <div className="p-6">
+    <h2 className="text-2xl font-bold text-gray-800 mb-6">My Tasks</h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-exclamation-circle text-red-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Pending Tasks</p>
+            <p className="text-2xl font-bold text-gray-800">5</p>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-check-circle text-green-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Completed</p>
+            <p className="text-2xl font-bold text-gray-800">23</p>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-percentage text-blue-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Progress</p>
+            <p className="text-2xl font-bold text-gray-800">82%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">Task Queue</h3>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+              <i className="fas fa-bolt text-red-600 text-sm"></i>
+            </div>
+            <div className="ml-3">
+              <p className="font-medium text-gray-800">Electricity Data - December</p>
+              <p className="text-sm text-gray-600">Due: Tomorrow</p>
+            </div>
+          </div>
+          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Start
+          </button>
+        </div>
+        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+              <i className="fas fa-tint text-blue-600 text-sm"></i>
+            </div>
+            <div className="ml-3">
+              <p className="font-medium text-gray-800">Water Usage Data</p>
+              <p className="text-sm text-gray-600">Due: In 3 days</p>
+            </div>
+          </div>
+          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Start
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const ViewerDashboard = ({ user }) => (
+  <div className="p-6">
+    <h2 className="text-2xl font-bold text-gray-800 mb-6">Compliance Overview</h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-check-circle text-green-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Compliance Rate</p>
+            <p className="text-2xl font-bold text-gray-800">94%</p>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-file-alt text-blue-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Reports Available</p>
+            <p className="text-2xl font-bold text-gray-800">12</p>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-calendar text-orange-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Last Updated</p>
+            <p className="text-2xl font-bold text-gray-800">2 days ago</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">Report Shortcuts</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
+          <div className="flex items-center">
+            <i className="fas fa-download text-blue-600 text-lg mr-3"></i>
+            <div>
+              <p className="font-medium text-gray-800">Monthly ESG Report</p>
+              <p className="text-sm text-gray-600">December 2024</p>
+            </div>
+          </div>
+        </button>
+        <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
+          <div className="flex items-center">
+            <i className="fas fa-chart-pie text-green-600 text-lg mr-3"></i>
+            <div>
+              <p className="font-medium text-gray-800">Compliance Summary</p>
+              <p className="text-sm text-gray-600">Q4 2024</p>
+            </div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+const MeterManagerDashboard = ({ user }) => (
+  <div className="p-6">
+    <h2 className="text-2xl font-bold text-gray-800 mb-6">Meter Management</h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-tachometer-alt text-green-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Active Meters</p>
+            <p className="text-2xl font-bold text-gray-800">15</p>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Needs Maintenance</p>
+            <p className="text-2xl font-bold text-gray-800">3</p>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-calendar-check text-orange-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Due This Week</p>
+            <p className="text-2xl font-bold text-gray-800">2</p>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i className="fas fa-wrench text-blue-600 text-xl"></i>
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Health Score</p>
+            <p className="text-2xl font-bold text-gray-800">87%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">Maintenance Schedule</h3>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between p-4 border border-red-200 bg-red-50 rounded-lg">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+              <i className="fas fa-bolt text-red-600 text-sm"></i>
+            </div>
+            <div className="ml-3">
+              <p className="font-medium text-gray-800">Electricity Meter #3</p>
+              <p className="text-sm text-red-600">Overdue - 2 days</p>
+            </div>
+          </div>
+          <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+            Schedule
+          </button>
+        </div>
+        <div className="flex items-center justify-between p-4 border border-orange-200 bg-orange-50 rounded-lg">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+              <i className="fas fa-tint text-orange-600 text-sm"></i>
+            </div>
+            <div className="ml-3">
+              <p className="font-medium text-gray-800">Water Meter #1</p>
+              <p className="text-sm text-orange-600">Due tomorrow</p>
+            </div>
+          </div>
+          <button className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+            Schedule
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user, selectedCompany } = useAuth();
+  const { user, selectedCompany, userSites, selectedSite, companies } = useAuth();
   const [selectedTimeRange, setSelectedTimeRange] = useState('This Month');
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -337,9 +726,9 @@ const Dashboard = () => {
     
     try {
       const [dashboardResponse, progressResponse, frameworksResponse] = await Promise.all([
-        makeAuthenticatedRequest(`${API_BASE_URL}/api/dashboard/?company_id=${companyId}`),
-        makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/progress/`),
-        makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/frameworks/`)
+        fetch(`${API_BASE_URL}/api/dashboard/?company_id=${companyId}`, { credentials: 'include' }),
+        fetch(`${API_BASE_URL}/api/companies/${companyId}/progress/`, { credentials: 'include' }),
+        fetch(`${API_BASE_URL}/api/companies/${companyId}/frameworks/`, { credentials: 'include' })
       ]);
       
       const dashboard = await dashboardResponse.json();
@@ -366,8 +755,8 @@ const Dashboard = () => {
     
     try {
       const [metersResponse, dataResponse] = await Promise.all([
-        makeAuthenticatedRequest(`${API_BASE_URL}/api/meters/?company_id=${companyId}`),
-        makeAuthenticatedRequest(`${API_BASE_URL}/api/data-collection/tasks/?company_id=${companyId}&year=2025&month=8`)
+        fetch(`${API_BASE_URL}/api/meters/?company_id=${companyId}`, { credentials: 'include' }),
+        fetch(`${API_BASE_URL}/api/data-collection/tasks/?company_id=${companyId}&year=2025&month=8`, { credentials: 'include' })
       ]);
       
       const meters = await metersResponse.json();
@@ -573,7 +962,7 @@ const Dashboard = () => {
     let activityId = 1;
     
     // Add real data submission activities from chartData
-    if (chartData?.dataEntries) {
+    if (chartData?.dataEntries && Array.isArray(chartData.dataEntries)) {
       chartData.dataEntries.forEach(entry => {
         if (entry.submission && entry.submission.value && parseFloat(entry.submission.value) > 0) {
           const submissionDate = new Date(entry.submission.updated_at || entry.submission.created_at);
@@ -1101,7 +1490,8 @@ const Dashboard = () => {
 
     console.log('Processing', chartData.dataEntries.length, 'data entries');
 
-    chartData.dataEntries.forEach((entry, index) => {
+    if (chartData?.dataEntries && Array.isArray(chartData.dataEntries)) {
+      chartData.dataEntries.forEach((entry, index) => {
       console.log(`Entry ${index}:`, entry);
       
       // Use meter type instead of element_name for proper categorization
@@ -1128,6 +1518,7 @@ const Dashboard = () => {
         scopes['Scope 3'].items.push(displayName);
       }
     });
+    }
 
     // Remove duplicate items
     Object.keys(scopes).forEach(scopeName => {
@@ -1150,452 +1541,32 @@ const Dashboard = () => {
     );
   }
 
-  return (
-    <div className="max-w-7xl mx-auto">
-      {/* Header with Back Button */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={() => navigate('/')}
-            className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
-          >
-            <i className="fas fa-arrow-left mr-2"></i>
-            Back to Main
-          </button>
-          <h1 className="text-2xl font-bold text-gray-900">ESG Dashboard</h1>
-        </div>
-      </div>
-
-      {/* Time Range Selector */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex space-x-4">
-          {['Last 7 Days', 'This Month', 'Last Quarter', 'Last Year'].map((range) => (
-            <button
-              key={range}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
-                selectedTimeRange === range
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-              onClick={() => setSelectedTimeRange(range)}
-            >
-              {range}
-            </button>
-          ))}
-        </div>
-        <div className="flex space-x-3">
-          <button 
-            onClick={handleExportData}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium transition-colors"
-          >
-            <i className="fas fa-download mr-2"></i>Export
-          </button>
-          <button 
-            onClick={handleExportData}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
-          >
-            <i className="fas fa-file-chart-line mr-2"></i>Generate Report
-          </button>
-        </div>
-      </div>
-
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {kpiCards.map((kpi, index) => (
-          <div key={index} className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <div className={`w-12 h-12 bg-${kpi.color}-100 rounded-lg flex items-center justify-center`}>
-                <i className={`${kpi.icon} text-${kpi.color}-600 text-lg`}></i>
-              </div>
-              <div className={`flex items-center text-sm font-medium ${
-                kpi.trend === 'up' ? 'text-red-600' : 'text-green-600'
-              }`}>
-                <i className={`fas fa-arrow-${kpi.trend} mr-1`}></i>
-                {Math.abs(kpi.change)}%
-              </div>
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-1">{kpi.title}</h3>
-            <div className="flex items-baseline space-x-2">
-              <span className="text-2xl font-bold text-gray-900">{kpi.value}</span>
-              <span className="text-sm text-gray-500">{kpi.unit}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        {/* Framework Progress */}
-        <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">Framework Compliance</h2>
-              <p className="text-gray-600">Progress across selected ESG frameworks</p>
-            </div>
-            <button 
-              onClick={() => navigate('/rame')}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
-            >
-              View Details
-            </button>
-          </div>
-          <div className="space-y-4">
-            {frameworkStatus.map((framework, index) => (
-              <div key={index}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-gray-900">{framework.name}</span>
-                  <div className="flex items-center space-x-3">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      framework.status === 'Complete' ? 'bg-green-100 text-green-800' :
-                      framework.status === 'On Track' ? 'bg-blue-100 text-blue-800' :
-                      framework.status === 'Needs Attention' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {framework.status}
-                    </span>
-                    <span className="text-sm font-bold text-gray-900">{framework.progress}%</span>
-                  </div>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className={`bg-${framework.color}-500 h-2 rounded-full`}
-                    style={{ width: `${framework.progress}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Recent Activities */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">Recent Activity</h2>
-              <p className="text-gray-600 text-sm">Latest system updates</p>
-            </div>
-          </div>
-          <div className="space-y-4">
-            {recentActivities.map((activity) => (
-              <div key={activity.id} className="flex items-start space-x-3">
-                <div className={`w-8 h-8 bg-${activity.color}-100 rounded-full flex items-center justify-center flex-shrink-0`}>
-                  <i className={`${activity.icon} text-${activity.color}-600 text-xs`}></i>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 text-sm">{activity.action}</p>
-                  <p className="text-gray-600 text-xs mt-1">{activity.description}</p>
-                  <p className="text-gray-400 text-xs mt-1">{activity.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Energy Consumption Chart */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-bold text-gray-900">Meter Data Analytics</h3>
-              <div className="h-5"> {/* Fixed height container */}
-                <p className="text-gray-600 text-sm truncate">
-                  {chartData?.meters?.[selectedMeter] ? 
-                    `${chartData.meters[selectedMeter].name} - ${chartData.meters[selectedMeter].type}` : 
-                    'Loading meter data...'
-                  }
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              {chartData?.meters && chartData.meters.length > 1 && (
-                <span className="text-sm text-gray-500">
-                  {selectedMeter + 1} of {chartData.meters.length}
-                </span>
-              )}
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                {chartData?.meters?.[selectedMeter]?.type?.includes('Electricity') ? 'kWh' :
-                 chartData?.meters?.[selectedMeter]?.type?.includes('Fuel') ? 'Liters' :
-                 chartData?.meters?.[selectedMeter]?.type?.includes('Water') ? 'Liters' : 'Units'}
-              </span>
-            </div>
-          </div>
-          
-          {/* Chart Area with Floating Navigation */}
-          <div className="h-64 bg-gray-50 rounded-lg p-4 relative group">
-            {/* Floating Left Arrow */}
-            {chartData?.meters && chartData.meters.length > 1 && (
-              <button 
-                onClick={() => handleMeterNavigation('prev')}
-                className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10 
-                          p-2 bg-white/90 hover:bg-white rounded-full shadow-lg
-                          opacity-0 group-hover:opacity-100 transition-all duration-200
-                          hover:scale-110"
-                title="Previous meter"
-              >
-                <i className="fas fa-chevron-left text-gray-700 text-sm"></i>
-              </button>
-            )}
-            
-            {/* Floating Right Arrow */}
-            {chartData?.meters && chartData.meters.length > 1 && (
-              <button 
-                onClick={() => handleMeterNavigation('next')}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10 
-                          p-2 bg-white/90 hover:bg-white rounded-full shadow-lg
-                          opacity-0 group-hover:opacity-100 transition-all duration-200
-                          hover:scale-110"
-                title="Next meter"
-              >
-                <i className="fas fa-chevron-right text-gray-700 text-sm"></i>
-              </button>
-            )}
-            
-            {/* Chart Content */}
-            {chartData ? (
-              <EnergyChart chartData={generateChartData()} meterType={chartData.meters?.[selectedMeter]?.type} />
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <i className="fas fa-spinner fa-spin text-2xl text-blue-600 mb-2"></i>
-                  <p className="text-gray-600">Loading chart data...</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Emissions Overview */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="text-lg font-bold text-gray-900">GHG Emissions Breakdown</h3>
-              <p className="text-gray-600 text-sm">By source category (tCO2e)</p>
-            </div>
-            <div className="flex space-x-2">
-              {['Scope 1', 'Scope 2', 'Scope 3'].map((scope) => (
-                <button 
-                  key={scope}
-                  onClick={() => setSelectedEmissionScope(scope)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                    selectedEmissionScope === scope
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {scope}
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          {/* Chart Area */}
-          <div className="h-64 bg-gray-50 rounded-lg p-4">
-            {chartData ? (
-              <EmissionsChart 
-                emissionsData={generateEmissionsData()} 
-                selectedScope={selectedEmissionScope} 
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <i className="fas fa-spinner fa-spin text-2xl text-blue-600 mb-2"></i>
-                  <p className="text-gray-600">Loading emissions data...</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Upcoming Deadlines */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Upcoming Deadlines</h2>
-            <p className="text-gray-600">Important compliance and reporting dates</p>
-          </div>
-          <button 
-            onClick={handleAddDeadline}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
-          >
-            <i className="fas fa-calendar-plus mr-2"></i>Add Deadline
-          </button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {upcomingDeadlines.map((deadline, index) => (
-            <div 
-              key={index} 
-              onClick={() => handleDeadlineClick(deadline)}
-              className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-300 hover:shadow-md transition-all duration-200"
-              title={`Click to manage ${deadline.type} tasks`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(deadline.priority)}`}>
-                  {deadline.priority}
-                </span>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-500">{deadline.daysLeft} days</span>
-                  <i className="fas fa-external-link-alt text-xs text-gray-400"></i>
-                </div>
-              </div>
-              <h4 className="font-semibold text-gray-900 mb-1 hover:text-blue-600 transition-colors">{deadline.name}</h4>
-              <p className="text-sm text-gray-600">{deadline.date}</p>
-              {deadline.type && (
-                <p className="text-xs text-gray-500 mt-2 capitalize">{deadline.type} deadline</p>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Action Center */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Quick Actions</h2>
-            <p className="text-gray-600">Common tasks and shortcuts</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {[
-            { icon: 'fas fa-upload', title: 'Upload Data', color: 'blue', path: '/data', description: 'Enter ESG data entries' },
-            { icon: 'fas fa-file-alt', title: 'Generate Report', color: 'green', action: 'export', description: 'Export current data' },
-            { icon: 'fas fa-cog', title: 'Configure Meters', color: 'orange', path: '/meter', description: 'Manage meter settings' },
-            { icon: 'fas fa-chart-bar', title: 'View Analytics', color: 'purple', path: '/dashboard', description: 'Current page' },
-            { icon: 'fas fa-bell', title: 'Profiling', color: 'red', path: '/rame', description: 'Company profiling' },
-            { icon: 'fas fa-list', title: 'Checklist', color: 'gray', path: '/list', description: 'ESG checklist' }
-          ].map((action, index) => (
-            <button
-              key={index}
-              onClick={() => handleQuickAction(action)}
-              className={`p-4 text-center bg-${action.color}-50 hover:bg-${action.color}-100 rounded-lg transition-colors group`}
-              title={action.description}
-            >
-              <div className={`w-10 h-10 bg-${action.color}-100 group-hover:bg-${action.color}-200 rounded-lg flex items-center justify-center mx-auto mb-2 transition-colors`}>
-                <i className={`${action.icon} text-${action.color}-600`}></i>
-              </div>
-              <span className="text-sm font-medium text-gray-900">{action.title}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Export Modal */}
-      <ExportModal
-        isOpen={modalData.isOpen}
-        onClose={closeModal}
-        onConfirm={confirmExport}
-        data={modalData.data}
-      />
-
-      {/* Deadline Modal */}
-      <DeadlineModal
-        isOpen={showDeadlineModal}
-        onClose={handleDeadlineModalClose}
-        onSelectType={handleDeadlineTypeSelect}
-      />
-    </div>
-  );
-};
-
-// Deadline Modal Component
-const DeadlineModal = ({ isOpen, onClose, onSelectType }) => {
-  if (!isOpen) return null;
-  
-  const deadlineTypes = [
-    {
-      id: 'data',
-      icon: 'fas fa-database',
-      title: 'Data Collection Deadline',
-      description: 'Add monthly submission deadline for meter readings and ESG data',
-      color: 'blue'
-    },
-    {
-      id: 'framework',
-      icon: 'fas fa-file-alt',
-      title: 'Framework Compliance Deadline',
-      description: 'Add reporting deadline for ESG frameworks (DST, Green Key, etc.)',
-      color: 'green'
-    },
-    {
-      id: 'checklist',
-      icon: 'fas fa-tasks',
-      title: 'ESG Action Item Deadline',
-      description: 'Add deadline for checklist items and sustainability initiatives',
-      color: 'purple'
+  // Role-based dashboard rendering
+  const renderRoleBasedDashboard = () => {
+    const role = user?.role;
+    console.log('Rendering dashboard for role:', role);
+    
+    switch (role) {
+      case 'super_user':
+        return <SuperUserDashboard user={user} companies={companies} />;
+      case 'admin':
+        return <AdminDashboard user={user} selectedCompany={selectedCompany} sites={userSites} />;
+      case 'site_manager':
+        return <SiteManagerDashboard user={user} selectedSite={selectedSite} />;
+      case 'uploader':
+        return <UploaderDashboard user={user} />;
+      case 'viewer':
+        return <ViewerDashboard user={user} />;
+      case 'meter_manager':
+        return <MeterManagerDashboard user={user} />;
+      default:
+        return <ViewerDashboard user={user} />;
     }
-  ];
-  
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        {/* Modal Header */}
-        <div className="p-6 border-b bg-blue-50">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <i className="fas fa-calendar-plus text-blue-600"></i>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">Add New Deadline</h2>
-                <p className="text-gray-600">Choose the type of deadline you want to add</p>
-              </div>
-            </div>
-            <button 
-              onClick={onClose}
-              className="p-2 hover:bg-white rounded-lg transition-colors"
-            >
-              <i className="fas fa-times text-gray-500"></i>
-            </button>
-          </div>
-        </div>
-
-        {/* Modal Body */}
-        <div className="p-6">
-          <div className="space-y-4">
-            {deadlineTypes.map((type) => (
-              <button
-                key={type.id}
-                onClick={() => onSelectType(type.id)}
-                className={`w-full p-6 rounded-xl border-2 border-gray-200 hover:border-${type.color}-300 hover:shadow-md transition-all duration-200 text-left group`}
-              >
-                <div className="flex items-start space-x-4">
-                  <div className={`w-12 h-12 bg-${type.color}-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-${type.color}-200 transition-colors`}>
-                    <i className={`${type.icon} text-${type.color}-600 text-lg`}></i>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                      {type.title}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">
-                      {type.description}
-                    </p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <i className="fas fa-arrow-right text-gray-400 group-hover:text-blue-500 transition-colors"></i>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Modal Footer */}
-        <div className="p-6 border-t bg-gray-50 flex justify-between">
-          <div className="text-sm text-gray-500">
-            <i className="fas fa-info-circle mr-2"></i>
-            You'll be taken to the relevant page to set up your deadline
-          </div>
-          <button 
-            onClick={onClose}
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      {renderRoleBasedDashboard()}
     </div>
   );
 };

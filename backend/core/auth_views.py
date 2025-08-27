@@ -81,29 +81,81 @@ class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow unauthenticated access
     
     def post(self, request):
-        username = request.data.get('username', '').strip()
+        email = request.data.get('email', '').strip()
+        username = request.data.get('username', '').strip()  # Backwards compatibility
         password = request.data.get('password', '')
+        company_code = request.data.get('company_code', '')
         
-        if not username or not password:
+        # Support both email and username login
+        login_field = email or username
+        
+        if not login_field or not password:
             return Response({
-                'error': 'Username and password are required'
+                'error': 'Email/Username and password are required'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        user = authenticate(request, username=username, password=password)
+        # Try to authenticate with email first, then username
+        user = None
+        if email:
+            # Try to find user by email and check password manually for inactive users
+            try:
+                user_obj = User.objects.get(email=email)
+                # Check password manually to handle inactive users
+                if user_obj.check_password(password):
+                    user = user_obj
+            except User.DoesNotExist:
+                user = None
+        else:
+            # For username login, try normal authenticate first, then manual check for inactive users
+            user = authenticate(request, username=username, password=password)
+            if user is None:
+                # Try to find inactive user with username
+                try:
+                    user_obj = User.objects.get(username=username)
+                    if user_obj.check_password(password):
+                        user = user_obj
+                except User.DoesNotExist:
+                    user = None
         
         if user is not None:
+            # Check if user is inactive (first time login)
+            if not user.is_active:
+                # Activate user on first successful login
+                user.is_active = True
+                user.save()
+            
             login(request, user)
-            return Response({
+            
+            # Get user role and check password reset requirement
+            try:
+                user_profile = user.userprofile
+                user_role = user_profile.role
+                must_reset_password = user_profile.must_reset_password
+            except:
+                user_role = 'viewer'  # Default fallback role
+                must_reset_password = False
+            
+            response_data = {
                 'message': 'Login successful',
                 'user': {
                     'id': user.id,
                     'username': user.username,
-                    'email': user.email
+                    'email': user.email,
+                    'name': f"{user.first_name} {user.last_name}".strip() or user.username,
+                    'role': user_role,
+                    'must_reset_password': must_reset_password
                 }
-            })
+            }
+            
+            # If user must reset password, include special flag
+            if must_reset_password:
+                response_data['requires_password_reset'] = True
+                response_data['message'] = 'Login successful. You must reset your password.'
+            
+            return Response(response_data)
         else:
             return Response({
-                'error': 'Invalid username or password'
+                'error': 'Invalid email/username or password'
             }, status=status.HTTP_401_UNAUTHORIZED)
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -116,17 +168,64 @@ class LogoutView(APIView):
 class UserProfileView(APIView):
     def get(self, request):
         if request.user.is_authenticated:
+            # Get user role from UserProfile
+            try:
+                user_role = request.user.userprofile.role
+            except:
+                user_role = 'viewer'  # Default fallback role
+            
             return Response({
                 'user': {
                     'id': request.user.id,
                     'username': request.user.username,
-                    'email': request.user.email
+                    'email': request.user.email,
+                    'name': f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username,
+                    'role': user_role
                 }
             })
         else:
             return Response({
                 'error': 'Not authenticated'
             }, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RoleSwitchView(APIView):
+    """Switch user role for testing purposes"""
+    
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return Response({
+                'error': 'Not authenticated'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+            
+        new_role = request.data.get('role')
+        if not new_role:
+            return Response({
+                'error': 'Role is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        # Valid roles
+        valid_roles = ['super_user', 'admin', 'site_manager', 'uploader', 'viewer', 'meter_manager']
+        if new_role not in valid_roles:
+            return Response({
+                'error': 'Invalid role'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Update user's role in UserProfile
+            profile = request.user.userprofile
+            profile.role = new_role
+            profile.save()
+            
+            return Response({
+                'message': 'Role switched successfully',
+                'new_role': new_role
+            })
+        except Exception as e:
+            return Response({
+                'error': f'Failed to switch role: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -137,3 +236,73 @@ class CsrfTokenView(APIView):
     def get(self, request):
         token = get_token(request)
         return Response({'csrfToken': token})
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ResetPasswordView(APIView):
+    """Reset user's own password"""
+    
+    def post(self, request):
+        print(f"🔐 Personal password reset request from user: {request.user.username if request.user.is_authenticated else 'Anonymous'}")
+        
+        if not request.user.is_authenticated:
+            return Response({
+                'error': 'Not authenticated'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        current_password = request.data.get('current_password', '')
+        new_password = request.data.get('new_password', '')
+        
+        if not current_password or not new_password:
+            return Response({
+                'error': 'Both current and new password are required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validate current password
+        if not request.user.check_password(current_password):
+            return Response({
+                'error': 'Current password is incorrect'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validate new password
+        if len(new_password) < 6:
+            return Response({
+                'error': 'New password must be at least 6 characters long'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Set new password
+            request.user.set_password(new_password)
+            request.user.save()
+            
+            # Clear the must_reset_password flag
+            try:
+                user_profile = request.user.userprofile
+                user_profile.must_reset_password = False
+                user_profile.save()
+            except:
+                pass  # Profile might not exist
+            
+            return Response({
+                'message': 'Password reset successfully'
+            })
+            
+        except Exception as e:
+            return Response({
+                'error': f'Failed to reset password: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UserSitesView(APIView):
+    """Get sites accessible to the current user"""
+    
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({
+                'error': 'Not authenticated'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        # For now, return empty sites since we haven't implemented the full site system yet
+        # TODO: Implement proper site filtering based on user role and permissions
+        return Response([])

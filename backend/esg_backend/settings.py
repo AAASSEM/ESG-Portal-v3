@@ -46,7 +46,8 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Add whitenoise for static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',  # Temporarily disabled for debugging
+    # CSRF middleware disabled for development multi-user frontend
+    # 'django.middleware.csrf.CsrfViewMiddleware',  
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -156,6 +157,11 @@ REST_FRAMEWORK = {
     ],
 }
 
+# Completely disable CSRF for development
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_SECURE = False  
+CSRF_COOKIE_HTTPONLY = False
+
 # CORS settings - Allow React frontend
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -214,6 +220,9 @@ CSRF_TRUSTED_ORIGINS_ENABLED = False
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:3002',
     'http://localhost:7701',
     'http://127.0.0.1:7701',
     'http://localhost:7702',

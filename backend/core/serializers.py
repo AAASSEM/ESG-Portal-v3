@@ -91,13 +91,28 @@ class CompanyDataSubmissionSerializer(serializers.ModelSerializer):
     element_name = serializers.CharField(source='element.name', read_only=True)
     meter_name = serializers.CharField(source='meter.name', read_only=True, allow_null=True)
     status = serializers.CharField(read_only=True)
+    assigned_to = serializers.SerializerMethodField()
+    assigned_by_name = serializers.CharField(source='assigned_by.username', read_only=True, allow_null=True)
+    
+    def get_assigned_to(self, obj):
+        """Return assigned user details"""
+        if obj.assigned_to:
+            return {
+                'id': obj.assigned_to.id,
+                'username': obj.assigned_to.username,
+                'first_name': obj.assigned_to.first_name,
+                'last_name': obj.assigned_to.last_name,
+                'email': obj.assigned_to.email
+            }
+        return None
     
     class Meta:
         model = CompanyDataSubmission
         fields = [
             'id', 'element', 'element_name', 'meter', 'meter_name', 
             'reporting_year', 'reporting_period', 'value', 'evidence_file',
-            'status', 'created_at', 'updated_at'
+            'status', 'assigned_to', 'assigned_by_name', 'assigned_at',
+            'created_at', 'updated_at'
         ]
 
 
@@ -117,6 +132,21 @@ class CompanyChecklistSerializer(serializers.ModelSerializer):
     
     def get_frameworks_list(self, obj):
         return [framework.name for framework in obj.frameworks.all()]
+
+
+class ProgressSerializer(serializers.Serializer):
+    """Serializer for progress data with inactive period support"""
+    data_progress = serializers.FloatField()
+    evidence_progress = serializers.FloatField()
+    overall_progress = serializers.FloatField()
+    total_points = serializers.IntegerField()
+    completed_points = serializers.IntegerField()
+    items_remaining = serializers.IntegerField()
+    total_submissions = serializers.IntegerField()
+    data_complete = serializers.IntegerField()
+    evidence_complete = serializers.IntegerField()
+    inactive_period_points = serializers.IntegerField(required=False)
+    inactive_period_submissions = serializers.IntegerField(required=False)
 
 
 class DashboardStatsSerializer(serializers.Serializer):

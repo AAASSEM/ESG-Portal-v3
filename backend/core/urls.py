@@ -5,7 +5,8 @@ from .views import (
     ProfilingQuestionViewSet, CompanyChecklistViewSet,
     MeterViewSet, DataCollectionViewSet, DashboardView
 )
-from .auth_views import SignupView, LoginView, LogoutView, UserProfileView, CsrfTokenView
+from .user_views import UserViewSet
+from .auth_views import SignupView, LoginView, LogoutView, UserProfileView, CsrfTokenView, UserSitesView, RoleSwitchView, ResetPasswordView
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -16,6 +17,7 @@ router.register(r'profiling-questions', ProfilingQuestionViewSet, basename='prof
 router.register(r'checklist', CompanyChecklistViewSet, basename='checklist')
 router.register(r'meters', MeterViewSet, basename='meters')
 router.register(r'data-collection', DataCollectionViewSet, basename='data-collection')
+router.register(r'users', UserViewSet, basename='users')
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -25,5 +27,9 @@ urlpatterns = [
     path('auth/login/', LoginView.as_view(), name='login'),
     path('auth/logout/', LogoutView.as_view(), name='logout'),
     path('auth/user/', UserProfileView.as_view(), name='user-profile'),
+    path('auth/switch-role/', RoleSwitchView.as_view(), name='switch-role'),
+    path('auth/reset-password/', ResetPasswordView.as_view(), name='reset-password'),
     path('auth/csrf/', CsrfTokenView.as_view(), name='csrf-token'),
+    # User endpoints
+    path('user/sites/', UserSitesView.as_view(), name='user-sites'),
 ]

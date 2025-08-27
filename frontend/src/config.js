@@ -4,13 +4,13 @@ const getApiUrl = () => {
     return window.location.origin;
   }
   
-  // When served by Django backend (localhost:8000) - force HTTP
-  if (window.location.port === '8000') {
+  // ALWAYS force HTTP for localhost development - prevents HTTPS upgrade
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     return 'http://localhost:8000';
   }
   
-  // Development with React dev server (localhost:7701) - use proxy
-  return '';
+  // Fallback
+  return window.location.origin;
 };
 
 export const API_BASE_URL = getApiUrl();

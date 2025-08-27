@@ -6,8 +6,9 @@ import { API_BASE_URL } from '../config';
 const Onboard = () => {
   console.log('🚀 Onboard component loaded/re-rendered at', new Date().toLocaleTimeString());
   
+  // ALL HOOKS DECLARED AT THE TOP
   const navigate = useNavigate();
-  const { selectedCompany } = useAuth();
+  const { user, selectedCompany } = useAuth();
   const [formData, setFormData] = useState({
     companyName: '',
     emirate: '',
@@ -552,35 +553,93 @@ const Onboard = () => {
     );
   }
 
+  // Check if user has permission to access company onboarding (moved after hooks)
+  const canAccessOnboarding = () => {
+    if (!user) return false;
+    // Module 1-2 (Company Setup & Frameworks): CORRECTED
+    // ✅ Super User, Admin: Full edit access
+    // 👁️ Site Manager, Viewer: View-only access
+    // ❌ Uploader, Meter Manager: NO ACCESS (completely blocked)
+    return ['super_user', 'admin', 'site_manager', 'viewer'].includes(user.role);
+  };
+
+  // If no permission, show permission denied message
+  if (!canAccessOnboarding()) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="max-w-md mx-auto text-center">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+              <i className="fas fa-lock text-red-600 text-2xl"></i>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Access Denied</h3>
+            <p className="text-gray-600 mb-4">
+              You don't have permission to access company onboarding.
+            </p>
+            <p className="text-sm text-gray-500">
+              Contact your administrator if you need access to this feature.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Role-based functionality controls for Company Onboarding
+  const canEditCompanyInfo = ['super_user', 'admin'].includes(user?.role); // Full edit access
+  const isViewOnly = ['site_manager', 'viewer'].includes(user?.role); // View only
+
   return (
     <div className="max-w-6xl mx-auto">
 
       {/* Company Information Form */}
       <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 mb-8">
-        <div className="flex items-center space-x-3 mb-6">
-          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-            <i className="fas fa-building text-blue-600"></i>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <i className="fas fa-building text-blue-600"></i>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Company Information</h2>
+              <p className="text-gray-600">
+                {canEditCompanyInfo ? 'Enter your basic company details' : 'View company information'}
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Company Information</h2>
-            <p className="text-gray-600">Enter your basic company details</p>
-          </div>
+          {isViewOnly && (
+            <div className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium">
+              <i className="fas fa-eye mr-2"></i>View Only Mode
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Company Name *</label>
             <div className="relative">
-              <input 
-                type="text" 
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                placeholder="Enter company name" 
-                value={formData.companyName}
-                onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
-              />
-              {formData.companyName && (
+              {canEditCompanyInfo ? (
+                <input 
+                  type="text" 
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                  placeholder="Enter company name" 
+                  value={formData.companyName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
+                />
+              ) : (
+                <div className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 font-medium">
+                  {formData.companyName || 'Not specified'}
+                </div>
+              )}
+              {formData.companyName && canEditCompanyInfo && (
                 <div className="absolute right-3 top-3 text-green-500">
                   <i className="fas fa-check-circle"></i>
+                </div>
+              )}
+              {isViewOnly && (
+                <div className="absolute -top-1 -right-1">
+                  <div className="px-1 py-0.5 bg-blue-100 text-blue-600 text-xs rounded-full">
+                    <i className="fas fa-eye"></i>
+                  </div>
                 </div>
               )}
             </div>
@@ -588,39 +647,69 @@ const Onboard = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Emirate *</label>
-            <select 
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={formData.emirate}
-              onChange={(e) => setFormData(prev => ({ ...prev, emirate: e.target.value }))}
-            >
-              <option value="">Select Emirate</option>
-              <option value="Dubai">Dubai</option>
-              <option value="Abu Dhabi">Abu Dhabi</option>
-              <option value="Sharjah">Sharjah</option>
-              <option value="Ajman">Ajman</option>
-              <option value="Umm Al Quwain">Umm Al Quwain</option>
-              <option value="Ras Al Khaimah">Ras Al Khaimah</option>
-              <option value="Fujairah">Fujairah</option>
-            </select>
+            <div className="relative">
+              {canEditCompanyInfo ? (
+                <select 
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={formData.emirate}
+                  onChange={(e) => setFormData(prev => ({ ...prev, emirate: e.target.value }))}
+                >
+                  <option value="">Select Emirate</option>
+                  <option value="Dubai">Dubai</option>
+                  <option value="Abu Dhabi">Abu Dhabi</option>
+                  <option value="Sharjah">Sharjah</option>
+                  <option value="Ajman">Ajman</option>
+                  <option value="Umm Al Quwain">Umm Al Quwain</option>
+                  <option value="Ras Al Khaimah">Ras Al Khaimah</option>
+                  <option value="Fujairah">Fujairah</option>
+                </select>
+              ) : (
+                <div className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 font-medium">
+                  {formData.emirate || 'Not specified'}
+                </div>
+              )}
+              {isViewOnly && (
+                <div className="absolute -top-1 -right-1">
+                  <div className="px-1 py-0.5 bg-blue-100 text-blue-600 text-xs rounded-full">
+                    <i className="fas fa-eye"></i>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">Primary Sector *</label>
-            <select 
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={formData.primarySector}
-              onChange={(e) => setFormData(prev => ({ ...prev, primarySector: e.target.value }))}
-            >
-              <option value="">Select Primary Sector</option>
-              <option value="Hospitality & Tourism">Hospitality & Tourism</option>
-              <option value="Real Estate">Real Estate</option>
-              <option value="Financial Services">Financial Services</option>
-              <option value="Manufacturing">Manufacturing</option>
-              <option value="Technology">Technology</option>
-              <option value="Healthcare">Healthcare</option>
-              <option value="Education">Education</option>
-              <option value="Retail">Retail</option>
-            </select>
+            <div className="relative">
+              {canEditCompanyInfo ? (
+                <select 
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={formData.primarySector}
+                  onChange={(e) => setFormData(prev => ({ ...prev, primarySector: e.target.value }))}
+                >
+                  <option value="">Select Primary Sector</option>
+                  <option value="Hospitality & Tourism">Hospitality & Tourism</option>
+                  <option value="Real Estate">Real Estate</option>
+                  <option value="Financial Services">Financial Services</option>
+                  <option value="Manufacturing">Manufacturing</option>
+                  <option value="Technology">Technology</option>
+                  <option value="Healthcare">Healthcare</option>
+                  <option value="Education">Education</option>
+                  <option value="Retail">Retail</option>
+                </select>
+              ) : (
+                <div className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 font-medium">
+                  {formData.primarySector || 'Not specified'}
+                </div>
+              )}
+              {isViewOnly && (
+                <div className="absolute -top-1 -right-1">
+                  <div className="px-1 py-0.5 bg-blue-100 text-blue-600 text-xs rounded-full">
+                    <i className="fas fa-eye"></i>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -634,22 +723,32 @@ const Onboard = () => {
             </div>
             <div>
               <h2 className="text-xl font-semibold text-gray-900">Business Activities</h2>
-              <p className="text-gray-600">Select all activities your company engages in</p>
+              <p className="text-gray-600">
+                {canEditCompanyInfo ? 'Select all activities your company engages in' : 'View selected business activities'}
+              </p>
             </div>
           </div>
           <div className="flex space-x-3">
-            <button 
-              className="px-4 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 text-sm font-medium"
-              onClick={() => setFormData(prev => ({ ...prev, activities: businessActivities.map(a => a.name) }))}
-            >
-              <i className="fas fa-check-double mr-2"></i>Select All
-            </button>
-            <button 
-              className="px-4 py-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 text-sm font-medium"
-              onClick={() => setFormData(prev => ({ ...prev, activities: [] }))}
-            >
-              <i className="fas fa-times mr-2"></i>Deselect All
-            </button>
+            {canEditCompanyInfo ? (
+              <>
+                <button 
+                  className="px-4 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 text-sm font-medium"
+                  onClick={() => setFormData(prev => ({ ...prev, activities: businessActivities.map(a => a.name) }))}
+                >
+                  <i className="fas fa-check-double mr-2"></i>Select All
+                </button>
+                <button 
+                  className="px-4 py-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 text-sm font-medium"
+                  onClick={() => setFormData(prev => ({ ...prev, activities: [] }))}
+                >
+                  <i className="fas fa-times mr-2"></i>Deselect All
+                </button>
+              </>
+            ) : (
+              <div className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium">
+                <i className="fas fa-eye mr-2"></i>View Only
+              </div>
+            )}
           </div>
         </div>
 
@@ -659,12 +758,14 @@ const Onboard = () => {
             return (
               <div 
                 key={activity.id}
-                className={`activity-card rounded-lg p-4 cursor-pointer transition-all ${
+                className={`activity-card rounded-lg p-4 transition-all relative ${
                   isSelected 
                     ? 'border-2 border-green-200 bg-green-50' 
-                    : 'border border-gray-200 bg-white hover:border-green-200 hover:bg-green-50'
+                    : canEditCompanyInfo 
+                      ? 'border border-gray-200 bg-white hover:border-green-200 hover:bg-green-50 cursor-pointer'
+                      : 'border border-gray-200 bg-gray-50'
                 }`}
-                onClick={() => handleActivityToggle(activity.name)}
+                onClick={canEditCompanyInfo ? () => handleActivityToggle(activity.name) : undefined}
               >
                 <div className="flex items-center space-x-3">
                   <input 
@@ -672,12 +773,22 @@ const Onboard = () => {
                     checked={isSelected} 
                     onChange={() => {}}
                     className="w-5 h-5 text-green-600 rounded"
+                    disabled={!canEditCompanyInfo}
                   />
-                  <div className={`w-8 h-8 bg-${activity.color}-100 rounded-lg flex items-center justify-center`}>
+                  <div className={`w-8 h-8 bg-${activity.color}-100 rounded-lg flex items-center justify-center ${!canEditCompanyInfo ? 'opacity-60' : ''}`}>
                     <i className={`${activity.icon} text-${activity.color}-600`}></i>
                   </div>
-                  <span className="font-medium text-gray-900">{activity.name}</span>
+                  <span className={`font-medium ${canEditCompanyInfo ? 'text-gray-900' : 'text-gray-600'}`}>
+                    {activity.name}
+                  </span>
                 </div>
+                {isViewOnly && (
+                  <div className="absolute -top-1 -right-1">
+                    <div className="px-1 py-0.5 bg-blue-100 text-blue-600 text-xs rounded-full">
+                      <i className="fas fa-eye"></i>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -739,26 +850,54 @@ const Onboard = () => {
         <div className="flex items-center space-x-4">
           <div className="text-sm text-gray-600">
             <i className="fas fa-info-circle mr-2"></i>
-            {saving ? 'Saving...' : 'Progress will be automatically saved'}
+            {canEditCompanyInfo 
+              ? (saving ? 'Saving...' : 'Progress will be automatically saved')
+              : 'Viewing company information in read-only mode'
+            }
           </div>
+          {isViewOnly && (
+            <div className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm">
+              <i className="fas fa-eye mr-1"></i>View Only Access
+            </div>
+          )}
         </div>
         <div className="flex space-x-4">
-          <button 
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
-            onClick={() => saveData(true)}
-            disabled={saving}
-          >
-            <i className={`fas ${saving ? 'fa-spinner fa-spin' : 'fa-save'} mr-2`}></i>
-            {saving ? 'Saving...' : 'Save Draft'}
-          </button>
-          <button 
-            className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg font-medium"
-            onClick={handleContinue}
-            disabled={saving}
-          >
-            {saving ? 'Saving...' : 'Save & Continue'}
-            <i className={`fas ${saving ? 'fa-spinner fa-spin' : 'fa-arrow-right'} ml-2`}></i>
-          </button>
+          {canEditCompanyInfo ? (
+            <>
+              <button 
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                onClick={() => saveData(true)}
+                disabled={saving}
+              >
+                <i className={`fas ${saving ? 'fa-spinner fa-spin' : 'fa-save'} mr-2`}></i>
+                {saving ? 'Saving...' : 'Save Draft'}
+              </button>
+              <button 
+                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg font-medium"
+                onClick={handleContinue}
+                disabled={saving}
+              >
+                {saving ? 'Saving...' : 'Save & Continue'}
+                <i className={`fas ${saving ? 'fa-spinner fa-spin' : 'fa-arrow-right'} ml-2`}></i>
+              </button>
+            </>
+          ) : (
+            <>
+              <button 
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                onClick={() => {/* Export functionality for view-only users */}}
+              >
+                <i className="fas fa-download mr-2"></i>Export Info
+              </button>
+              <button 
+                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg font-medium"
+                onClick={handleContinue}
+              >
+                Continue
+                <i className="fas fa-arrow-right ml-2"></i>
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

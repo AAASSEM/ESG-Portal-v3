@@ -126,7 +126,7 @@ class ProfilingService:
         return questions
     
     @staticmethod
-    def save_profiling_answers(company, answers_data):
+    def save_profiling_answers(company, answers_data, user):
         """Save profiling wizard answers"""
         with transaction.atomic():
             for answer_data in answers_data:
@@ -136,6 +136,7 @@ class ProfilingService:
                 try:
                     question = ProfilingQuestion.objects.get(question_id=question_id)
                     CompanyProfileAnswer.objects.update_or_create(
+                        user=user,
                         company=company,
                         question=question,
                         defaults={'answer': answer}
@@ -270,7 +271,7 @@ class DataCollectionService:
             return []
     
     @staticmethod
-    def get_data_collection_tasks(company, year, month):
+    def get_data_collection_tasks(company, year, month, user=None):
         """Get all data collection tasks for a specific month"""
         month_name = datetime(year, month, 1).strftime('%b')
         
@@ -340,6 +341,7 @@ class DataCollectionService:
                 for meter in meters:
                     # Get or create submission record
                     submission, created = CompanyDataSubmission.objects.get_or_create(
+                        user=user,
                         company=company,
                         element=item.element,
                         meter=meter,
@@ -356,6 +358,7 @@ class DataCollectionService:
             else:
                 # For non-metered elements, create single task
                 submission, created = CompanyDataSubmission.objects.get_or_create(
+                    user=user,
                     company=company,
                     element=item.element,
                     meter=None,
@@ -373,13 +376,59 @@ class DataCollectionService:
         return tasks
     
     @staticmethod
-    def calculate_progress(company, year, month=None):
+    def calculate_progress(company, year, month=None, user=None):
         """Calculate data collection progress - counts data and evidence as separate tasks"""
         filters = {'company': company, 'reporting_year': year}
         
         if month:
             month_name = datetime(year, month, 1).strftime('%b')
             filters['reporting_period'] = month_name
+        else:
+            # For yearly progress, calculate from user's first submission month to December
+            if user:
+                user_submissions = CompanyDataSubmission.objects.filter(
+                    company=company, 
+                    reporting_year=year, 
+                    user=user
+                )
+                if user_submissions.exists():
+                    # Get the earliest month the user has submissions
+                    earliest_period = user_submissions.order_by('reporting_period').first().reporting_period
+                    
+                    # Convert month name to number to determine range
+                    month_mapping = {
+                        'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
+                        'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
+                    }
+                    start_month_num = month_mapping.get(earliest_period)
+                    current_month = datetime.now().month
+                    
+                    if start_month_num:
+                        # Create submissions for the FULL year (Jan-Dec)
+                        # But mark pre-user months (Jan to start_month-1) as inactive period
+                        
+                        # Create tasks for all 12 months
+                        for month_num in range(1, 13):
+                            tasks = DataCollectionService.get_data_collection_tasks(company, year, month_num, user=user)
+                            
+                            # If this month is before user's start month, mark submissions as "inactive_period"
+                            if month_num < start_month_num:
+                                month_name = datetime(year, month_num, 1).strftime('%b')
+                                inactive_submissions = CompanyDataSubmission.objects.filter(
+                                    company=company,
+                                    user=user, 
+                                    reporting_year=year,
+                                    reporting_period=month_name
+                                )
+                                # Add a flag to mark these as inactive period
+                                for submission in inactive_submissions:
+                                    # We can use the value field to mark inactive periods
+                                    if not submission.value:
+                                        submission.value = 'INACTIVE_PERIOD'
+                                        submission.save()
+        
+        if user:
+            filters['user'] = user
         
         submissions = CompanyDataSubmission.objects.filter(**filters)
         
@@ -389,44 +438,56 @@ class DataCollectionService:
             Q(meter__isnull=True) | Q(meter__status='active')
         )
         
-        total_submissions = active_submissions.count()
-        if total_submissions == 0:
+        # Separate active period submissions from inactive period submissions
+        active_period_submissions = active_submissions.exclude(value='INACTIVE_PERIOD')
+        inactive_period_submissions = active_submissions.filter(value='INACTIVE_PERIOD')
+        
+        total_active_submissions = active_period_submissions.count()
+        total_inactive_submissions = inactive_period_submissions.count()
+        
+        if total_active_submissions == 0 and total_inactive_submissions == 0:
             return {
                 'data_progress': 0, 
                 'evidence_progress': 0, 
                 'total_points': 0, 
                 'completed_points': 0,
-                'items_remaining': 0
+                'items_remaining': 0,
+                'inactive_period_points': 0
             }
         
-        # Count completed data entries and evidence files separately (only from active meters)
-        data_complete = active_submissions.exclude(value='').count()
-        evidence_complete = active_submissions.exclude(evidence_file='').count()
+        # Count completed data entries and evidence files separately (only from active period)
+        data_complete = active_period_submissions.exclude(value='').count()
+        evidence_complete = active_period_submissions.exclude(evidence_file='').count()
         
-        # Total tasks = submissions × 2 (data + evidence for each submission)
-        total_tasks = total_submissions * 2
+        # Total tasks = active submissions × 2 (data + evidence for each submission)
+        total_active_tasks = total_active_submissions * 2
         
-        # Completed tasks = data entries + evidence uploads
+        # Inactive period tasks (shown as incomplete/orange)
+        total_inactive_tasks = total_inactive_submissions * 2
+        
+        # Completed tasks = data entries + evidence uploads (only from active period)
         completed_tasks = data_complete + evidence_complete
         
-        # Remaining tasks = total tasks - completed tasks
-        items_remaining = total_tasks - completed_tasks
+        # Remaining tasks = total active tasks - completed tasks
+        items_remaining = total_active_tasks - completed_tasks
         
-        # Calculate percentages based on separate task counting
-        overall_progress = (completed_tasks / total_tasks) * 100 if total_tasks > 0 else 0
-        data_progress = (data_complete / total_submissions) * 100
-        evidence_progress = (evidence_complete / total_submissions) * 100
+        # Calculate percentages based on active period only
+        overall_progress = (completed_tasks / total_active_tasks) * 100 if total_active_tasks > 0 else 0
+        data_progress = (data_complete / total_active_submissions) * 100 if total_active_submissions > 0 else 0
+        evidence_progress = (evidence_complete / total_active_submissions) * 100 if total_active_submissions > 0 else 0
         
         return {
             'data_progress': data_progress,
             'evidence_progress': evidence_progress,
-            'overall_progress': overall_progress,  # New field for combined progress
-            'total_points': total_tasks,  # Now counts both data and evidence tasks
-            'completed_points': completed_tasks,  # Data entries + evidence files
-            'items_remaining': items_remaining,  # Tasks still needed
-            'total_submissions': total_submissions,  # Original submission count for reference
-            'data_complete': data_complete,  # Data entries completed
-            'evidence_complete': evidence_complete  # Evidence files uploaded
+            'overall_progress': overall_progress,
+            'total_points': total_active_tasks,  # Only active period tasks
+            'completed_points': completed_tasks,
+            'items_remaining': items_remaining,
+            'total_submissions': total_active_submissions,  # Active period submissions
+            'data_complete': data_complete,
+            'evidence_complete': evidence_complete,
+            'inactive_period_points': total_inactive_tasks,  # New field for inactive period
+            'inactive_period_submissions': total_inactive_submissions
         }
 
 
@@ -434,7 +495,7 @@ class DashboardService:
     """Service for dashboard statistics and data visualization"""
     
     @staticmethod
-    def get_dashboard_stats(company):
+    def get_dashboard_stats(company, user=None):
         """Get comprehensive dashboard statistics"""
         # Basic counts
         total_frameworks = company.companyframework_set.count()
@@ -444,12 +505,12 @@ class DashboardService:
         
         # Data completeness (for current year)
         current_year = datetime.now().year
-        year_progress = DataCollectionService.calculate_progress(company, current_year)
+        year_progress = DataCollectionService.calculate_progress(company, current_year, user=user)
         
         # Monthly data for charts
         monthly_data = []
         for month in range(1, 13):
-            month_progress = DataCollectionService.calculate_progress(company, current_year, month)
+            month_progress = DataCollectionService.calculate_progress(company, current_year, month, user=user)
             monthly_data.append({
                 'month': datetime(current_year, month, 1).strftime('%b'),
                 'data_progress': month_progress['data_progress'],

@@ -1,29 +1,214 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
+import { API_BASE_URL } from '../config';
+
+// Role Switcher Dropdown Component for Testing
+const RoleSwitcherDropdown = ({ currentRole }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isChanging, setIsChanging] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const { user, checkAuthStatus } = useAuth();
+  const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
+  const portalDropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Check if click is outside both the main dropdown container AND the portal-rendered dropdown
+      const isOutsideDropdown = dropdownRef.current && !dropdownRef.current.contains(event.target);
+      const isOutsidePortal = portalDropdownRef.current && !portalDropdownRef.current.contains(event.target);
+      
+      if (isOutsideDropdown && isOutsidePortal) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Calculate dropdown position when opening
+  const handleToggleDropdown = () => {
+    if (!isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 4,
+        left: rect.left
+      });
+    }
+    setIsOpen(!isOpen);
+  };
+
+  const availableRoles = [
+    { value: 'super_user', label: 'Super User', color: 'bg-red-100 text-red-700' },
+    { value: 'admin', label: 'Admin', color: 'bg-blue-100 text-blue-700' },
+    { value: 'site_manager', label: 'Site Manager', color: 'bg-green-100 text-green-700' },
+    { value: 'uploader', label: 'Uploader', color: 'bg-yellow-100 text-yellow-700' },
+    { value: 'viewer', label: 'Viewer', color: 'bg-purple-100 text-purple-700' },
+    { value: 'meter_manager', label: 'Meter Manager', color: 'bg-orange-100 text-orange-700' }
+  ];
+
+  const currentRoleInfo = availableRoles.find(role => role.value === currentRole);
+
+  const handleRoleSwitch = async (newRole) => {
+    if (newRole === currentRole) {
+      setIsOpen(false);
+      return;
+    }
+
+    setIsChanging(true);
+    try {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/auth/switch-role/`, {
+        method: 'POST',
+        body: JSON.stringify({ role: newRole })
+      });
+
+      if (response.ok) {
+        // Refresh user data to get new role
+        await checkAuthStatus();
+        console.log(`✅ Role switched to: ${newRole}`);
+        // Reload the page to refresh all role-based content
+        window.location.reload();
+      } else {
+        console.error('❌ Role switch failed');
+        alert('Failed to switch role. This is a test feature.');
+      }
+    } catch (error) {
+      console.error('Role switch error:', error);
+      alert('This is a test feature - role switching would need backend implementation');
+    } finally {
+      setIsChanging(false);
+      setIsOpen(false);
+    }
+  };
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        ref={buttonRef}
+        onClick={handleToggleDropdown}
+        disabled={isChanging}
+        className={`text-xs px-2 py-0.5 rounded-full capitalize transition-all duration-200 flex items-center space-x-1 ${
+          isChanging 
+            ? 'bg-gray-100 text-gray-500 cursor-wait'
+            : currentRoleInfo?.color || 'bg-purple-100 text-purple-700'
+        } hover:shadow-sm`}
+      >
+        {/* <span>{isChanging ? 'Switching...' : currentRole.replace('_', ' ')}</span> */}
+        <i className={`fas fa-chevron-${isOpen ? 'up' : 'down'} text-xs`}></i>
+      </button>
+
+      {isOpen && createPortal(
+        <div 
+          ref={portalDropdownRef}
+          className="fixed bg-white border border-gray-200 rounded-lg shadow-xl z-[99999] min-w-[140px]"
+          style={{
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          }}
+        >
+          <div className="py-1">
+            <div className="px-3 py-2 text-xs font-medium text-gray-500 border-b border-gray-100">
+              Test Role Switch
+            </div>
+            {availableRoles.map((role) => (
+              <button
+                key={role.value}
+                onClick={() => handleRoleSwitch(role.value)}
+                disabled={isChanging}
+                className={`w-full px-3 py-2 text-left text-xs hover:bg-gray-50 flex items-center space-x-2 ${
+                  role.value === currentRole ? 'bg-blue-50' : ''
+                }`}
+              >
+                <span className={`px-2 py-0.5 rounded-full ${role.color}`}>
+                  {role.label}
+                </span>
+                {role.value === currentRole && (
+                  <i className="fas fa-check text-blue-600 text-xs"></i>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+};
 
 const TopNavbar = () => {
   console.log('TopNavbar rendering');
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout, selectedCompany, companies, switchCompany } = useAuth();
+  const { user, logout, selectedCompany, companies, switchCompany, userSites, selectedSite, switchSite, hasPermission } = useAuth();
   console.log('Current location:', location.pathname);
 
-  const modules = [
-    { id: 1, name: 'Company Onboarding', path: '/onboard', description: 'Set up your company profile and business activities', progress: 17 },
-    { id: 2, name: 'Framework Selection', path: '/rame', description: 'Choose ESG frameworks that align with your reporting requirements', progress: 33 },
-    { id: 3, name: 'Data Checklist', path: '/list', description: 'Review personalized data requirements based on your frameworks', progress: 50 },
-    { id: 4, name: 'Meter Management', path: '/meter', description: 'Configure and monitor your data collection points', progress: 67 },
-    { id: 5, name: 'Data Collection', path: '/data', description: 'Track, input, and validate your ESG performance data', progress: 83 },
-    { id: 6, name: 'Dashboard', path: '/dashboard', description: 'Comprehensive view of your sustainability performance', progress: 100 }
-  ];
+  // Function to get role colors
+  const getRoleColor = (role) => {
+    const roleColors = {
+      'super_user': 'bg-red-100 text-red-700',
+      'admin': 'bg-blue-100 text-blue-700',
+      'site_manager': 'bg-green-100 text-green-700',
+      'uploader': 'bg-yellow-100 text-yellow-700',
+      'viewer': 'bg-purple-100 text-purple-700',
+      'meter_manager': 'bg-orange-100 text-orange-700'
+    };
+    return roleColors[role] || 'bg-gray-100 text-gray-700';
+  };
+
+  const getRoleBasedModules = () => {
+    const baseModules = [
+      { id: 1, name: 'Company Onboarding', path: '/onboard', description: 'Set up your company profile and business activities', progress: 14, permission: 'companyOnboarding' },
+      { id: 2, name: 'Framework Selection', path: '/rame', description: 'Choose ESG frameworks that align with your reporting requirements', progress: 28, permission: 'frameworkSelection' },
+      { id: 3, name: 'Data Checklist', path: '/list', description: 'Review personalized data requirements based on your frameworks', progress: 42, permission: 'dataChecklist' },
+      { id: 4, name: 'Meter Management', path: '/meter', description: 'Configure and monitor your data collection points', progress: 56, permission: 'meterManagement' },
+      { id: 5, name: 'Data Collection', path: '/data', description: 'Track, input, and validate your ESG performance data', progress: 70, permission: 'dataCollection' },
+      { id: 6, name: 'Team Management', path: '/team', description: 'Manage users and their access to your organization', progress: 84, permission: 'userManagement' },
+      { id: 7, name: 'Dashboard', path: '/dashboard', description: 'Comprehensive view of your sustainability performance', progress: 100, permission: 'dashboard' }
+    ];
+
+    const adminModules = [
+      { id: 7, name: 'Team Management', path: '/team', description: 'Manage users and their access to the platform', progress: 100, permission: 'userManagement' },
+      { id: 8, name: 'Site Management', path: '/sites', description: 'Manage company locations and sites', progress: 100, permission: 'siteManagement' },
+      { id: 9, name: 'Task Assignment', path: '/tasks', description: 'Assign data collection tasks to team members', progress: 100, permission: 'taskAssignment' }
+    ];
+
+    // If user is not loaded yet, return basic modules to prevent errors
+    if (!user) {
+      return baseModules;
+    }
+
+    let modules = baseModules.filter(module => hasPermission(module.permission, 'read'));
+    
+    if (user?.role === 'admin' || user?.role === 'super_user') {
+      modules = [...modules, ...adminModules.filter(module => hasPermission(module.permission, 'read'))];
+    } else if (user?.role === 'site_manager') {
+      modules = [...modules, ...adminModules.filter(module => ['userManagement', 'taskAssignment'].includes(module.permission) && hasPermission(module.permission, 'read'))];
+    }
+
+    return modules.length > 0 ? modules : baseModules; // Fallback to baseModules if filtering results in empty array
+  };
+
+  const modules = getRoleBasedModules();
 
   const getCurrentModule = () => {
-    return modules.find(module => location.pathname === module.path) || modules[0];
+    return modules.find(module => location.pathname === module.path) || modules[0] || { 
+      id: 1, 
+      name: 'Dashboard', 
+      path: '/dashboard', 
+      description: 'Main dashboard', 
+      progress: 100 
+    };
   };
 
   const currentModule = getCurrentModule();
-  const progress = currentModule.progress;
+  const progress = currentModule?.progress || 0;
   
   // Update modules with completion status based on progress
   const modulesWithCompletion = modules.map(module => ({
@@ -80,6 +265,27 @@ const TopNavbar = () => {
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
+            {/* Site Selector */}
+            {userSites && userSites.length > 1 && (
+              <div className="relative">
+                <select
+                  value={selectedSite?.id || ''}
+                  onChange={(e) => {
+                    const site = userSites.find(s => s.id === parseInt(e.target.value));
+                    if (site) switchSite(site);
+                  }}
+                  className="text-sm bg-white border border-purple-200 rounded-md px-3 py-1 text-gray-700 hover:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="">All Sites</option>
+                  {userSites.map(site => (
+                    <option key={site.id} value={site.id}>
+                      {site.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             {/* Company Selector */}
             {companies && companies.length > 1 && (
               <div className="relative">
@@ -100,35 +306,36 @@ const TopNavbar = () => {
               </div>
             )}
             
-            <button className="text-gray-500 hover:text-purple-600 transition-colors">
-              <i className="fas fa-question-circle"></i>
-            </button>
-            <button className="text-gray-500 hover:text-purple-600 transition-colors relative">
-              <i className="fas fa-bell"></i>
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
-            </button>
+            
             
             {/* User Profile with Logout Button */}
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-2">
                 <div className="w-7 h-7 rounded-full ring-2 ring-purple-200 bg-purple-500 flex items-center justify-center">
                   <span className="text-white text-xs font-medium">
-                    {user?.username?.charAt(0)?.toUpperCase() || 'U'}
+                    {user?.name?.charAt(0)?.toUpperCase() || user?.username?.charAt(0)?.toUpperCase() || 'U'}
                   </span>
                 </div>
-                <span className="text-sm font-medium text-gray-700">
-                  {user?.username || 'User'}
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-gray-700">
+                    {user?.name || user?.username || 'User'}
+                  </span>
+                  {user?.role && (
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${getRoleColor(user.role)}`}>
+                      {user.role.replace('_', ' ')}
+                    </span>
+                  )}
+                  {/* <RoleSwitcherDropdown currentRole={user.role} /> */}
+                </div>
               </div>
-              
+
               {/* Logout Button */}
               <button
                 onClick={logout}
-                className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 border border-gray-300 hover:border-red-300 rounded-md transition-all duration-200 flex items-center"
+                className="px-2 py-1.5 text-xs font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 border border-gray-300 hover:border-red-300 rounded-md transition-all duration-200 flex items-center"
                 title="Sign Out"
               >
-                <i className="fas fa-sign-out-alt mr-1"></i>
-                Logout
+                <i className="fas fa-sign-out-alt"></i>
               </button>
             </div>
           </div>
@@ -191,7 +398,8 @@ const TopNavbar = () => {
               { id: 3, name: 'Profiling', path: '/list' },
               { id: 4, name: 'Meters', path: '/meter' },
               { id: 5, name: 'Data Collection', path: '/data' },
-              { id: 6, name: 'Dashboard', path: '/dashboard' }
+              { id: 6, name: 'Team Management', path: '/team' },
+              { id: 7, name: 'Dashboard', path: '/dashboard' }
             ].map((step, index) => {
               const isActive = location.pathname === step.path;
               

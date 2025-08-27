@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
 
 const Data = () => {
+  // ALL HOOKS DECLARED AT THE TOP
   const navigate = useNavigate();
   const location = useLocation();
-  const { selectedCompany } = useAuth();
+  const { user, selectedCompany } = useAuth();
   const [selectedYear, setSelectedYear] = useState(2025); // Use 2025 to match backend data
   const [selectedMonth, setSelectedMonth] = useState(8); // Use August to match current backend data
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,6 +24,11 @@ const Data = () => {
   const [filteredEntries, setFilteredEntries] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadResults, setUploadResults] = useState(null);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [selectedTaskForAssignment, setSelectedTaskForAssignment] = useState(null);
+  const [availableUsers, setAvailableUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [assignmentFilter, setAssignmentFilter] = useState('all'); // 'all', 'assigned', 'unassigned'
   const [progressData, setProgressData] = useState({
     annual: { 
       data_progress: 0, 
@@ -324,7 +331,12 @@ const Data = () => {
           status: entry.submission.status || 'missing',
           category: entry.type,
           description: entry.element_description || '',
-          evidence_file: entry.submission.evidence_file || null
+          evidence_file: entry.submission.evidence_file || null,
+          assignedTo: entry.submission.assigned_to ? 
+            `${entry.submission.assigned_to.first_name || ''} ${entry.submission.assigned_to.last_name || ''}`.trim() || entry.submission.assigned_to.username || entry.submission.assigned_to.email
+            : null,
+          assignedUserId: entry.submission.assigned_to ? entry.submission.assigned_to.id : null,
+          assignedAt: entry.submission.assigned_at || null
         }));
         console.log('Transformed entries:', transformedEntries);
         setDataEntries(transformedEntries);
@@ -339,11 +351,19 @@ const Data = () => {
     loadInitialData();
   }, [selectedYear, selectedMonth, companyId]);
 
-  // Update filtered entries when search, filter, or grouping changes
+  // Update filtered entries when search, filter, grouping, or assignment changes
   useEffect(() => {
-    const filtered = applyFiltersAndSearch(dataEntries);
+    let filtered = applyFiltersAndSearch(dataEntries);
+    
+    // Filter by assignment status
+    if (assignmentFilter === 'assigned') {
+      filtered = filtered.filter(entry => entry.assignedTo);
+    } else if (assignmentFilter === 'unassigned') {
+      filtered = filtered.filter(entry => !entry.assignedTo);
+    }
+    
     setFilteredEntries(filtered);
-  }, [searchTerm, viewFilter, groupBy, dataEntries]);
+  }, [searchTerm, viewFilter, groupBy, dataEntries, assignmentFilter]);
 
   // Add window focus listener to refresh data when user returns to tab
   useEffect(() => {
@@ -408,26 +428,62 @@ const Data = () => {
         monthly: monthlyProgress
       });
 
-      const transformedEntries = entries.map(entry => ({
-        id: entry.submission.id,
-        name: entry.element_name,
-        meter: entry.meter ? `${entry.meter.name} (${entry.meter.type})` : 'N/A',
-        meter_id: entry.meter ? entry.meter.id : null,
-        meter_type: entry.meter ? entry.meter.type : null,
-        meter_location: entry.meter ? entry.meter.location : null,
-        frequency: entry.cadence,
-        value: entry.submission.value || '',
-        unit: entry.element_unit || '',
-        status: entry.submission.status || 'missing',
-        category: entry.type,
-        description: entry.element_description || '',
-        evidence_file: entry.submission.evidence_file || null
-      }));
+      const transformedEntries = entries.map(entry => {
+        const assignedUser = entry.submission.assigned_to;
+        let assignedToName = null;
+        
+        if (assignedUser) {
+          const firstName = assignedUser.first_name || '';
+          const lastName = assignedUser.last_name || '';
+          const fullName = `${firstName} ${lastName}`.trim();
+          assignedToName = fullName || assignedUser.username || assignedUser.email;
+        }
+        
+        return {
+          id: entry.submission.id,
+          name: entry.element_name,
+          meter: entry.meter ? `${entry.meter.name} (${entry.meter.type})` : 'N/A',
+          meter_id: entry.meter ? entry.meter.id : null,
+          meter_type: entry.meter ? entry.meter.type : null,
+          meter_location: entry.meter ? entry.meter.location : null,
+          frequency: entry.cadence,
+          value: entry.submission.value || '',
+          unit: entry.element_unit || '',
+          status: entry.submission.status || 'missing',
+          category: entry.type,
+          description: entry.element_description || '',
+          evidence_file: entry.submission.evidence_file || null,
+          assignedTo: assignedToName,
+          assignedUserId: assignedUser ? assignedUser.id : null,
+          assignedAt: entry.submission.assigned_at || null
+        };
+      });
       setDataEntries(transformedEntries);
       console.log('✅ REFRESH COMPLETE - Found', transformedEntries.length, 'tasks');
-      console.log('- Total points (should be', transformedEntries.length * 2, '):', monthlyProgress.total_points);
+      console.log('- Raw entries breakdown with assignments:');
+      entries.forEach((entry, i) => {
+        const submission = entry.submission;
+        console.log(`  ${i + 1}. ${entry.element_name} - Meter: ${entry.meter ? entry.meter.name + ' (' + entry.meter.type + ')' : 'N/A'} - Status: ${submission?.status || 'missing'}`);
+        if (submission.assigned_to) {
+          console.log(`    ✅ Assignment: ${JSON.stringify(submission.assigned_to)}`);
+        } else {
+          console.log(`    ❌ No assignment data`);
+        }
+        
+        // Check if submission has all expected fields
+        console.log(`    Submission keys: ${Object.keys(submission)}`);
+        if (submission.assigned_to === null || submission.assigned_to === undefined) {
+          console.log(`    Assignment is explicitly null/undefined`);
+        }
+      });
+      console.log('- Expected total points (entries * 2):', transformedEntries.length * 2);
+      console.log('- Actual total points from API:', monthlyProgress.total_points);
       console.log('- Completed points:', monthlyProgress.completed_points);
       console.log('- Items remaining:', monthlyProgress.items_remaining);
+      console.log('- Progress calculations:');
+      console.log('  - Data progress:', monthlyProgress.data_progress);
+      console.log('  - Evidence progress:', monthlyProgress.evidence_progress);
+      console.log('  - Overall progress:', monthlyProgress.overall_progress);
     } catch (error) {
       console.error('❌ Error refreshing data entries:', error);
     }
@@ -793,7 +849,12 @@ const Data = () => {
           status: entry.submission.status || 'missing',
           category: entry.type,
           description: entry.element_description || '',
-          evidence_file: entry.submission.evidence_file || null
+          evidence_file: entry.submission.evidence_file || null,
+          assignedTo: entry.submission.assigned_to ? 
+            `${entry.submission.assigned_to.first_name || ''} ${entry.submission.assigned_to.last_name || ''}`.trim() || entry.submission.assigned_to.username || entry.submission.assigned_to.email
+            : null,
+          assignedUserId: entry.submission.assigned_to ? entry.submission.assigned_to.id : null,
+          assignedAt: entry.submission.assigned_at || null
         }));
         setDataEntries(transformedEntries);
 
@@ -820,6 +881,140 @@ const Data = () => {
 
   const handleContinue = () => {
     navigate('/dashboard');
+  };
+
+  // Check if user has permission to access data collection (moved after hooks)
+  const canAccessDataCollection = () => {
+    if (!user) return false;
+    // Module 5 (Data Collection): CORRECTED
+    // ✅ Super User, Admin: Full access + approval rights
+    // ⚠️ Site Manager: Review + limited approval
+    // ⚠️ Uploader: Edit assigned tasks only
+    // 👁️ Viewer: View only
+    // ⚠️ Meter Manager: Limited access to view meter-related data only
+    return ['super_user', 'admin', 'site_manager', 'uploader', 'viewer', 'meter_manager'].includes(user.role);
+  };
+
+  // If no permission, show permission denied message
+  if (!canAccessDataCollection()) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="max-w-md mx-auto text-center">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+              <i className="fas fa-lock text-red-600 text-2xl"></i>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Access Denied</h3>
+            <p className="text-gray-600 mb-4">
+              You don't have permission to access data collection.
+            </p>
+            <p className="text-sm text-gray-500">
+              Contact your administrator if you need access to this feature.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Role-based functionality controls for Data Collection - CORRECTED
+  const canFullAccess = ['super_user', 'admin'].includes(user?.role); // Full access + approval rights
+  const canReviewAndLimitedApproval = ['site_manager'].includes(user?.role); // Review + limited approval
+  const canEditAssignedTasks = ['uploader'].includes(user?.role); // Edit assigned tasks only
+  const isViewOnly = ['viewer'].includes(user?.role); // View only
+  const isMeterDataOnly = ['meter_manager'].includes(user?.role); // Limited access to view meter-related data only
+
+  // Task Assignment Permissions (same as List.js):
+  const canAssignToAnyone = ['super_user'].includes(user?.role); // System-wide assignment
+  const canAssignInCompany = ['admin'].includes(user?.role); // Company-wide, all sites
+  const canAssignToUploadersAtOwnSites = ['site_manager'].includes(user?.role); // Limited to own sites, Uploaders only
+  const cannotAssignTasks = ['uploader', 'viewer', 'meter_manager'].includes(user?.role); // No assignment rights
+
+  // Function to fetch available users for assignment based on role permissions
+  const fetchAvailableUsers = async () => {
+    if (!companyId || !user) return;
+    
+    setLoadingUsers(true);
+    try {
+      // Use the standard users endpoint - backend handles permissions automatically
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/users/`);
+      
+      if (response.ok) {
+        const users = await response.json();
+        
+        // Filter users based on assignment permissions and exclude viewers (read-only role)
+        let filteredUsers = users.filter(u => u.role !== 'viewer'); // Viewers can't be assigned tasks
+        
+        if (canAssignToUploadersAtOwnSites) {
+          // Site Manager: Can only assign to Uploaders and Meter Managers (exclude viewers)
+          filteredUsers = users.filter(u => 
+            ['uploader', 'meter_manager'].includes(u.role)
+          );
+        }
+        // Super User and Admin can assign to all non-viewer users
+        
+        console.log('Available users for assignment:', filteredUsers);
+        setAvailableUsers(filteredUsers);
+      } else {
+        console.error('Failed to fetch available users, status:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching available users:', error);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  // Handle opening assignment modal
+  const handleOpenAssignModal = (task) => {
+    setSelectedTaskForAssignment(task);
+    setShowAssignModal(true);
+    fetchAvailableUsers();
+  };
+
+  // Handle task assignment
+  const handleAssignTask = async (userId, taskId) => {
+    try {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/data-collection/assign-task/`, {
+        method: 'POST',
+        body: JSON.stringify({
+          task_id: taskId,
+          assigned_user_id: userId
+        })
+      });
+      
+      if (response.ok) {
+        const responseData = await response.json();
+        console.log('Assignment response:', responseData);
+        
+        // Update the task in the data entries
+        const assignedUser = availableUsers.find(u => u.id === userId);
+        const assignedName = assignedUser ? 
+          `${assignedUser.first_name || ''} ${assignedUser.last_name || ''}`.trim() || assignedUser.name || assignedUser.email
+          : 'Unknown User';
+        
+        console.log('Updating entry with assignment:', { taskId, assignedName, userId });
+        
+        setDataEntries(prev => prev.map(entry => 
+          entry.id === taskId 
+            ? { ...entry, assignedTo: assignedName, assignedUserId: userId }
+            : entry
+        ));
+        
+        setShowAssignModal(false);
+        setSelectedTaskForAssignment(null);
+        console.log('Task assigned successfully to:', assignedName);
+        
+        // Refresh data to get updated assignment info from server
+        refreshDataEntries();
+      } else {
+        console.error('Failed to assign task, status:', response.status);
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+      }
+    } catch (error) {
+      console.error('Error assigning task:', error);
+    }
   };
 
   if (loading) {
@@ -923,19 +1118,19 @@ const Data = () => {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-gray-700">Data Entry Progress</span>
-                <span className="text-sm font-bold text-orange-600">{Math.round(progressData.monthly.data_progress)}%</span>
+                <span className="text-sm font-bold text-orange-600">{Math.round(progressData.monthly.data_progress || 0)}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
-                <div className="bg-orange-500 h-3 rounded-full" style={{ width: `${progressData.monthly.data_progress}%` }}></div>
+                <div className="bg-orange-500 h-3 rounded-full" style={{ width: `${Math.min(100, Math.max(0, progressData.monthly.data_progress || 0))}%` }}></div>
               </div>
             </div>
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-gray-700">Evidence Upload</span>
-                <span className="text-sm font-bold text-purple-600">{Math.round(progressData.monthly.evidence_progress)}%</span>
+                <span className="text-sm font-bold text-purple-600">{Math.round(progressData.monthly.evidence_progress || 0)}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
-                <div className="bg-purple-500 h-3 rounded-full" style={{ width: `${progressData.monthly.evidence_progress}%` }}></div>
+                <div className="bg-purple-500 h-3 rounded-full" style={{ width: `${Math.min(100, Math.max(0, progressData.monthly.evidence_progress || 0))}%` }}></div>
               </div>
             </div>
             {/* Overall Monthly Progress */}
@@ -945,7 +1140,7 @@ const Data = () => {
                 <span className="text-sm font-bold text-indigo-600">{Math.round(progressData.monthly.overall_progress || 0)}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-4">
-                <div className="bg-indigo-500 h-4 rounded-full" style={{ width: `${progressData.monthly.overall_progress || 0}%` }}></div>
+                <div className="bg-indigo-500 h-4 rounded-full" style={{ width: `${Math.min(100, Math.max(0, progressData.monthly.overall_progress || 0))}%` }}></div>
               </div>
             </div>
             
@@ -954,6 +1149,9 @@ const Data = () => {
               <div className="text-sm text-gray-500">Tasks Completed This Month</div>
               <div className="text-xs text-red-500 mt-1">
                 {progressData.monthly.items_remaining || 0} Tasks Remaining
+              </div>
+              <div className="text-xs text-gray-400 mt-1">
+                Debug: Total entries loaded: {dataEntries.length}
               </div>
             </div>
           </div>
@@ -964,25 +1162,64 @@ const Data = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Data Entry Interface</h3>
+            <div className="flex items-center space-x-3">
+              <h3 className="text-lg font-semibold text-gray-900">Data Entry Interface</h3>
+              {isViewOnly && (
+                <div className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium">
+                  <i className="fas fa-eye mr-1"></i>View Only
+                </div>
+              )}
+              {canEditAssignedTasks && (
+                <div className="px-3 py-1 bg-yellow-50 text-yellow-700 rounded-lg text-sm font-medium">
+                  <i className="fas fa-tasks mr-1"></i>Assigned Tasks Only
+                </div>
+              )}
+              {canReviewAndLimitedApproval && (
+                <div className="px-3 py-1 bg-orange-50 text-orange-700 rounded-lg text-sm font-medium">
+                  <i className="fas fa-clipboard-check mr-1"></i>Review Mode
+                </div>
+              )}
+              {isMeterDataOnly && (
+                <div className="px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium">
+                  <i className="fas fa-gauge mr-1"></i>Meter Data Only
+                </div>
+              )}
+            </div>
             <div className="flex space-x-3">
-              <div className="relative">
-                <input
-                  type="file"
-                  multiple
-                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
-                  onChange={(e) => handleMultipleFileUpload(Array.from(e.target.files))}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  id="multiple-file-upload"
-                />
+              <button 
+                className="bg-orange-100 text-orange-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-200"
+                onClick={refreshDataEntries}
+                title="Refresh data to check for new meters or tasks"
+              >
+                <i className="fas fa-sync-alt mr-2"></i>Refresh
+              </button>
+              {(canFullAccess || canEditAssignedTasks) && (
+                <div className="relative">
+                  <input
+                    type="file"
+                    multiple
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+                    onChange={(e) => handleMultipleFileUpload(Array.from(e.target.files))}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    id="multiple-file-upload"
+                  />
+                  <button 
+                    className={`bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={isUploading}
+                  >
+                    <i className={`fas ${isUploading ? 'fa-spinner fa-spin' : 'fa-upload'} mr-2`}></i>
+                    {isUploading ? 'Uploading...' : 'Upload Multiple Files'}
+                  </button>
+                </div>
+              )}
+              {(isViewOnly || canReviewAndLimitedApproval || isMeterDataOnly) && (
                 <button 
-                  className={`bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  disabled={isUploading}
+                  className="bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-200"
+                  onClick={() => {/* Handle export functionality */}}
                 >
-                  <i className={`fas ${isUploading ? 'fa-spinner fa-spin' : 'fa-upload'} mr-2`}></i>
-                  {isUploading ? 'Uploading...' : 'Upload Multiple Files'}
+                  <i className="fas fa-download mr-2"></i>Export Data
                 </button>
-              </div>
+              )}
             </div>
           </div>
           
@@ -1009,6 +1246,18 @@ const Data = () => {
                 <option>Category</option>
                 <option>Frequency</option>
                 <option>Status</option>
+              </select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-gray-700">Assignment:</label>
+              <select 
+                className="border border-gray-300 rounded-lg px-3 py-1 text-sm"
+                value={assignmentFilter}
+                onChange={(e) => setAssignmentFilter(e.target.value)}
+              >
+                <option value="all">All Tasks</option>
+                <option value="assigned">Assigned</option>
+                <option value="unassigned">Unassigned</option>
               </select>
             </div>
             <div className="flex-1">
@@ -1093,28 +1342,47 @@ const Data = () => {
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-center space-x-2">
-                              {savingEntries[entry.id] ? (
-                                <div className="flex items-center text-sm text-blue-600">
-                                  <i className="fas fa-spinner fa-spin mr-2"></i>
-                                  <span className="text-xs">Auto-saving...</span>
-                                </div>
-                              ) : entry.status === 'complete' ? (
-                                <div className="flex items-center text-sm text-green-600">
-                                  <i className="fas fa-check mr-1"></i>
-                                  <span className="text-xs">Complete</span>
-                                </div>
-                              ) : entry.status === 'partial' ? (
-                                <div className="flex items-center text-sm text-orange-600">
-                                  <i className="fas fa-clock mr-1"></i>
-                                  <span className="text-xs">Partial</span>
-                                </div>
-                              ) : (
-                                <div className="flex items-center text-sm text-gray-500">
-                                  <i className="fas fa-circle mr-1"></i>
-                                  <span className="text-xs">Missing</span>
+                            <div className="flex items-center space-x-3">
+                              {/* Task Assignment Section */}
+                              {(canAssignToAnyone || canAssignInCompany || canAssignToUploadersAtOwnSites) && (
+                                <div className="flex items-center space-x-2 text-xs">
+                                  <span className="text-gray-500">
+                                    {entry.assignedTo ? `Assigned: ${entry.assignedTo}` : 'Unassigned'}
+                                  </span>
+                                  <button 
+                                    className="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs font-medium hover:bg-blue-100"
+                                    onClick={() => handleOpenAssignModal(entry)}
+                                  >
+                                    <i className="fas fa-user-plus mr-1"></i>
+                                    {entry.assignedTo ? 'Reassign' : 'Assign'}
+                                  </button>
                                 </div>
                               )}
+                              
+                              {/* Status Indicator */}
+                              <div className="flex items-center space-x-2">
+                                {savingEntries[entry.id] ? (
+                                  <div className="flex items-center text-sm text-blue-600">
+                                    <i className="fas fa-spinner fa-spin mr-2"></i>
+                                    <span className="text-xs">Auto-saving...</span>
+                                  </div>
+                                ) : entry.status === 'complete' ? (
+                                  <div className="flex items-center text-sm text-green-600">
+                                    <i className="fas fa-check mr-1"></i>
+                                    <span className="text-xs">Complete</span>
+                                  </div>
+                                ) : entry.status === 'partial' ? (
+                                  <div className="flex items-center text-sm text-orange-600">
+                                    <i className="fas fa-clock mr-1"></i>
+                                    <span className="text-xs">Partial</span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center text-sm text-gray-500">
+                                    <i className="fas fa-circle mr-1"></i>
+                                    <span className="text-xs">Missing</span>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
 
@@ -1129,16 +1397,29 @@ const Data = () => {
                                 </div>
                                 <div className="flex items-center space-x-3">
                                   <div className="relative flex-1">
-                                    <input 
-                                      type="number" 
-                                      value={entryValues[entry.id] !== undefined ? entryValues[entry.id] : entry.value || ''}
-                                      onChange={(e) => handleValueChange(entry.id, e.target.value)}
-                                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-lg font-medium focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                                      placeholder="0"
-                                    />
+                                    {(canFullAccess || canEditAssignedTasks || canReviewAndLimitedApproval) && !isViewOnly && !isMeterDataOnly ? (
+                                      <input 
+                                        type="number" 
+                                        value={entryValues[entry.id] !== undefined ? entryValues[entry.id] : entry.value || ''}
+                                        onChange={(e) => handleValueChange(entry.id, e.target.value)}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-lg font-medium focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                        placeholder="0"
+                                      />
+                                    ) : (
+                                      <div className="w-full bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 text-lg font-medium text-gray-500">
+                                        {entryValues[entry.id] !== undefined ? entryValues[entry.id] : entry.value || '0'}
+                                      </div>
+                                    )}
                                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm font-medium text-gray-500 bg-white px-2 rounded">
                                       {entry.unit}
                                     </div>
+                                    {(isViewOnly || isMeterDataOnly) && (
+                                      <div className="absolute -top-1 -right-1">
+                                        <div className="px-1 py-0.5 bg-blue-100 text-blue-600 text-xs rounded-full">
+                                          <i className="fas fa-eye"></i>
+                                        </div>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -1164,21 +1445,22 @@ const Data = () => {
                                   )}
                                 </div>
                                 <div className="relative">
-                                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors duration-200 cursor-pointer">
-                                    <input 
-                                      type="file" 
-                                      onChange={(e) => handleFileChange(entry.id, e.target.files[0])}
-                                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
-                                    />
-                                    {entry.evidence_file ? (
-                                      <div className="space-y-2">
-                                        <i className="fas fa-file-alt text-green-500 text-lg"></i>
-                                        <div className="text-xs text-gray-600 truncate">
-                                          {entry.evidence_file.split('/').pop()}
-                                        </div>
-                                        <div className="text-xs text-green-600 font-medium">
-                                          File uploaded
+                                  {(canFullAccess || canEditAssignedTasks || canReviewAndLimitedApproval) && !isViewOnly && !isMeterDataOnly ? (
+                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors duration-200 cursor-pointer">
+                                      <input 
+                                        type="file" 
+                                        onChange={(e) => handleFileChange(entry.id, e.target.files[0])}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+                                      />
+                                      {entry.evidence_file ? (
+                                        <div className="space-y-2">
+                                          <i className="fas fa-file-alt text-green-500 text-lg"></i>
+                                          <div className="text-xs text-gray-600 truncate">
+                                            {entry.evidence_file.split('/').pop()}
+                                          </div>
+                                          <div className="text-xs text-green-600 font-medium">
+                                            File uploaded
                                         </div>
                                       </div>
                                     ) : (
@@ -1190,6 +1472,28 @@ const Data = () => {
                                       </div>
                                     )}
                                   </div>
+                                ) : (
+                                  <div className="border-2 border-gray-200 rounded-lg p-3 text-center bg-gray-50">
+                                    {entry.evidence_file ? (
+                                      <div className="space-y-2">
+                                        <i className="fas fa-file-alt text-gray-400 text-lg"></i>
+                                        <div className="text-xs text-gray-500 truncate">
+                                          {entry.evidence_file.split('/').pop()}
+                                        </div>
+                                        <div className="text-xs text-gray-500">
+                                          View only
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="space-y-1">
+                                        <i className="fas fa-file text-gray-400 text-lg"></i>
+                                        <div className="text-xs text-gray-500">
+                                          No evidence uploaded
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
                                 </div>
                               </div>
                             </div>
@@ -1228,8 +1532,11 @@ const Data = () => {
       </div>
 
       {/* Upload Results Modal */}
-      {uploadResults && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      {uploadResults && createPortal(
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000]"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh' }}
+        >
           <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Upload Results</h3>
@@ -1299,7 +1606,107 @@ const Data = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>, document.body
+      )}
+
+      {/* Task Assignment Modal */}
+      {showAssignModal && selectedTaskForAssignment && createPortal(
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000]"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh' }}
+        >
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 max-h-96 overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Assign Task</h3>
+              <button 
+                className="text-gray-400 hover:text-gray-600"
+                onClick={() => {
+                  setShowAssignModal(false);
+                  setSelectedTaskForAssignment(null);
+                }}
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            
+            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+              <h4 className="font-medium text-gray-900 mb-1">{selectedTaskForAssignment.name}</h4>
+              <p className="text-sm text-gray-600">{selectedTaskForAssignment.description}</p>
+              <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                <span>Unit: {selectedTaskForAssignment.unit}</span>
+                <span>Frequency: {selectedTaskForAssignment.frequency}</span>
+                {selectedTaskForAssignment.meter && (
+                  <span>Meter: {selectedTaskForAssignment.meter}</span>
+                )}
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select User to Assign:
+              </label>
+              {loadingUsers ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                  <span className="ml-2 text-sm text-gray-600">Loading users...</span>
+                </div>
+              ) : availableUsers.length === 0 ? (
+                <div className="text-sm text-gray-500 py-4 text-center">
+                  No users available for assignment
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {availableUsers.map(availableUser => (
+                    <div
+                      key={availableUser.id}
+                      className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                      onClick={() => handleAssignTask(availableUser.id, selectedTaskForAssignment.id)}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <i className="fas fa-user text-blue-600 text-sm"></i>
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {availableUser.first_name} {availableUser.last_name}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {availableUser.role} • {availableUser.email}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {availableUser.sites && availableUser.sites.length > 0 && (
+                          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                            {availableUser.sites.length} site{availableUser.sites.length > 1 ? 's' : ''}
+                          </span>
+                        )}
+                        <i className="fas fa-chevron-right text-gray-400 text-xs"></i>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+              <div className="text-xs text-gray-500">
+                {canAssignToAnyone && 'System-wide assignment'}
+                {canAssignInCompany && 'Company-wide assignment'}
+                {canAssignToUploadersAtOwnSites && 'Site-level assignment (Uploaders only)'}
+              </div>
+              <button
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium"
+                onClick={() => {
+                  setShowAssignModal(false);
+                  setSelectedTaskForAssignment(null);
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>, document.body
       )}
     </div>
   );

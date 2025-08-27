@@ -4,8 +4,9 @@ import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    username: '',
-    password: ''
+    email: '',
+    password: '',
+    companyCode: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,7 +25,7 @@ const Login = () => {
     setLoading(true);
     setError('');
 
-    const result = await login(formData.username, formData.password);
+    const result = await login(formData.email, formData.password, formData.companyCode);
     
     if (!result.success) {
       setError(result.error);
@@ -69,22 +70,42 @@ const Login = () => {
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Username
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email
               </label>
               <div className="mt-1 relative">
                 <input
-                  id="username"
-                  name="username"
-                  type="text"
+                  id="email"
+                  name="email"
+                  type="email"
                   required
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
-                  placeholder="Enter your username"
-                  value={formData.username}
+                  placeholder="Enter your email"
+                  value={formData.email}
                   onChange={handleChange}
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <i className="fas fa-user text-gray-400"></i>
+                  <i className="fas fa-envelope text-gray-400"></i>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="companyCode" className="block text-sm font-medium text-gray-700">
+                Company Code <span className="text-gray-500 text-xs">(Optional)</span>
+              </label>
+              <div className="mt-1 relative">
+                <input
+                  id="companyCode"
+                  name="companyCode"
+                  type="text"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+                  placeholder="Enter company code (if provided)"
+                  value={formData.companyCode}
+                  onChange={handleChange}
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <i className="fas fa-building text-gray-400"></i>
                 </div>
               </div>
             </div>

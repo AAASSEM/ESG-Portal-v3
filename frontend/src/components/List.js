@@ -2,15 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
+import Modal from './Modal';
 
 const List = () => {
   const navigate = useNavigate();
-  const { user, selectedCompany } = useAuth();
+  const { user, selectedCompany, hasPermission } = useAuth();
   const [answers, setAnswers] = useState({});
   const [showChecklist, setShowChecklist] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [profilingQuestions, setProfilingQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: ''
+  });
+  const [checklistExists, setChecklistExists] = useState(false);
   
   // Get company ID from auth context
   const companyId = selectedCompany?.id;
@@ -19,6 +27,25 @@ const List = () => {
   console.log('List component - selectedCompany:', selectedCompany);
   console.log('List component - companyId:', companyId);
   console.log('List component - user:', user);
+
+  // Modal helper function
+  const showModal = (type, title, message) => {
+    setModalState({
+      isOpen: true,
+      type,
+      title,
+      message
+    });
+  };
+
+  const closeModal = () => {
+    setModalState({
+      isOpen: false,
+      type: 'info',
+      title: '',
+      message: ''
+    });
+  };
 
   // Fetch profiling questions from backend
   const fetchProfilingQuestions = async () => {
@@ -61,14 +88,16 @@ const List = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      // Reset state to ensure clean load
+      // Reset state to ensure clean load (but keep checklistExists to prevent flickering)
       setAnswers({});
       setShowChecklist(false);
       setProfilingQuestions([]);
+      // Don't reset checklistExists here to prevent flickering
       
       // Fetch profiling questions and existing answers
       await fetchProfilingQuestions();
       await fetchExistingAnswers();
+      await checkChecklistExists();
       await checkWizardCompletion();
       setLoading(false);
     };
@@ -111,6 +140,30 @@ const List = () => {
     }
   };
 
+  // Check if checklist exists
+  const checkChecklistExists = async () => {
+    if (!companyId) return false;
+    
+    try {
+      console.log('🔍 Checking if checklist exists for company:', companyId);
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/checklist/?company_id=${companyId}`);
+      if (response.ok) {
+        const checklistData = await response.json();
+        const exists = checklistData.results && checklistData.results.length > 0;
+        console.log('✅ Checklist exists check result:', exists);
+        setChecklistExists(exists);
+        return exists;
+      } else {
+        console.log('❌ Failed to check checklist:', response.status);
+        setChecklistExists(false);
+      }
+    } catch (error) {
+      console.error('❌ Error checking checklist existence:', error);
+      setChecklistExists(false);
+    }
+    return false;
+  };
+
   // Check if wizard has been completed
   const checkWizardCompletion = async () => {
     if (!companyId) return;
@@ -124,10 +177,14 @@ const List = () => {
         if (questionsResponse.ok) {
           const questionsData = await questionsResponse.json();
           
-          // If all questions are answered, show checklist
+          // If all questions are answered, check if checklist exists
           if (answersData.length > 0 && answersData.length >= questionsData.length) {
-            console.log('Profiling wizard completed, showing checklist');
-            setShowChecklist(true);
+            console.log('Profiling wizard completed');
+            const checklistExists = await checkChecklistExists();
+            if (checklistExists) {
+              console.log('Checklist exists, showing checklist view');
+              setShowChecklist(true);
+            }
           }
         }
       }
@@ -226,6 +283,12 @@ const List = () => {
   };
 
   const handleAnswerChange = async (questionId, answer) => {
+    // Check if user has edit permission
+    if (!hasPermission('frameworkSelection', 'update')) {
+      showModal('warning', 'Permission Denied', 'You do not have permission to edit profiling answers. This is view-only mode.');
+      return;
+    }
+
     const newAnswers = {
       ...answers,
       [questionId]: answer
@@ -250,6 +313,10 @@ const List = () => {
         console.error('Failed to save answer. Status:', response.status);
         const errorText = await response.text();
         console.error('Error response:', errorText);
+        // If it's a 403 error, show permission denied message
+        if (response.status === 403) {
+          showModal('error', 'Permission Denied', 'You can only view profiling answers.');
+        }
       }
     } catch (error) {
       console.error('Error saving answer to database:', error);
@@ -257,6 +324,12 @@ const List = () => {
   };
 
   const handleAnswerAll = async (answer) => {
+    // Check if user has edit permission
+    if (!hasPermission('frameworkSelection', 'update')) {
+      showModal('warning', 'Permission Denied', 'You do not have permission to edit profiling answers. This is view-only mode.');
+      return;
+    }
+
     const allAnswers = {};
     profilingQuestions.forEach(question => {
       allAnswers[question.id] = answer;
@@ -283,6 +356,11 @@ const List = () => {
         console.log('All answers saved successfully');
       } else {
         console.error('Some answers failed to save');
+        // Check for 403 errors
+        const hasForbidden = responses.some(r => r.status === 403);
+        if (hasForbidden) {
+          showModal('error', 'Permission Denied', 'You can only view profiling answers.');
+        }
       }
     } catch (error) {
       console.error('Error saving all answers to database:', error);
@@ -294,13 +372,16 @@ const List = () => {
   );
   
   // Debug logging
-  console.log('Current state:', {
+  console.log('🔍 Component render state:', {
+    companyId,
     answersCount: Object.keys(answers).length,
-    answers: answers,
     questionsCount: profilingQuestions.length,
-    questions: profilingQuestions.map(q => q.id),
     allQuestionsAnswered: allQuestionsAnswered,
-    showChecklist: showChecklist
+    showChecklist: showChecklist,
+    checklistExists: checklistExists,
+    hasEditPermission: hasPermission('frameworkSelection', 'update'),
+    userRole: user?.role,
+    loading: loading
   });
 
 
@@ -353,7 +434,7 @@ const List = () => {
       throw new Error('Failed to save answers or generate checklist');
     } catch (error) {
       console.error('Error saving answers and generating checklist:', error);
-      alert('Failed to generate checklist. Please try again.');
+      showModal('error', 'Generation Failed', 'Failed to generate checklist. Please try again.');
       return false;
     } finally {
       setIsGenerating(false);
@@ -496,7 +577,11 @@ const List = () => {
           <div className="flex items-center space-x-4">
             <button 
               className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
-              onClick={() => setShowChecklist(false)}
+              onClick={async () => {
+                setShowChecklist(false);
+                // Refresh checklist existence when going back to questions
+                await checkChecklistExists();
+              }}
             >
               <i className="fas fa-arrow-left mr-2"></i>Back to Questions
             </button>
@@ -586,21 +671,28 @@ const List = () => {
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-600">
             <span className="font-medium">{Object.keys(answers).length}</span> of <span className="font-medium">{profilingQuestions.length}</span> questions answered
+            {!hasPermission('frameworkSelection', 'update') && (
+              <span className="ml-4 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
+                <i className="fas fa-eye mr-1"></i>View Only
+              </span>
+            )}
           </div>
-          <div className="flex space-x-3">
-            <button 
-              className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium"
-              onClick={() => handleAnswerAll(false)}
-            >
-              <i className="fas fa-times mr-2"></i>Answer All No
-            </button>
-            <button 
-              className="px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-sm font-medium"
-              onClick={() => handleAnswerAll(true)}
-            >
-              <i className="fas fa-check mr-2"></i>Answer All Yes
-            </button>
-          </div>
+          {hasPermission('frameworkSelection', 'update') && (
+            <div className="flex space-x-3">
+              <button 
+                className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium"
+                onClick={() => handleAnswerAll(false)}
+              >
+                <i className="fas fa-times mr-2"></i>Answer All No
+              </button>
+              <button 
+                className="px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-sm font-medium"
+                onClick={() => handleAnswerAll(true)}
+              >
+                <i className="fas fa-check mr-2"></i>Answer All Yes
+              </button>
+            </div>
+          )}
         </div>
         
         {/* Progress Bar */}
@@ -636,9 +728,12 @@ const List = () => {
                       className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
                         answers[question.id] === false
                           ? 'bg-red-100 text-red-700 border-2 border-red-300'
+                          : !hasPermission('frameworkSelection', 'update')
+                          ? 'bg-gray-200 text-gray-500 border border-gray-300 cursor-not-allowed'
                           : 'bg-gray-100 text-gray-600 border border-gray-300 hover:bg-red-50'
                       }`}
                       onClick={() => handleAnswerChange(question.id, false)}
+                      disabled={!hasPermission('frameworkSelection', 'update')}
                     >
                       No
                     </button>
@@ -646,9 +741,12 @@ const List = () => {
                       className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
                         answers[question.id] === true
                           ? 'bg-green-100 text-green-700 border-2 border-green-300'
+                          : !hasPermission('frameworkSelection', 'update')
+                          ? 'bg-gray-200 text-gray-500 border border-gray-300 cursor-not-allowed'
                           : 'bg-gray-100 text-gray-600 border border-gray-300 hover:bg-green-50'
                       }`}
                       onClick={() => handleAnswerChange(question.id, true)}
+                      disabled={!hasPermission('frameworkSelection', 'update')}
                     >
                       Yes
                     </button>
@@ -660,8 +758,8 @@ const List = () => {
         </div>
       ))}
 
-      {/* Generate Checklist Button */}
-      {allQuestionsAnswered && (
+      {/* Generate/View Checklist Button */}
+      {allQuestionsAnswered && hasPermission('frameworkSelection', 'update') && !checklistExists && (
         <div className="bg-green-50 border border-green-200 rounded-xl p-6 mb-8">
           <div className="flex items-center justify-between">
             <div>
@@ -675,6 +773,7 @@ const List = () => {
                 if (checklist) {
                   // Wizard completion is tracked by database (all questions answered)
                   console.log('Profiling wizard completed, showing checklist');
+                  setChecklistExists(true);
                   setShowChecklist(true);
                 }
               }}
@@ -689,6 +788,55 @@ const List = () => {
                   <i className="fas fa-list mr-2"></i>Generate Checklist
                 </>
               )}
+            </button>
+          </div>
+        </div>
+      )}
+
+
+      {/* View Only Message with Checklist Access for Read-Only Users */}
+      {!hasPermission('frameworkSelection', 'update') && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i className="fas fa-eye text-blue-600"></i>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-blue-900">Profiling (View Only)</h3>
+                <p className="text-blue-700">
+                  {checklistExists 
+                    ? "You can view the generated checklist." 
+                    : "Questions have been answered by an admin. Checklist will be available once generated."
+                  }
+                </p>
+              </div>
+            </div>
+            {checklistExists && (
+              <button
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                onClick={() => setShowChecklist(true)}
+              >
+                <i className="fas fa-eye mr-2"></i>View Checklist
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Checklist Ready Button - only shows for users with edit permissions */}
+      {allQuestionsAnswered && checklistExists && !showChecklist && hasPermission('frameworkSelection', 'update') && (
+        <div className="bg-green-50 border border-green-200 rounded-xl p-6 mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-green-900">✅ Checklist Ready!</h3>
+              <p className="text-green-700">Your personalized data checklist has been created and is ready to view.</p>
+            </div>
+            <button
+              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+              onClick={() => setShowChecklist(true)}
+            >
+              <i className="fas fa-eye mr-2"></i>View Checklist
             </button>
           </div>
         </div>
@@ -713,6 +861,15 @@ const List = () => {
           </p>
         </div>
       </div>
+
+      {/* Modal for messages */}
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        type={modalState.type}
+        title={modalState.title}
+        message={modalState.message}
+      />
     </div>
   );
 };

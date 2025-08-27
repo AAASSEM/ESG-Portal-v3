@@ -4,8 +4,9 @@ import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
 
 const Meter = () => {
+  // ALL HOOKS DECLARED AT THE TOP
   const navigate = useNavigate();
-  const { selectedCompany } = useAuth();
+  const { user, selectedCompany } = useAuth();
   const [selectedMeter, setSelectedMeter] = useState(null);
   const [showAddMeter, setShowAddMeter] = useState(false);
   const [showEditMeter, setShowEditMeter] = useState(false);
@@ -456,6 +457,41 @@ const Meter = () => {
     navigate('/data');
   };
 
+  // Check if user has permission to access meter management (moved after hooks)
+  const canAccessMeterManagement = () => {
+    if (!user) return false;
+    // Module 4 (Meter Management):
+    // ✅ Super User, Admin, Site Manager, Meter Manager: Full CRUD
+    // 👁️ Uploader, Viewer: View only
+    return ['super_user', 'admin', 'site_manager', 'meter_manager', 'uploader', 'viewer'].includes(user.role);
+  };
+
+  // If no permission, show permission denied message
+  if (!canAccessMeterManagement()) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="max-w-md mx-auto text-center">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+              <i className="fas fa-lock text-red-600 text-2xl"></i>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Access Denied</h3>
+            <p className="text-gray-600 mb-4">
+              You don't have permission to access meter management.
+            </p>
+            <p className="text-sm text-gray-500">
+              Contact your administrator if you need access to this feature.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Role-based functionality controls for Meter Management
+  const canEditMeters = ['super_user', 'admin', 'site_manager', 'meter_manager'].includes(user?.role); // Full CRUD
+  const isViewOnly = ['uploader', 'viewer'].includes(user?.role); // View only
+
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto">
@@ -510,12 +546,25 @@ const Meter = () => {
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900">Meter Configuration</h3>
-            <button 
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transition-all"
-              onClick={() => setShowAddMeter(true)}
-            >
-              <i className="fas fa-plus mr-2"></i>Add New Meter
-            </button>
+            <div className="flex items-center space-x-3">
+              {isViewOnly && (
+                <div className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium">
+                  <i className="fas fa-eye mr-2"></i>View Only Mode
+                </div>
+              )}
+              {canEditMeters ? (
+                <button 
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transition-all"
+                  onClick={() => setShowAddMeter(true)}
+                >
+                  <i className="fas fa-plus mr-2"></i>Add New Meter
+                </button>
+              ) : (
+                <div className="px-6 py-2 bg-gray-300 text-gray-600 rounded-lg font-medium">
+                  <i className="fas fa-lock mr-2"></i>Read Only Access
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Filter/Search Bar */}
@@ -653,49 +702,51 @@ const Meter = () => {
                 </div>
                 
                 <div className="flex space-x-2">
-                  <button 
-                    className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-700"
-                    onClick={() => handleEditMeterClick(meter)}
-                  >
-                    <i className="fas fa-edit mr-1"></i>Edit
-                  </button>
-                  {/* <button 
-                    className="bg-gray-200 text-gray-600 py-2 px-3 rounded-lg text-sm hover:bg-gray-300"
-                    onClick={() => handleCopyMeter(meter)}
-                  >
-                    <i className="fas fa-copy"></i>
-                  </button> */}
-                  {/* Activate/Deactivate Button */}
-                  <button 
-                    type="button"
-                    className={`py-2 px-3 rounded-lg text-sm ${
-                      meter.status === 'Active'
-                        ? 'bg-red-100 text-red-600 hover:bg-red-200' 
-                        : 'bg-green-100 text-green-600 hover:bg-green-200'
-                    }`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleToggleMeterStatus(meter.id);
-                    }}
-                    title={meter.status === 'Active' ? 'Deactivate Meter' : 'Activate Meter'}
-                  >
-                    <i className={`fas ${meter.status === 'Active' ? 'fa-power-off' : 'fa-play'}`}></i>
-                  </button>
-                  
-                  {/* Delete Button */}
-                  <button 
-                    type="button"
-                    className="py-2 px-3 rounded-lg text-sm bg-red-100 text-red-600 hover:bg-red-200"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleDeleteMeter(meter.id);
-                    }}
-                    title="Delete Meter"
-                  >
-                    <i className="fas fa-trash"></i>
-                  </button>
+                  {canEditMeters ? (
+                    <>
+                      <button 
+                        className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-700"
+                        onClick={() => handleEditMeterClick(meter)}
+                      >
+                        <i className="fas fa-edit mr-1"></i>Edit
+                      </button>
+                      {/* Activate/Deactivate Button */}
+                      <button 
+                        type="button"
+                        className={`py-2 px-3 rounded-lg text-sm ${
+                          meter.status === 'Active'
+                            ? 'bg-red-100 text-red-600 hover:bg-red-200' 
+                            : 'bg-green-100 text-green-600 hover:bg-green-200'
+                        }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleToggleMeterStatus(meter.id);
+                        }}
+                        title={meter.status === 'Active' ? 'Deactivate Meter' : 'Activate Meter'}
+                      >
+                        <i className={`fas ${meter.status === 'Active' ? 'fa-power-off' : 'fa-play'}`}></i>
+                      </button>
+                      
+                      {/* Delete Button */}
+                      <button 
+                        type="button"
+                        className="py-2 px-3 rounded-lg text-sm bg-red-100 text-red-600 hover:bg-red-200"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleDeleteMeter(meter.id);
+                        }}
+                        title="Delete Meter"
+                      >
+                        <i className="fas fa-trash"></i>
+                      </button>
+                    </>
+                  ) : (
+                    <div className="flex-1 bg-gray-100 text-gray-500 py-2 px-3 rounded-lg text-sm font-medium text-center">
+                      <i className="fas fa-eye mr-1"></i>View Only
+                    </div>
+                  )}
                 </div>
               </div>
               ))}
@@ -868,8 +919,8 @@ const Meter = () => {
 
       {/* Meter Details Modal */}
       {selectedMeter && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-[100000]">
+          <div className="bg-white rounded-md p-5 border w-96 shadow-lg mx-4">
             <div className="mt-3">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium text-gray-900">{selectedMeter.name}</h3>
@@ -1018,8 +1069,8 @@ const Meter = () => {
 
       {/* Alert/Confirm Modal */}
       {modal.show && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-[100000]">
+          <div className="bg-white rounded-md p-5 border w-96 shadow-lg mx-4">
             <div className="mt-3">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
@@ -1166,8 +1217,8 @@ const MeterFormModal = ({ isOpen, title, meter, meterTypes, onSave, onClose }) =
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-10 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-[100000]">
+      <div className="bg-white rounded-md p-5 border w-full max-w-md shadow-lg mx-4">
         <div className="mt-3">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-medium text-gray-900">{title}</h3>
