@@ -168,13 +168,22 @@ if DEBUG:
     CSRF_COOKIE_HTTPONLY = False
     CSRF_COOKIE_SAMESITE = 'Lax'
 else:
-    # Production: Secure CSRF settings for HTTPS/SPA
+    # Production: CSRF settings for HTTPS/SPA
     CSRF_USE_SESSIONS = False  # Don't tie to sessions for API
     CSRF_COOKIE_SECURE = True  # HTTPS only
     CSRF_COOKIE_HTTPONLY = False  # Allow JS access for SPA
-    CSRF_COOKIE_SAMESITE = 'None'  # Allow cross-site for API calls
+    CSRF_COOKIE_SAMESITE = 'Lax'  # Changed from 'None' - works better with same-origin
     CSRF_COOKIE_NAME = 'csrftoken'
     CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
+    CSRF_COOKIE_AGE = 31449600  # 1 year
+    CSRF_COOKIE_PATH = '/'
+    CSRF_COOKIE_DOMAIN = None  # Auto-detect domain
+    
+    # Session cookie settings for production
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True  # Sessions should be HTTP-only for security
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_AGE = 1209600  # 2 weeks
 
 # CORS settings - Allow React frontend
 CORS_ALLOWED_ORIGINS = [

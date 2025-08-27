@@ -1,41 +1,124 @@
-Uncaught runtime errors:
-×
-ERROR
-chartData.dataEntries.forEach is not a function
-TypeError: chartData.dataEntries.forEach is not a function
-    at http://localhost:3001/static/js/bundle.js:52573:29
-    at Dashboard (http://localhost:3001/static/js/bundle.js:52648:5)
-    at renderWithHooks (http://localhost:3001/static/js/bundle.js:26177:22)
-    at updateFunctionComponent (http://localhost:3001/static/js/bundle.js:29745:24)
-    at beginWork (http://localhost:3001/static/js/bundle.js:31464:20)
-    at HTMLUnknownElement.callCallback (http://localhost:3001/static/js/bundle.js:16433:18)
-    at Object.invokeGuardedCallbackDev (http://localhost:3001/static/js/bundle.js:16477:20)
-    at invokeGuardedCallback (http://localhost:3001/static/js/bundle.js:16534:35)
-    at beginWork$1 (http://localhost:3001/static/js/bundle.js:36433:11)
-    at performUnitOfWork (http://localhost:3001/static/js/bundle.js:35681:16)
-ERROR
-chartData.dataEntries.forEach is not a function
-TypeError: chartData.dataEntries.forEach is not a function
-    at http://localhost:3001/static/js/bundle.js:52573:29
-    at Dashboard (http://localhost:3001/static/js/bundle.js:52648:5)
-    at renderWithHooks (http://localhost:3001/static/js/bundle.js:26177:22)
-    at updateFunctionComponent (http://localhost:3001/static/js/bundle.js:29745:24)
-    at beginWork (http://localhost:3001/static/js/bundle.js:31464:20)
-    at HTMLUnknownElement.callCallback (http://localhost:3001/static/js/bundle.js:16433:18)
-    at Object.invokeGuardedCallbackDev (http://localhost:3001/static/js/bundle.js:16477:20)
-    at invokeGuardedCallback (http://localhost:3001/static/js/bundle.js:16534:35)
-    at beginWork$1 (http://localhost:3001/static/js/bundle.js:36433:11)
-    at performUnitOfWork (http://localhost:3001/static/js/bundle.js:35681:16)
-ERROR
-chartData.dataEntries.forEach is not a function
-TypeError: chartData.dataEntries.forEach is not a function
-    at http://localhost:3001/static/js/bundle.js:52573:29
-    at Dashboard (http://localhost:3001/static/js/bundle.js:52648:5)
-    at renderWithHooks (http://localhost:3001/static/js/bundle.js:26177:22)
-    at updateFunctionComponent (http://localhost:3001/static/js/bundle.js:29745:24)
-    at beginWork (http://localhost:3001/static/js/bundle.js:31464:20)
-    at beginWork$1 (http://localhost:3001/static/js/bundle.js:36411:18)
-    at performUnitOfWork (http://localhost:3001/static/js/bundle.js:35681:16)
-    at workLoopSync (http://localhost:3001/static/js/bundle.js:35604:9)
-    at renderRootSync (http://localhost:3001/static/js/bundle.js:35577:11)
-    at recoverFromConcurrentError (http://localhost:3001/static/js/bundle.js:35069:24)
+App.js loaded
+index.js:7 index.js loaded
+index.js:10 Root element: <div id=​"root">​…​</div>​
+index.js:16 Rendering App...
+index.js:20 App render called
+App.js:27 App component rendering
+index.iife.js:1 content script loaded
+AuthContext.js:123 ✅ User authenticated: Object
+AuthContext.js:150 🏢 User companies fetched: Array(0)
+AuthContext.js:154 🔍 Saved company ID from storage: null
+AuthContext.js:155 🔍 Available companies for user: Array(0)
+TopNavbar.js:146 TopNavbar rendering
+TopNavbar.js:150 Current location: /onboard
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 4:37:00 PM
+Onboard.js:25 📊 Current formData state: Object
+Onboard.js:26 ⏱️ Component states - Loading: true Saving: false InitialLoad: true
+Onboard.js:30 🔄 useEffect for data fetching triggered
+Onboard.js:32 ⏸️ No company selected, skipping data fetch
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 4:37:00 PM
+Onboard.js:25 📊 Current formData state: Object
+Onboard.js:26 ⏱️ Component states - Loading: false Saving: false InitialLoad: true
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 4:37:17 PM
+Onboard.js:25 📊 Current formData state: {companyName: 'a', emirate: '', primarySector: '', activities: Array(0), customActivity: ''}
+Onboard.js:26 ⏱️ Component states - Loading: false Saving: false InitialLoad: true
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 4:37:17 PM
+Onboard.js:25 📊 Current formData state: {companyName: 'as', emirate: '', primarySector: '', activities: Array(0), customActivity: ''}
+Onboard.js:26 ⏱️ Component states - Loading: false Saving: false InitialLoad: true
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 4:37:17 PM
+Onboard.js:25 📊 Current formData state: {companyName: 'ass', emirate: '', primarySector: '', activities: Array(0), customActivity: ''}
+Onboard.js:26 ⏱️ Component states - Loading: false Saving: false InitialLoad: true
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 4:37:17 PM
+Onboard.js:25 📊 Current formData state: {companyName: 'asse', emirate: '', primarySector: '', activities: Array(0), customActivity: ''}
+Onboard.js:26 ⏱️ Component states - Loading: false Saving: false InitialLoad: true
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 4:37:18 PM
+Onboard.js:25 📊 Current formData state: {companyName: 'assem', emirate: '', primarySector: '', activities: Array(0), customActivity: ''}
+Onboard.js:26 ⏱️ Component states - Loading: false Saving: false InitialLoad: true
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 4:37:21 PM
+Onboard.js:25 📊 Current formData state: {companyName: 'assem', emirate: 'Dubai', primarySector: '', activities: Array(0), customActivity: ''}
+Onboard.js:26 ⏱️ Component states - Loading: false Saving: false InitialLoad: true
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 4:37:23 PM
+Onboard.js:25 📊 Current formData state: {companyName: 'assem', emirate: 'Dubai', primarySector: 'Hospitality & Tourism', activities: Array(0), customActivity: ''}
+Onboard.js:26 ⏱️ Component states - Loading: false Saving: false InitialLoad: true
+Onboard.js:384 💾 saveData function called with showMessage: true
+Onboard.js:385 💾 Current saving state: false
+Onboard.js:392 💾 saveData called, formData: {companyName: 'assem', emirate: 'Dubai', primarySector: 'Hospitality & Tourism', activities: Array(0), customActivity: ''}
+Onboard.js:395 💾 Set saving state to true
+Onboard.js:396 💾 Starting to save company data: {companyName: 'assem', emirate: 'Dubai', primarySector: 'Hospitality & Tourism', activities: Array(0), customActivity: ''}
+AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/companies/null/
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 4:37:33 PM
+Onboard.js:25 📊 Current formData state: {companyName: 'assem', emirate: 'Dubai', primarySector: 'Hospitality & Tourism', activities: Array(0), customActivity: ''}
+Onboard.js:26 ⏱️ Component states - Loading: false Saving: true InitialLoad: true
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:71  GET https://esg-portal.onrender.com/api/companies/null/ 404 (Not Found)
+ze @ AuthContext.js:71
+await in ze
+x @ Onboard.js:400
+h @ Onboard.js:540
+Fe @ react-dom.production.min.js:54
+Ge @ react-dom.production.min.js:54
+(anonymous) @ react-dom.production.min.js:55
+Ln @ react-dom.production.min.js:105
+Un @ react-dom.production.min.js:106
+(anonymous) @ react-dom.production.min.js:117
+cc @ react-dom.production.min.js:273
+Te @ react-dom.production.min.js:52
+Bn @ react-dom.production.min.js:109
+Qt @ react-dom.production.min.js:74
+qt @ react-dom.production.min.js:73Understand this error
+AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/null/ Status: 404
+Onboard.js:431 Company data to send: {name: 'assem', emirate: 'dubai', sector: 'hospitality'}
+Onboard.js:442 Creating new company...
+AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/companies/
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:71  POST https://esg-portal.onrender.com/api/companies/ 403 (Forbidden)
+ze @ AuthContext.js:71
+await in ze
+x @ Onboard.js:443
+await in x
+h @ Onboard.js:540
+Fe @ react-dom.production.min.js:54
+Ge @ react-dom.production.min.js:54
+(anonymous) @ react-dom.production.min.js:55
+Ln @ react-dom.production.min.js:105
+Un @ react-dom.production.min.js:106
+(anonymous) @ react-dom.production.min.js:117
+cc @ react-dom.production.min.js:273
+Te @ react-dom.production.min.js:52
+Bn @ react-dom.production.min.js:109
+Qt @ react-dom.production.min.js:74
+qt @ react-dom.production.min.js:73Understand this error
+AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/ Status: 403
+Onboard.js:527 Failed to save company data. Status: 403
+x @ Onboard.js:527
+await in x
+h @ Onboard.js:540
+Fe @ react-dom.production.min.js:54
+Ge @ react-dom.production.min.js:54
+(anonymous) @ react-dom.production.min.js:55
+Ln @ react-dom.production.min.js:105
+Un @ react-dom.production.min.js:106
+(anonymous) @ react-dom.production.min.js:117
+cc @ react-dom.production.min.js:273
+Te @ react-dom.production.min.js:52
+Bn @ react-dom.production.min.js:109
+Qt @ react-dom.production.min.js:74
+qt @ react-dom.production.min.js:73Understand this error
+Onboard.js:529 Error response: {"detail":"CSRF Failed: CSRF cookie not set."}
+x @ Onboard.js:529
+await in x
+h @ Onboard.js:540
+Fe @ react-dom.production.min.js:54
+Ge @ react-dom.production.min.js:54
+(anonymous) @ react-dom.production.min.js:55
+Ln @ react-dom.production.min.js:105
+Un @ react-dom.production.min.js:106
+(anonymous) @ react-dom.production.min.js:117
+cc @ react-dom.production.min.js:273
+Te @ react-dom.production.min.js:52
+Bn @ react-dom.production.min.js:109
+Qt @ react-dom.production.min.js:74
+qt @ react-dom.production.min.js:73Understand this error
+TopNavbar.js:146 TopNavbar rendering
+TopNavbar.js:150 Current location: /rame
+Rame.js:18 ⏸️ No company selected, skipping framework fetch

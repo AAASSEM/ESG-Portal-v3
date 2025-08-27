@@ -1,50 +1,70 @@
-2025-08-27T07:55:38.259118725Z   Downloading Pillow-10.0.0.tar.gz (50.5 MB)
-2025-08-27T07:55:38.624265275Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 50.5/50.5 MB 139.5 MB/s eta 0:00:00
-2025-08-27T07:55:39.787383185Z   Installing build dependencies: started
-2025-08-27T07:55:41.378211398Z   Installing build dependencies: finished with status 'done'
-2025-08-27T07:55:41.379019082Z   Getting requirements to build wheel: started
-2025-08-27T07:55:41.858051056Z   Getting requirements to build wheel: finished with status 'error'
-2025-08-27T07:55:41.863867403Z   error: subprocess-exited-with-error
-2025-08-27T07:55:41.863894814Z   
-2025-08-27T07:55:41.863899384Z   × Getting requirements to build wheel did not run successfully.
-2025-08-27T07:55:41.863903014Z   │ exit code: 1
-2025-08-27T07:55:41.863906484Z   ╰─> [21 lines of output]
-2025-08-27T07:55:41.863910035Z       Traceback (most recent call last):
-2025-08-27T07:55:41.863913725Z         File "/opt/render/project/src/.venv/lib/python3.13/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 389, in <module>
-2025-08-27T07:55:41.863917155Z           main()
-2025-08-27T07:55:41.863920535Z           ~~~~^^
-2025-08-27T07:55:41.863924105Z         File "/opt/render/project/src/.venv/lib/python3.13/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 373, in main
-2025-08-27T07:55:41.863927665Z           json_out["return_val"] = hook(**hook_input["kwargs"])
-2025-08-27T07:55:41.863931065Z                                    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^
-2025-08-27T07:55:41.863936265Z         File "/opt/render/project/src/.venv/lib/python3.13/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 143, in get_requires_for_build_wheel
-2025-08-27T07:55:41.863939765Z           return hook(config_settings)
-2025-08-27T07:55:41.863943225Z         File "/tmp/pip-build-env-6i45y2jp/overlay/lib/python3.13/site-packages/setuptools/build_meta.py", line 331, in get_requires_for_build_wheel
-2025-08-27T07:55:41.863956706Z           return self._get_build_requires(config_settings, requirements=[])
-2025-08-27T07:55:41.863959036Z                  ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-2025-08-27T07:55:41.863961356Z         File "/tmp/pip-build-env-6i45y2jp/overlay/lib/python3.13/site-packages/setuptools/build_meta.py", line 301, in _get_build_requires
-2025-08-27T07:55:41.863963506Z           self.run_setup()
-2025-08-27T07:55:41.863965546Z           ~~~~~~~~~~~~~~^^
-2025-08-27T07:55:41.863967796Z         File "/tmp/pip-build-env-6i45y2jp/overlay/lib/python3.13/site-packages/setuptools/build_meta.py", line 317, in run_setup
-2025-08-27T07:55:41.863969926Z           exec(code, locals())
-2025-08-27T07:55:41.863971996Z           ~~~~^^^^^^^^^^^^^^^^
-2025-08-27T07:55:41.863974126Z         File "<string>", line 30, in <module>
-2025-08-27T07:55:41.863976317Z         File "<string>", line 27, in get_version
-2025-08-27T07:55:41.863978477Z       KeyError: '__version__'
-2025-08-27T07:55:41.863980517Z       [end of output]
-2025-08-27T07:55:41.863982597Z   
-2025-08-27T07:55:41.863985227Z   note: This error originates from a subprocess, and is likely not a problem with pip.
-2025-08-27T07:55:42.126368104Z 
-2025-08-27T07:55:42.126391534Z [notice] A new release of pip is available: 25.1.1 -> 25.2
-2025-08-27T07:55:42.126394604Z [notice] To update, run: pip install --upgrade pip
-2025-08-27T07:55:42.127863887Z error: subprocess-exited-with-error
-2025-08-27T07:55:42.127876917Z 
-2025-08-27T07:55:42.127881407Z × Getting requirements to build wheel did not run successfully.
-2025-08-27T07:55:42.127884687Z │ exit code: 1
-2025-08-27T07:55:42.127888457Z ╰─> See above for output.
-2025-08-27T07:55:42.127891617Z 
-2025-08-27T07:55:42.127895397Z note: This error originates from a subprocess, and is likely not a problem with pip.
-2025-08-27T07:55:42.341300651Z ==> Build failed 😞
-2025-08-27T07:55:42.341322842Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
-2025-08-27T07:55:42.407328515Z ==> Requesting Node.js version >=16.0.0
-2025-08-27T07:55:42.54376163Z ==> Using Node.js version 24.6.0 via /opt/render/project/src/package.json
-2025-08-27T07:55:42.56978918Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2025-08-27T13:33:47.651853909Z   Applying core.0008_userprofile_must_reset_password_and_more... OK
+2025-08-27T13:33:47.768036852Z   Applying sessions.0001_initial... OK
+2025-08-27T13:33:47.865428217Z Initializing production data...
+2025-08-27T13:33:48.405612105Z 🚀 Initializing production data...
+2025-08-27T13:33:48.405637877Z Populating initial data...
+2025-08-27T13:33:48.405641917Z Created 10 predefined activities
+2025-08-27T13:33:48.405644607Z Created 8 frameworks
+2025-08-27T13:33:48.405646897Z Created 9 data elements with framework mappings
+2025-08-27T13:33:48.405649077Z Created 4 profiling questions
+2025-08-27T13:33:48.405651437Z Successfully populated initial data
+2025-08-27T13:33:48.405653557Z ✅ Production data initialized successfully!
+2025-08-27T13:33:48.451261755Z Fixing user company associations...
+2025-08-27T13:33:48.763631231Z 🔧 Fixing user company associations...
+2025-08-27T13:33:48.763644532Z Creating profile for user: admin
+2025-08-27T13:33:48.763647252Z ✅ User company associations fixed successfully!
+2025-08-27T13:33:48.763648992Z 
+2025-08-27T13:33:48.763650782Z 📊 Summary:
+2025-08-27T13:33:48.763652522Z Total users: 1
+2025-08-27T13:33:48.763654922Z Users with profiles: 1
+2025-08-27T13:33:48.763656772Z Superusers with companies: 0
+2025-08-27T13:33:48.80744635Z Build complete!
+2025-08-27T13:33:48.871061878Z ==> Requesting Node.js version >=16.0.0
+2025-08-27T13:33:49.013026448Z ==> Using Node.js version 24.6.0 via /opt/render/project/src/package.json
+2025-08-27T13:33:49.039515888Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2025-08-27T13:33:56.243748967Z ==> Uploading build...
+2025-08-27T13:35:10.178720392Z ==> Uploaded in 6.6s. Compression took 67.3s
+2025-08-27T13:35:10.210971798Z ==> Build successful 🎉
+2025-08-27T13:35:29.277490418Z ==> Deploying...
+2025-08-27T13:36:04.92288605Z ==> Running ' cd backend && gunicorn esg_backend.wsgi:application'
+2025-08-27T13:36:11.828310867Z [2025-08-27 17:36:11 +0400] [56] [INFO] Starting gunicorn 21.2.0
+2025-08-27T13:36:11.828856381Z [2025-08-27 17:36:11 +0400] [56] [INFO] Listening at: http://0.0.0.0:10000 (56)
+2025-08-27T13:36:11.828866692Z [2025-08-27 17:36:11 +0400] [56] [INFO] Using worker: sync
+2025-08-27T13:36:11.832221347Z [2025-08-27 17:36:11 +0400] [57] [INFO] Booting worker with pid: 57
+2025-08-27T13:36:14.623785914Z 127.0.0.1 - - [27/Aug/2025:17:36:14 +0400] "HEAD / HTTP/1.1" 200 724 "-" "Go-http-client/1.1"
+2025-08-27T13:36:20.054062016Z ==> Your service is live 🎉
+2025-08-27T13:36:20.111341785Z ==> 
+2025-08-27T13:36:20.164555844Z ==> ///////////////////////////////////////////////////////////
+2025-08-27T13:36:20.211951283Z ==> 
+2025-08-27T13:36:20.241750383Z ==> Available at your primary URL https://esg-portal.onrender.com
+2025-08-27T13:36:20.277421283Z ==> 
+2025-08-27T13:36:20.302612652Z ==> ///////////////////////////////////////////////////////////
+2025-08-27T13:36:21.693658517Z 127.0.0.1 - - [27/Aug/2025:17:36:21 +0400] "GET / HTTP/1.1" 200 724 "-" "Go-http-client/2.0"
+2025-08-27T13:36:29.527502271Z 127.0.0.1 - - [27/Aug/2025:17:36:29 +0400] "GET / HTTP/1.1" 200 724 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:36:30.51851611Z 127.0.0.1 - - [27/Aug/2025:17:36:30 +0400] "GET /static/js/main.259cf165.js HTTP/1.1" 200 0 "https://esg-portal.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:36:31.156322718Z 127.0.0.1 - - [27/Aug/2025:17:36:31 +0400] "GET /static/css/main.923a4e7c.css HTTP/1.1" 200 0 "https://esg-portal.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:36:32.13529377Z Unauthorized: /api/auth/user/
+2025-08-27T13:36:32.13567078Z 127.0.0.1 - - [27/Aug/2025:17:36:32 +0400] "GET /api/auth/user/ HTTP/1.1" 401 29 "https://esg-portal.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:36:32.347267324Z 127.0.0.1 - - [27/Aug/2025:17:36:32 +0400] "GET /favicon.ico HTTP/1.1" 200 724 "https://esg-portal.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:36:32.651450889Z 127.0.0.1 - - [27/Aug/2025:17:36:32 +0400] "GET /favicon.ico HTTP/1.1" 200 724 "https://esg-portal.onrender.com/login" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:36:41.602066403Z 127.0.0.1 - - [27/Aug/2025:17:36:41 +0400] "GET /favicon.ico HTTP/1.1" 200 724 "https://esg-portal.onrender.com/signup" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:36:56.035555011Z 127.0.0.1 - - [27/Aug/2025:17:36:56 +0400] "POST /api/auth/signup/ HTTP/1.1" 201 143 "https://esg-portal.onrender.com/signup" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:36:56.659321422Z 127.0.0.1 - - [27/Aug/2025:17:36:56 +0400] "GET /favicon.ico HTTP/1.1" 200 724 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:36:59.329353291Z 127.0.0.1 - - [27/Aug/2025:17:36:59 +0400] "GET /onboard HTTP/1.1" 200 724 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:36:59.730537319Z 127.0.0.1 - - [27/Aug/2025:17:36:59 +0400] "GET /static/js/main.259cf165.js HTTP/1.1" 304 0 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:37:00.108866658Z 127.0.0.1 - - [27/Aug/2025:17:37:00 +0400] "GET /static/css/main.923a4e7c.css HTTP/1.1" 304 0 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:37:00.5023469Z 127.0.0.1 - - [27/Aug/2025:17:37:00 +0400] "GET /api/auth/user/ HTTP/1.1" 200 143 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:37:00.503399117Z 127.0.0.1 - - [27/Aug/2025:17:37:00 +0400] "GET /favicon.ico HTTP/1.1" 200 724 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:37:00.792332175Z /opt/render/project/src/.venv/lib/python3.13/site-packages/rest_framework/pagination.py:200: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'core.models.Company'> QuerySet.
+2025-08-27T13:37:00.792355036Z   paginator = self.django_paginator_class(queryset, page_size)
+2025-08-27T13:37:00.794007027Z 127.0.0.1 - - [27/Aug/2025:17:37:00 +0400] "GET /api/companies/ HTTP/1.1" 200 52 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:37:10.34443637Z 127.0.0.1 - - [27/Aug/2025:17:37:10 +0400] "GET /static/css/main.923a4e7c.css HTTP/1.1" 304 0 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:37:11.392931628Z 127.0.0.1 - - [27/Aug/2025:17:37:11 +0400] "GET /static/js/main.259cf165.js.map HTTP/1.1" 200 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:37:11.487625013Z 127.0.0.1 - - [27/Aug/2025:17:37:11 +0400] "GET /static/css/main.923a4e7c.css.map HTTP/1.1" 200 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:37:34.440697963Z 127.0.0.1 - - [27/Aug/2025:17:37:34 +0400] "GET /api/auth/csrf/ HTTP/1.1" 200 80 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:37:34.800402038Z Not Found: /api/companies/null/
+2025-08-27T13:37:34.801095725Z 127.0.0.1 - - [27/Aug/2025:17:37:34 +0400] "GET /api/companies/null/ HTTP/1.1" 404 23 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:37:35.124725794Z 127.0.0.1 - - [27/Aug/2025:17:37:35 +0400] "GET /api/auth/csrf/ HTTP/1.1" 200 80 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:37:35.42185274Z Forbidden: /api/companies/
+2025-08-27T13:37:35.422177278Z 127.0.0.1 - - [27/Aug/2025:17:37:35 +0400] "POST /api/companies/ HTTP/1.1" 403 46 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+2025-08-27T13:37:35.808471518Z 127.0.0.1 - - [27/Aug/2025:17:37:35 +0400] "GET /favicon.ico HTTP/1.1" 200 724 "https://esg-portal.onrender.com/rame" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
