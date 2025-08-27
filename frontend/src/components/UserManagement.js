@@ -964,6 +964,9 @@ const UserManagement = () => {
                 Role
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Company ID
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Sites/Access
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -997,6 +1000,16 @@ const UserManagement = () => {
                   <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getRoleBadgeColor(user.role)}`}>
                     {roleOptions.find(r => r.value === user.role)?.label || user.role}
                   </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                      {user.company?.company_code || 'N/A'}
+                    </span>
+                    <span className="text-gray-500 text-xs">
+                      (ID: {user.company?.id || 'N/A'})
+                    </span>
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {user.sites?.length || 0} sites

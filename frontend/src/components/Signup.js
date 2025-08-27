@@ -6,6 +6,7 @@ const Signup = () => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
+    companyName: '',
     password: '',
     confirmPassword: ''
   });
@@ -22,6 +23,14 @@ const Signup = () => {
   };
 
   const validateForm = () => {
+    if (!formData.email || !formData.email.trim()) {
+      setError('Email address is required');
+      return false;
+    }
+    if (!formData.companyName || !formData.companyName.trim()) {
+      setError('Company name is required');
+      return false;
+    }
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return false;
@@ -47,7 +56,7 @@ const Signup = () => {
       return;
     }
 
-    const result = await signup(formData.username, formData.email, formData.password);
+    const result = await signup(formData.username, formData.email, formData.companyName, formData.password);
     
     if (!result.success) {
       setError(result.error);
@@ -93,7 +102,7 @@ const Signup = () => {
           <div className="space-y-4">
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Username *
+                Username
               </label>
               <div className="mt-1 relative">
                 <input
@@ -114,15 +123,16 @@ const Signup = () => {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+                Email Address
               </label>
               <div className="mt-1 relative">
                 <input
                   id="email"
                   name="email"
                   type="email"
+                  required
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
-                  placeholder="Enter your email (optional)"
+                  placeholder="Enter your email address"
                   value={formData.email}
                   onChange={handleChange}
                 />
@@ -133,8 +143,29 @@ const Signup = () => {
             </div>
 
             <div>
+              <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
+                Company Name
+              </label>
+              <div className="mt-1 relative">
+                <input
+                  id="companyName"
+                  name="companyName"
+                  type="text"
+                  required
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+                  placeholder="Enter your company name"
+                  value={formData.companyName}
+                  onChange={handleChange}
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <i className="fas fa-building text-gray-400"></i>
+                </div>
+              </div>
+            </div>
+
+            <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password *
+                Password
               </label>
               <div className="mt-1 relative">
                 <input
@@ -155,7 +186,7 @@ const Signup = () => {
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirm Password *
+                Confirm Password
               </label>
               <div className="mt-1 relative">
                 <input

@@ -162,9 +162,16 @@ class UserViewSet(viewsets.ModelViewSet):
         user_data = []
         for user in users:
             try:
-                role = user.userprofile.role
+                profile = user.userprofile
+                role = profile.role
+                company_info = {
+                    'id': profile.company.id,
+                    'name': profile.company.name,
+                    'company_code': profile.company.company_code
+                } if profile.company else None
             except:
                 role = 'viewer'
+                company_info = None
             
             user_data.append({
                 'id': user.id,
@@ -172,6 +179,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 'email': user.email,
                 'name': f"{user.first_name} {user.last_name}".strip() or user.username,
                 'role': role,
+                'company': company_info,
                 'is_active': user.is_active,
                 'last_login': user.last_login.isoformat() if user.last_login else None,
                 'sites': []  # TODO: Implement site relationships

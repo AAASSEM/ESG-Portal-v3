@@ -16,12 +16,23 @@ class SignupView(APIView):
     def post(self, request):
         username = request.data.get('username', '').strip()
         email = request.data.get('email', '').strip()
+        company_name = request.data.get('companyName', '').strip()
         password = request.data.get('password', '')
         
         # Validation
         if not username or not password:
             return Response({
                 'error': 'Username and password are required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not email:
+            return Response({
+                'error': 'Email address is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not company_name:
+            return Response({
+                'error': 'Company name is required'
             }, status=status.HTTP_400_BAD_REQUEST)
         
         if len(password) < 6:
@@ -34,8 +45,8 @@ class SignupView(APIView):
                 'error': 'Username must be at least 3 characters long'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Email validation if provided
-        if email and not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
+        # Email validation (now required)
+        if not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
             return Response({
                 'error': 'Please enter a valid email address'
             }, status=status.HTTP_400_BAD_REQUEST)
@@ -68,10 +79,10 @@ class SignupView(APIView):
             # Generate unique company code
             company_code = f"USR{user.id:03d}"
             
-            # Create company with default values
+            # Create company with provided name
             company = Company.objects.create(
                 user=user,
-                name=f"{username}'s Company",
+                name=company_name,
                 company_code=company_code,
                 emirate='dubai',  # Default emirate
                 sector='hospitality'  # Default sector
