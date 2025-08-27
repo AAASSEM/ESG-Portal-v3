@@ -54,6 +54,16 @@ class CompanyViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # CRITICAL: Set user when creating
         company = serializer.save(user=self.request.user)
+        
+        # CRITICAL FIX: Update user's profile to link to the new company
+        user_profile = getattr(self.request.user, 'userprofile', None)
+        if user_profile:
+            user_profile.company = company
+            user_profile.save()
+            print(f"✅ Linked user {self.request.user.username} profile to company {company.name}")
+        else:
+            print(f"❌ No UserProfile found for user {self.request.user.username}")
+        
         # Auto-assign mandatory frameworks
         FrameworkService.assign_mandatory_frameworks(company, self.request.user)
         return company

@@ -28,14 +28,14 @@ class UserViewSet(viewsets.ModelViewSet):
             user_role = 'viewer'
             user_company = None
         
-        # All users (including super_user) should only see users from their company
+        # All users should only see users from their company
         if user_company:
             return User.objects.filter(
                 userprofile__company=user_company
             ).select_related('userprofile')
         else:
-            # If user has no company, they see no users
-            return User.objects.none()
+            # If user has no company, they see only themselves
+            return User.objects.filter(id=current_user.id).select_related('userprofile')
     
     def create(self, request, *args, **kwargs):
         """Create a new user"""

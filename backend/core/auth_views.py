@@ -61,23 +61,48 @@ class SignupView(APIView):
                 is_superuser=True   # Has all permissions
             )
             
-            # Create UserProfile for the new user
-            from .models import UserProfile
+            # Create a default company for the new user
+            from .models import UserProfile, Company
+            import random
+            
+            # Generate unique company code
+            company_code = f"USR{user.id:03d}"
+            
+            # Create company with default values
+            company = Company.objects.create(
+                user=user,
+                name=f"{username}'s Company",
+                company_code=company_code,
+                emirate='dubai',  # Default emirate
+                sector='hospitality'  # Default sector
+            )
+            
+            # Create UserProfile linked to the company
             UserProfile.objects.create(
                 user=user,
-                role='super_user'
+                role='super_user',
+                company=company
             )
+            
+            # Auto-assign mandatory frameworks to the new company
+            from .services import FrameworkService
+            FrameworkService.assign_mandatory_frameworks(company, user)
             
             # Auto-login after signup
             login(request, user)
             
             return Response({
-                'message': 'Superuser created successfully',
+                'message': 'Superuser and company created successfully',
                 'user': {
                     'id': user.id,
                     'username': user.username,
                     'email': user.email,
-                    'is_superuser': True
+                    'is_superuser': True,
+                    'company': {
+                        'id': company.id,
+                        'name': company.name,
+                        'company_code': company.company_code
+                    }
                 }
             }, status=status.HTTP_201_CREATED)
             
