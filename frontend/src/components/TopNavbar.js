@@ -218,7 +218,7 @@ const TopNavbar = () => {
 
   const getBreadcrumb = () => {
     return [
-      { name: 'ESG Portal', path: '/', isActive: false },
+      { name: 'ESG Portal2', path: '/', isActive: false },
       { name: currentModule.name, path: currentModule.path, isActive: true }
     ];
   };
@@ -259,7 +259,7 @@ const TopNavbar = () => {
               <i className="fas fa-leaf text-white"></i>
             </div>
             <h1 className="text-lg font-bold bg-gradient-to-r from-purple-700 to-blue-600 bg-clip-text text-transparent">
-              ESG Portal
+              ESG Portal2
             </h1>
           </div>
 
