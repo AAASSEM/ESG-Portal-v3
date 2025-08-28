@@ -1,70 +1,162 @@
-2025-08-27T13:33:47.651853909Z   Applying core.0008_userprofile_must_reset_password_and_more... OK
-2025-08-27T13:33:47.768036852Z   Applying sessions.0001_initial... OK
-2025-08-27T13:33:47.865428217Z Initializing production data...
-2025-08-27T13:33:48.405612105Z 🚀 Initializing production data...
-2025-08-27T13:33:48.405637877Z Populating initial data...
-2025-08-27T13:33:48.405641917Z Created 10 predefined activities
-2025-08-27T13:33:48.405644607Z Created 8 frameworks
-2025-08-27T13:33:48.405646897Z Created 9 data elements with framework mappings
-2025-08-27T13:33:48.405649077Z Created 4 profiling questions
-2025-08-27T13:33:48.405651437Z Successfully populated initial data
-2025-08-27T13:33:48.405653557Z ✅ Production data initialized successfully!
-2025-08-27T13:33:48.451261755Z Fixing user company associations...
-2025-08-27T13:33:48.763631231Z 🔧 Fixing user company associations...
-2025-08-27T13:33:48.763644532Z Creating profile for user: admin
-2025-08-27T13:33:48.763647252Z ✅ User company associations fixed successfully!
-2025-08-27T13:33:48.763648992Z 
-2025-08-27T13:33:48.763650782Z 📊 Summary:
-2025-08-27T13:33:48.763652522Z Total users: 1
-2025-08-27T13:33:48.763654922Z Users with profiles: 1
-2025-08-27T13:33:48.763656772Z Superusers with companies: 0
-2025-08-27T13:33:48.80744635Z Build complete!
-2025-08-27T13:33:48.871061878Z ==> Requesting Node.js version >=16.0.0
-2025-08-27T13:33:49.013026448Z ==> Using Node.js version 24.6.0 via /opt/render/project/src/package.json
-2025-08-27T13:33:49.039515888Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
-2025-08-27T13:33:56.243748967Z ==> Uploading build...
-2025-08-27T13:35:10.178720392Z ==> Uploaded in 6.6s. Compression took 67.3s
-2025-08-27T13:35:10.210971798Z ==> Build successful 🎉
-2025-08-27T13:35:29.277490418Z ==> Deploying...
-2025-08-27T13:36:04.92288605Z ==> Running ' cd backend && gunicorn esg_backend.wsgi:application'
-2025-08-27T13:36:11.828310867Z [2025-08-27 17:36:11 +0400] [56] [INFO] Starting gunicorn 21.2.0
-2025-08-27T13:36:11.828856381Z [2025-08-27 17:36:11 +0400] [56] [INFO] Listening at: http://0.0.0.0:10000 (56)
-2025-08-27T13:36:11.828866692Z [2025-08-27 17:36:11 +0400] [56] [INFO] Using worker: sync
-2025-08-27T13:36:11.832221347Z [2025-08-27 17:36:11 +0400] [57] [INFO] Booting worker with pid: 57
-2025-08-27T13:36:14.623785914Z 127.0.0.1 - - [27/Aug/2025:17:36:14 +0400] "HEAD / HTTP/1.1" 200 724 "-" "Go-http-client/1.1"
-2025-08-27T13:36:20.054062016Z ==> Your service is live 🎉
-2025-08-27T13:36:20.111341785Z ==> 
-2025-08-27T13:36:20.164555844Z ==> ///////////////////////////////////////////////////////////
-2025-08-27T13:36:20.211951283Z ==> 
-2025-08-27T13:36:20.241750383Z ==> Available at your primary URL https://esg-portal.onrender.com
-2025-08-27T13:36:20.277421283Z ==> 
-2025-08-27T13:36:20.302612652Z ==> ///////////////////////////////////////////////////////////
-2025-08-27T13:36:21.693658517Z 127.0.0.1 - - [27/Aug/2025:17:36:21 +0400] "GET / HTTP/1.1" 200 724 "-" "Go-http-client/2.0"
-2025-08-27T13:36:29.527502271Z 127.0.0.1 - - [27/Aug/2025:17:36:29 +0400] "GET / HTTP/1.1" 200 724 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:36:30.51851611Z 127.0.0.1 - - [27/Aug/2025:17:36:30 +0400] "GET /static/js/main.259cf165.js HTTP/1.1" 200 0 "https://esg-portal.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:36:31.156322718Z 127.0.0.1 - - [27/Aug/2025:17:36:31 +0400] "GET /static/css/main.923a4e7c.css HTTP/1.1" 200 0 "https://esg-portal.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:36:32.13529377Z Unauthorized: /api/auth/user/
-2025-08-27T13:36:32.13567078Z 127.0.0.1 - - [27/Aug/2025:17:36:32 +0400] "GET /api/auth/user/ HTTP/1.1" 401 29 "https://esg-portal.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:36:32.347267324Z 127.0.0.1 - - [27/Aug/2025:17:36:32 +0400] "GET /favicon.ico HTTP/1.1" 200 724 "https://esg-portal.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:36:32.651450889Z 127.0.0.1 - - [27/Aug/2025:17:36:32 +0400] "GET /favicon.ico HTTP/1.1" 200 724 "https://esg-portal.onrender.com/login" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:36:41.602066403Z 127.0.0.1 - - [27/Aug/2025:17:36:41 +0400] "GET /favicon.ico HTTP/1.1" 200 724 "https://esg-portal.onrender.com/signup" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:36:56.035555011Z 127.0.0.1 - - [27/Aug/2025:17:36:56 +0400] "POST /api/auth/signup/ HTTP/1.1" 201 143 "https://esg-portal.onrender.com/signup" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:36:56.659321422Z 127.0.0.1 - - [27/Aug/2025:17:36:56 +0400] "GET /favicon.ico HTTP/1.1" 200 724 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:36:59.329353291Z 127.0.0.1 - - [27/Aug/2025:17:36:59 +0400] "GET /onboard HTTP/1.1" 200 724 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:36:59.730537319Z 127.0.0.1 - - [27/Aug/2025:17:36:59 +0400] "GET /static/js/main.259cf165.js HTTP/1.1" 304 0 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:37:00.108866658Z 127.0.0.1 - - [27/Aug/2025:17:37:00 +0400] "GET /static/css/main.923a4e7c.css HTTP/1.1" 304 0 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:37:00.5023469Z 127.0.0.1 - - [27/Aug/2025:17:37:00 +0400] "GET /api/auth/user/ HTTP/1.1" 200 143 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:37:00.503399117Z 127.0.0.1 - - [27/Aug/2025:17:37:00 +0400] "GET /favicon.ico HTTP/1.1" 200 724 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:37:00.792332175Z /opt/render/project/src/.venv/lib/python3.13/site-packages/rest_framework/pagination.py:200: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'core.models.Company'> QuerySet.
-2025-08-27T13:37:00.792355036Z   paginator = self.django_paginator_class(queryset, page_size)
-2025-08-27T13:37:00.794007027Z 127.0.0.1 - - [27/Aug/2025:17:37:00 +0400] "GET /api/companies/ HTTP/1.1" 200 52 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:37:10.34443637Z 127.0.0.1 - - [27/Aug/2025:17:37:10 +0400] "GET /static/css/main.923a4e7c.css HTTP/1.1" 304 0 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:37:11.392931628Z 127.0.0.1 - - [27/Aug/2025:17:37:11 +0400] "GET /static/js/main.259cf165.js.map HTTP/1.1" 200 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:37:11.487625013Z 127.0.0.1 - - [27/Aug/2025:17:37:11 +0400] "GET /static/css/main.923a4e7c.css.map HTTP/1.1" 200 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:37:34.440697963Z 127.0.0.1 - - [27/Aug/2025:17:37:34 +0400] "GET /api/auth/csrf/ HTTP/1.1" 200 80 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:37:34.800402038Z Not Found: /api/companies/null/
-2025-08-27T13:37:34.801095725Z 127.0.0.1 - - [27/Aug/2025:17:37:34 +0400] "GET /api/companies/null/ HTTP/1.1" 404 23 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:37:35.124725794Z 127.0.0.1 - - [27/Aug/2025:17:37:35 +0400] "GET /api/auth/csrf/ HTTP/1.1" 200 80 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:37:35.42185274Z Forbidden: /api/companies/
-2025-08-27T13:37:35.422177278Z 127.0.0.1 - - [27/Aug/2025:17:37:35 +0400] "POST /api/companies/ HTTP/1.1" 403 46 "https://esg-portal.onrender.com/onboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
-2025-08-27T13:37:35.808471518Z 127.0.0.1 - - [27/Aug/2025:17:37:35 +0400] "GET /favicon.ico HTTP/1.1" 200 724 "https://esg-portal.onrender.com/rame" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+App.js loaded
+index.js:7 index.js loaded
+index.js:10 Root element: <div id=​"root">​…​</div>​
+index.js:16 Rendering App...
+index.js:20 App render called
+App.js:27 App component rendering
+index.iife.js:1 content script loaded
+api/auth/user/:1  Failed to load resource: the server responded with a status of 401 ()Understand this error
+AuthContext.js:127 ❌ User not authenticated
+AuthContext.js:332 ✅ Signup successful: Object
+TopNavbar.js:146 TopNavbar rendering
+TopNavbar.js:150 Current location: /onboard
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 7:47:04 PM
+Onboard.js:25 📊 Current formData state: Object
+Onboard.js:26 ⏱️ Component states - Loading: true Saving: false InitialLoad: true
+Onboard.js:30 🔄 useEffect for data fetching triggered
+Onboard.js:39 📡 Fetching company data for ID: 1
+AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/ Status: 200
+Onboard.js:43 Company API Response status: 200
+Onboard.js:47 Loaded company data from API: Object
+AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/activities/
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/activities/ Status: 200
+Onboard.js:55 Loaded activities data: Array(0)
+Onboard.js:91 Setting form data: Object
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 7:47:06 PM
+Onboard.js:25 📊 Current formData state: Object
+Onboard.js:26 ⏱️ Component states - Loading: false Saving: false InitialLoad: false
+Onboard.js:558 🔍 Checking onboarding access: Object
+Onboard.js:568 ✅ Access check result: true for role: super_user
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 7:47:09 PM
+Onboard.js:25 📊 Current formData state: Object
+Onboard.js:26 ⏱️ Component states - Loading: false Saving: false InitialLoad: false
+Onboard.js:558 🔍 Checking onboarding access: Object
+Onboard.js:568 ✅ Access check result: true for role: super_user
+Onboard.js:384 💾 saveData function called with showMessage: true
+Onboard.js:385 💾 Current saving state: false
+Onboard.js:392 💾 saveData called, formData: Object
+Onboard.js:395 💾 Set saving state to true
+Onboard.js:396 💾 Starting to save company data: Object
+AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 7:47:11 PM
+Onboard.js:25 📊 Current formData state: Object
+Onboard.js:26 ⏱️ Component states - Loading: false Saving: true InitialLoad: false
+Onboard.js:558 🔍 Checking onboarding access: Object
+Onboard.js:568 ✅ Access check result: true for role: super_user
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/ Status: 200
+Onboard.js:431 Company data to send: Object
+Onboard.js:435 Updating existing company...
+AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/
+AuthContext.js:52 🔑 CSRF token: obtained
+api/companies/1/:1  Failed to load resource: the server responded with a status of 403 ()Understand this error
+AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/ Status: 403
+Onboard.js:527 Failed to save company data. Status: 403
+x @ Onboard.js:527Understand this error
+Onboard.js:529 Error response: {"detail":"CSRF Failed: CSRF cookie not set."}
+x @ Onboard.js:529Understand this error
+TopNavbar.js:146 TopNavbar rendering
+TopNavbar.js:150 Current location: /rame
+Rame.js:24 🔍 Fetching mandatory frameworks for company: 1
+Rame.js:32 📋 Backend frameworks: Array(3)
+Rame.js:89 ✅ Mapped backend frameworks: Array(4)
+Rame.js:103 ✅ Final mandatory frameworks: Array(4)
+TopNavbar.js:146 TopNavbar rendering
+TopNavbar.js:150 Current location: /list
+List.js:27 List component - selectedCompany: Object
+List.js:28 List component - companyId: 1
+List.js:29 List component - user: Object
+List.js:375 🔍 Component render state: Object
+List.js:58 Fetching profiling questions for company: 1
+AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/profiling-questions/for_company/?company_id=1
+List.js:27 List component - selectedCompany: Object
+List.js:28 List component - companyId: 1
+List.js:29 List component - user: Object
+List.js:375 🔍 Component render state: Object
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/profiling-questions/for_company/?company_id=1 Status: 200
+List.js:60 Response status: 200 Response ok: true
+List.js:64 Fetched questions from backend: Array(4)
+List.js:65 Questions type: object Length: 4
+List.js:74 Transformed questions: Array(4)
+List.js:115 Fetching existing profile answers for company: 1
+AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/profile_answers/
+List.js:27 List component - selectedCompany: Object
+List.js:28 List component - companyId: 1
+List.js:29 List component - user: Object
+List.js:375 🔍 Component render state: Object
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/profile_answers/ Status: 200
+List.js:120 Loaded profile answers from API: Array(0)
+List.js:128 Setting answers state to: Object
+List.js:148 🔍 Checking if checklist exists for company: 1
+AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/checklist/?company_id=1
+List.js:27 List component - selectedCompany: Object
+List.js:28 List component - companyId: 1
+List.js:29 List component - user: Object
+List.js:375 🔍 Component render state: Object
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/checklist/?company_id=1 Status: 200
+List.js:153 ✅ Checklist exists check result: false
+AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/profile_answers/
+List.js:27 List component - selectedCompany: Object
+List.js:28 List component - companyId: 1
+List.js:29 List component - user: Object
+List.js:375 🔍 Component render state: Object
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/profile_answers/ Status: 200
+AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/profiling-questions/for_company/?company_id=1
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/profiling-questions/for_company/?company_id=1 Status: 200
+List.js:27 List component - selectedCompany: Object
+List.js:28 List component - companyId: 1
+List.js:29 List component - user: Object
+List.js:375 🔍 Component render state: Object
+List.js:341 Saving all profiling answers to database: true
+4AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/save_profile_answer/
+List.js:27 List component - selectedCompany: Object
+List.js:28 List component - companyId: 1
+List.js:29 List component - user: Object
+List.js:375 🔍 Component render state: Object
+AuthContext.js:52 🔑 CSRF token: obtained
+api/companies/1/save_profile_answer/:1  Failed to load resource: the server responded with a status of 403 ()Understand this error
+AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/save_profile_answer/ Status: 403
+AuthContext.js:52 🔑 CSRF token: obtained
+api/companies/1/save_profile_answer/:1  Failed to load resource: the server responded with a status of 403 ()Understand this error
+AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/save_profile_answer/ Status: 403
+AuthContext.js:52 🔑 CSRF token: obtained
+api/companies/1/save_profile_answer/:1  Failed to load resource: the server responded with a status of 403 ()Understand this error
+AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/save_profile_answer/ Status: 403
+AuthContext.js:52 🔑 CSRF token: obtained
+api/companies/1/save_profile_answer/:1  Failed to load resource: the server responded with a status of 403 ()Understand this error
+AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/save_profile_answer/ Status: 403
+List.js:358 Some answers failed to save
+E @ List.js:358Understand this error
+List.js:27 List component - selectedCompany: Object
+List.js:28 List component - companyId: 1
+List.js:29 List component - user: Object
+List.js:375 🔍 Component render state: Object
+List.js:27 List component - selectedCompany: Object
+List.js:28 List component - companyId: 1
+List.js:29 List component - user: Object
+List.js:375 🔍 Component render state: Object
+List.js:400 Sending answers to backend: Array(4)
+AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/profiling-questions/save_answers/
+List.js:27 List component - selectedCompany: Object
+List.js:28 List component - companyId: 1
+List.js:29 List component - user: Object
+List.js:375 🔍 Component render state: Object
+AuthContext.js:52 🔑 CSRF token: obtained
+api/profiling-questions/save_answers/:1  Failed to load resource: the server responded with a status of 403 ()Understand this error
+AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/profiling-questions/save_answers/ Status: 403
+List.js:436 Error saving answers and generating checklist: Error: Failed to save answers or generate checklist
+    at List.js:434:13
+    at async onClick (List.js:771:24)
+(anonymous) @ List.js:436Understand this error
+List.js:27 List component - selectedCompany: Object
+List.js:28 List component - companyId: 1
+List.js:29 List component - user: Object
+List.js:375 🔍 Component render state: Object
