@@ -176,7 +176,7 @@ else:
     CSRF_USE_SESSIONS = False  # Don't tie to sessions for API
     CSRF_COOKIE_SECURE = True  # HTTPS only
     CSRF_COOKIE_HTTPONLY = False  # Allow JS access for SPA
-    CSRF_COOKIE_SAMESITE = 'None'  # Required for HTTPS cross-origin requests
+    CSRF_COOKIE_SAMESITE = 'Lax'  # Changed from 'None' - works better with same-origin
     CSRF_COOKIE_NAME = 'csrftoken'
     CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
     CSRF_COOKIE_AGE = 31449600  # 1 year
@@ -186,7 +186,7 @@ else:
     # Session cookie settings for production
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True  # Sessions should be HTTP-only for security
-    SESSION_COOKIE_SAMESITE = 'None'  # Required for HTTPS cross-origin requests
+    SESSION_COOKIE_SAMESITE = 'Lax'
     SESSION_COOKIE_AGE = 1209600  # 2 weeks
 
 # CORS settings - Allow React frontend

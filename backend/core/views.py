@@ -35,6 +35,7 @@ def get_user_company(request_user, company_id):
     """
     Universal helper to validate company access through UserProfile.
     Returns the company if user has access, raises PermissionDenied otherwise.
+    Backwards-compatible with legacy users.
     """
     if not company_id:
         raise PermissionDenied("Company ID is required")
@@ -51,7 +52,20 @@ def get_user_company(request_user, company_id):
     
     # Fallback: check if user owns this company directly (legacy support)
     try:
-        return Company.objects.get(pk=company_id, user=request_user)
+        company = Company.objects.get(pk=company_id, user=request_user)
+        
+        # Auto-create UserProfile for legacy users to avoid future issues
+        if not user_profile:
+            from .models import UserProfile
+            UserProfile.objects.get_or_create(
+                user=request_user,
+                defaults={
+                    'role': 'super_user' if request_user.is_superuser else 'viewer',
+                    'company': company
+                }
+            )
+        
+        return company
     except Company.DoesNotExist:
         pass
     
