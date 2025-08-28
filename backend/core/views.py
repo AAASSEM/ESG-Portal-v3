@@ -31,6 +31,33 @@ from .services import (
 )
 
 
+def get_user_company(request_user, company_id):
+    """
+    Universal helper to validate company access through UserProfile.
+    Returns the company if user has access, raises PermissionDenied otherwise.
+    """
+    if not company_id:
+        raise PermissionDenied("Company ID is required")
+    
+    try:
+        company_id = int(company_id)
+    except (ValueError, TypeError):
+        raise PermissionDenied("Invalid company ID")
+    
+    # Check if user has access to this company through their profile
+    user_profile = getattr(request_user, 'userprofile', None)
+    if user_profile and user_profile.company and user_profile.company.id == company_id:
+        return user_profile.company
+    
+    # Fallback: check if user owns this company directly (legacy support)
+    try:
+        return Company.objects.get(pk=company_id, user=request_user)
+    except Company.DoesNotExist:
+        pass
+    
+    raise PermissionDenied("You don't have permission to access this company")
+
+
 class CompanyViewSet(viewsets.ModelViewSet):
     """ViewSet for company management"""
     serializer_class = CompanySerializer
@@ -43,8 +70,13 @@ class CompanyViewSet(viewsets.ModelViewSet):
         if user_profile and user_profile.company:
             return Company.objects.filter(id=user_profile.company.id)
         
-        # Fallback: return companies owned by the user (for super users who might own companies)
-        return Company.objects.filter(user=self.request.user)
+        # Fallback: return companies owned by the user directly (legacy support)
+        legacy_companies = Company.objects.filter(user=self.request.user)
+        if legacy_companies.exists():
+            return legacy_companies
+            
+        # No companies accessible
+        return Company.objects.none()
     
     def get_serializer_class(self):
         if self.action == 'create':
@@ -86,15 +118,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
     
     def _get_user_company(self, company_id):
         """Helper method to get company that user has access to"""
-        user_profile = getattr(self.request.user, 'userprofile', None)
-        if user_profile and user_profile.company and user_profile.company.id == int(company_id):
-            return user_profile.company
-        
-        # Fallback: check if user owns this company (for super users)
-        try:
-            return Company.objects.get(pk=company_id, user=self.request.user)
-        except Company.DoesNotExist:
-            raise PermissionDenied("You don't have permission to access this company")
+        return get_user_company(self.request.user, company_id)
     
     @action(detail=True, methods=['get'])
     def progress(self, request, pk=None):
@@ -355,18 +379,7 @@ class ProfilingQuestionViewSet(viewsets.ReadOnlyModelViewSet):
         
         try:
             # CRITICAL: Ensure user can only access their own company
-            user_profile = getattr(request.user, 'userprofile', None)
-            if user_profile and user_profile.company and user_profile.company.id == int(company_id):
-                company = user_profile.company
-            else:
-                # Fallback: check if user owns this company (for super users)
-                try:
-                    company = Company.objects.get(pk=company_id, user=request.user)
-                except Company.DoesNotExist:
-                    return Response(
-                        {'error': 'Company not found'}, 
-                        status=status.HTTP_404_NOT_FOUND
-                    )
+            company = get_user_company(request.user, company_id)
                     
             questions = ProfilingService.get_profiling_questions(company)
             serializer = self.get_serializer(questions, many=True)
@@ -395,15 +408,7 @@ class ProfilingQuestionViewSet(viewsets.ReadOnlyModelViewSet):
         
         try:
             # CRITICAL: Ensure user can only save answers for their own company
-            user_profile = getattr(request.user, 'userprofile', None)
-            if user_profile and user_profile.company and user_profile.company.id == int(company_id):
-                company = user_profile.company
-            else:
-                # Fallback: check if user owns this company (for super users)
-                try:
-                    company = Company.objects.get(pk=company_id, user=request.user)
-                except Company.DoesNotExist:
-                    raise PermissionDenied("You don't have permission to access this company")
+            company = get_user_company(request.user, company_id)
                     
             ProfilingService.save_profiling_answers(company, answers, request.user)
             
@@ -432,16 +437,11 @@ class CompanyChecklistViewSet(viewsets.ReadOnlyModelViewSet):
         company_id = self.request.query_params.get('company_id')
         if company_id:
             # CRITICAL: Ensure user can only access checklists for their own company
-            user_profile = getattr(self.request.user, 'userprofile', None)
-            if user_profile and user_profile.company and user_profile.company.id == int(company_id):
+            try:
+                company = get_user_company(self.request.user, company_id)
                 return CompanyChecklist.objects.filter(company_id=company_id)
-            else:
-                # Fallback: check if user owns this company (for super users)
-                try:
-                    Company.objects.get(pk=company_id, user=self.request.user)
-                    return CompanyChecklist.objects.filter(company_id=company_id)
-                except Company.DoesNotExist:
-                    return CompanyChecklist.objects.none()
+            except PermissionDenied:
+                return CompanyChecklist.objects.none()
         return CompanyChecklist.objects.none()
     
     @action(detail=False, methods=['post'])
@@ -451,15 +451,7 @@ class CompanyChecklistViewSet(viewsets.ReadOnlyModelViewSet):
         
         try:
             # CRITICAL: Ensure user can only generate checklist for their own company
-            user_profile = getattr(request.user, 'userprofile', None)
-            if user_profile and user_profile.company and user_profile.company.id == int(company_id):
-                company = user_profile.company
-            else:
-                # Fallback: check if user owns this company (for super users)
-                try:
-                    company = Company.objects.get(pk=company_id, user=request.user)
-                except Company.DoesNotExist:
-                    raise PermissionDenied("You don't have permission to access this company")
+            company = get_user_company(request.user, company_id)
                     
             checklist = ChecklistService.generate_personalized_checklist(company)
             
@@ -485,16 +477,11 @@ class MeterViewSet(viewsets.ModelViewSet):
         company_id = self.request.query_params.get('company_id')
         if company_id:
             # CRITICAL: Filter by user's company to ensure data isolation
-            user_profile = getattr(self.request.user, 'userprofile', None)
-            if user_profile and user_profile.company and user_profile.company.id == int(company_id):
+            try:
+                company = get_user_company(self.request.user, company_id)
                 return Meter.objects.filter(company_id=company_id)
-            else:
-                # Fallback: check if user owns this company (for super users)
-                try:
-                    Company.objects.get(pk=company_id, user=self.request.user)
-                    return Meter.objects.filter(company_id=company_id)
-                except Company.DoesNotExist:
-                    return Meter.objects.none()
+            except PermissionDenied:
+                return Meter.objects.none()
         return Meter.objects.none()
     
     def create(self, request, *args, **kwargs):
@@ -516,13 +503,13 @@ class MeterViewSet(viewsets.ModelViewSet):
             
             # Validate company exists and belongs to authenticated user
             try:
-                company = Company.objects.get(pk=company_id, user=request.user)
+                company = get_user_company(request.user, company_id)
                 print(f"✅ Company found: {company.name}")
-            except Company.DoesNotExist:
-                print(f"❌ Company not found for ID: {company_id}")
+            except PermissionDenied as e:
+                print(f"❌ Company access denied for ID: {company_id}")
                 return Response(
-                    {'error': 'Company not found'}, 
-                    status=status.HTTP_404_NOT_FOUND
+                    {'error': str(e)}, 
+                    status=status.HTTP_403_FORBIDDEN
                 )
             
             # Create meter data with company_id
@@ -584,14 +571,14 @@ class MeterViewSet(viewsets.ModelViewSet):
         company_id = request.data.get('company_id')
         
         try:
-            company = Company.objects.get(pk=company_id)
+            company = get_user_company(request.user, company_id)
             meters = MeterService.auto_create_meters(company)
             serializer = self.get_serializer(meters, many=True)
             return Response(serializer.data)
-        except Company.DoesNotExist:
+        except PermissionDenied as e:
             return Response(
-                {'error': 'Company not found'}, 
-                status=status.HTTP_404_NOT_FOUND
+                {'error': str(e)}, 
+                status=status.HTTP_403_FORBIDDEN
             )
     
     def destroy(self, request, *args, **kwargs):
@@ -669,7 +656,8 @@ class DataCollectionViewSet(viewsets.ModelViewSet):
             )
         
         try:
-            company = Company.objects.get(pk=company_id)
+            # CRITICAL: Added proper permission check
+            company = get_user_company(request.user, company_id)
             print(f"🔐 Tasks request from user: {request.user} (ID: {request.user.id if hasattr(request.user, 'id') else 'N/A'})")
             tasks = DataCollectionService.get_data_collection_tasks(
                 company, int(year), int(month), user=request.user
@@ -702,10 +690,10 @@ class DataCollectionViewSet(viewsets.ModelViewSet):
             
             return Response(task_data)
             
-        except Company.DoesNotExist:
+        except PermissionDenied as e:
             return Response(
-                {'error': 'Company not found'}, 
-                status=status.HTTP_404_NOT_FOUND
+                {'error': str(e)}, 
+                status=status.HTTP_403_FORBIDDEN
             )
     
     @action(detail=False, methods=['get'])
@@ -722,7 +710,8 @@ class DataCollectionViewSet(viewsets.ModelViewSet):
             )
         
         try:
-            company = Company.objects.get(pk=company_id)
+            # CRITICAL: Added proper permission check
+            company = get_user_company(request.user, company_id)
             progress = DataCollectionService.calculate_progress(
                 company, int(year), int(month) if month else None, user=request.user
             )
@@ -730,10 +719,10 @@ class DataCollectionViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             return Response(serializer.data)
             
-        except Company.DoesNotExist:
+        except PermissionDenied as e:
             return Response(
-                {'error': 'Company not found'}, 
-                status=status.HTTP_404_NOT_FOUND
+                {'error': str(e)}, 
+                status=status.HTTP_403_FORBIDDEN
             )
     
     @action(detail=False, methods=['post'], url_path='cleanup-orphaned')
@@ -847,7 +836,8 @@ class DataCollectionViewSet(viewsets.ModelViewSet):
 
 class DashboardView(APIView):
     """API view for dashboard statistics"""
-    permission_classes = [permissions.AllowAny]
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]  # CRITICAL: Fixed security hole
     
     def get(self, request):
         company_id = request.query_params.get('company_id')
@@ -858,14 +848,15 @@ class DashboardView(APIView):
             )
         
         try:
-            company = Company.objects.get(pk=company_id)
+            # CRITICAL: Added proper permission check
+            company = get_user_company(request.user, company_id)
             stats = DashboardService.get_dashboard_stats(company, user=request.user)
             serializer = DashboardStatsSerializer(data=stats)
             serializer.is_valid(raise_exception=True)
             return Response(serializer.data)
             
-        except Company.DoesNotExist:
+        except PermissionDenied as e:
             return Response(
-                {'error': 'Company not found'}, 
-                status=status.HTTP_404_NOT_FOUND
+                {'error': str(e)}, 
+                status=status.HTTP_403_FORBIDDEN
             )

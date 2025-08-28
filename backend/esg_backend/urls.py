@@ -18,6 +18,10 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    # React app for development
+    urlpatterns += [
+        re_path(r'^(?!api/|admin/|static/).*$', TemplateView.as_view(template_name='index.html'), name='react_app'),
+    ]
 else:
     # In production, serve React build files
     # Serve static files for React build
@@ -26,8 +30,7 @@ else:
             'document_root': os.path.join(settings.BASE_DIR, 'staticfiles'),
         }),
     ]
-
-# Catch-all pattern for React routing (must be last)
-urlpatterns += [
-    re_path(r'^.*$', TemplateView.as_view(template_name='index.html'), name='react_app'),
-]
+    # React app for production
+    urlpatterns += [
+        re_path(r'^(?!api/|admin/|static/).*$', TemplateView.as_view(template_name='index.html'), name='react_app'),
+    ]

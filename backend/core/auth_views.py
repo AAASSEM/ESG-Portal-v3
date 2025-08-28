@@ -128,10 +128,20 @@ class SignupView(APIView):
 class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow unauthenticated access
     
+    def get(self, request):
+        return Response({'message': 'Login endpoint is working'})
+    
     def post(self, request):
+        print(f"🔍 Raw request data: {request.data}")
+        print(f"🔍 Request content type: {request.content_type}")
+        
         email = request.data.get('email', '').strip()
         username = request.data.get('username', '').strip()  # Backwards compatibility
         password = request.data.get('password', '')
+        
+        print(f"🔍 Login attempt - Email: '{email}', Username: '{username}', Password: '{password[:3]}...'")
+        print(f"🔍 Request data: {request.data}")
+        print(f"🔍 Request method: {request.method}")
         company_code = request.data.get('company_code', '')
         
         # Support both email and username login
