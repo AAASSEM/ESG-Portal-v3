@@ -1,0 +1,173 @@
+react refresh:37 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+App.js:24 App.js loaded
+index.js:7 index.js loaded
+index.js:10 Root element: div#root
+index.js:16 Rendering App...
+index.js:20 App render called
+App.js:27 App component rendering
+deprecations.ts:9  ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+warnOnce @ deprecations.ts:9
+logDeprecation @ deprecations.ts:13
+logV6DeprecationWarnings @ deprecations.ts:26
+(anonymous) @ index.tsx:816
+commitHookEffectListMount @ react-dom.development.js:23189
+commitPassiveMountOnFiber @ react-dom.development.js:24965
+commitPassiveMountEffects_complete @ react-dom.development.js:24930
+commitPassiveMountEffects_begin @ react-dom.development.js:24917
+commitPassiveMountEffects @ react-dom.development.js:24905
+flushPassiveEffectsImpl @ react-dom.development.js:27078
+flushPassiveEffects @ react-dom.development.js:27023
+(anonymous) @ react-dom.development.js:26808
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
+deprecations.ts:9  ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+warnOnce @ deprecations.ts:9
+logDeprecation @ deprecations.ts:13
+logV6DeprecationWarnings @ deprecations.ts:37
+(anonymous) @ index.tsx:816
+commitHookEffectListMount @ react-dom.development.js:23189
+commitPassiveMountOnFiber @ react-dom.development.js:24965
+commitPassiveMountEffects_complete @ react-dom.development.js:24930
+commitPassiveMountEffects_begin @ react-dom.development.js:24917
+commitPassiveMountEffects @ react-dom.development.js:24905
+flushPassiveEffectsImpl @ react-dom.development.js:27078
+flushPassiveEffects @ react-dom.development.js:27023
+(anonymous) @ react-dom.development.js:26808
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
+[NEW] Explain Console errors by using Copilot in Edge: click
+         
+         to explain an error. 
+        Learn more
+        Don't show again
+AuthContext.js:123 ✅ User authenticated: {id: 34, username: 'alia2001', email: 'alia@2001.com', name: 'alia2001', role: 'super_user', …}
+AuthContext.js:150 🏢 User companies fetched: [{…}]
+AuthContext.js:153 🔍 Available companies for user: [{…}]
+AuthContext.js:157 🏢 Using user assigned company: {id: 16, name: 'alia2001', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-29T05:14:19.952528+04:00'}
+TopNavbar.js:146 TopNavbar rendering
+TopNavbar.js:150 Current location: /onboard
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 6:43:20 AM
+Onboard.js:25 📊 Current formData state: {companyName: '', emirate: '', primarySector: '', activities: Array(0), customActivity: ''}
+Onboard.js:26 ⏱️ Component states - Loading: true Saving: false InitialLoad: true
+Onboard.js:44 🔄 useEffect for data fetching triggered
+Onboard.js:53 📡 Fetching company data for ID: 16
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/companies/16/
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/companies/16/ Status: 200
+Onboard.js:57 Company API Response status: 200
+Onboard.js:61 Loaded company data from API: {id: 16, name: 'alia2001', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-29T05:14:19.952528+04:00'}
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/companies/16/activities/
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/companies/16/activities/ Status: 200
+Onboard.js:69 Loaded activities data: (2) [{…}, {…}]
+Onboard.js:105 Setting form data: {companyName: 'alia2001', emirate: 'Dubai', primarySector: 'Hospitality & Tourism', activities: Array(2), customActivity: ''}
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 6:43:21 AM
+Onboard.js:25 📊 Current formData state: {companyName: 'alia2001', emirate: 'Dubai', primarySector: 'Hospitality & Tourism', activities: Array(2), customActivity: ''}
+Onboard.js:26 ⏱️ Component states - Loading: false Saving: false InitialLoad: false
+Onboard.js:36 🎯 Selected activities details: (2) [{…}, {…}]
+Onboard.js:594 🔍 Checking onboarding access: {user: {…}, role: 'super_user', selectedCompany: {…}}
+Onboard.js:604 ✅ Access check result: true for role: super_user
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 6:43:25 AM
+Onboard.js:25 📊 Current formData state: {companyName: 'alia2001', emirate: 'Dubai', primarySector: 'Hospitality & Tourism', activities: Array(3), customActivity: ''}
+Onboard.js:26 ⏱️ Component states - Loading: false Saving: false InitialLoad: false
+Onboard.js:36 🎯 Selected activities details: (3) [{…}, {…}, {…}]
+Onboard.js:594 🔍 Checking onboarding access: {user: {…}, role: 'super_user', selectedCompany: {…}}
+Onboard.js:604 ✅ Access check result: true for role: super_user
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 6:43:25 AM
+Onboard.js:25 📊 Current formData state: {companyName: 'alia2001', emirate: 'Dubai', primarySector: 'Hospitality & Tourism', activities: Array(4), customActivity: ''}
+Onboard.js:26 ⏱️ Component states - Loading: false Saving: false InitialLoad: false
+Onboard.js:36 🎯 Selected activities details: (4) [{…}, {…}, {…}, {…}]
+Onboard.js:594 🔍 Checking onboarding access: {user: {…}, role: 'super_user', selectedCompany: {…}}
+Onboard.js:604 ✅ Access check result: true for role: super_user
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 6:43:26 AM
+Onboard.js:25 📊 Current formData state: {companyName: 'alia2001', emirate: 'Dubai', primarySector: 'Hospitality & Tourism', activities: Array(5), customActivity: ''}
+Onboard.js:26 ⏱️ Component states - Loading: false Saving: false InitialLoad: false
+Onboard.js:36 🎯 Selected activities details: (5) [{…}, {…}, {…}, {…}, {…}]
+Onboard.js:594 🔍 Checking onboarding access: {user: {…}, role: 'super_user', selectedCompany: {…}}
+Onboard.js:604 ✅ Access check result: true for role: super_user
+Onboard.js:398 💾 saveData function called with showMessage: true
+Onboard.js:399 💾 Current saving state: false
+Onboard.js:406 💾 saveData called, formData: {companyName: 'alia2001', emirate: 'Dubai', primarySector: 'Hospitality & Tourism', activities: Array(5), customActivity: ''}
+Onboard.js:409 💾 Set saving state to true
+Onboard.js:410 💾 Starting to save company data: {companyName: 'alia2001', emirate: 'Dubai', primarySector: 'Hospitality & Tourism', activities: Array(5), customActivity: ''}
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/companies/16/
+Onboard.js:7 🚀 Onboard component loaded/re-rendered at 6:43:28 AM
+Onboard.js:25 📊 Current formData state: {companyName: 'alia2001', emirate: 'Dubai', primarySector: 'Hospitality & Tourism', activities: Array(5), customActivity: ''}
+Onboard.js:26 ⏱️ Component states - Loading: false Saving: true InitialLoad: false
+Onboard.js:36 🎯 Selected activities details: (5) [{…}, {…}, {…}, {…}, {…}]
+Onboard.js:594 🔍 Checking onboarding access: {user: {…}, role: 'super_user', selectedCompany: {…}}
+Onboard.js:604 ✅ Access check result: true for role: super_user
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/companies/16/ Status: 200
+Onboard.js:445 Company data to send: {name: 'alia2001', emirate: 'dubai', sector: 'hospitality'}
+Onboard.js:449 Updating existing company...
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/companies/16/update_info/
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:71   POST http://localhost:8080/api/companies/16/update_info/ 403 (Forbidden)
+makeAuthenticatedRequest @ AuthContext.js:71
+await in makeAuthenticatedRequest
+saveData @ Onboard.js:450
+await in saveData
+handleContinue @ Onboard.js:576
+callCallback @ react-dom.development.js:4164
+invokeGuardedCallbackDev @ react-dom.development.js:4213
+invokeGuardedCallback @ react-dom.development.js:4277
+invokeGuardedCallbackAndCatchFirstError @ react-dom.development.js:4291
+executeDispatch @ react-dom.development.js:9041
+processDispatchQueueItemsInOrder @ react-dom.development.js:9073
+processDispatchQueue @ react-dom.development.js:9086
+dispatchEventsForPlugins @ react-dom.development.js:9097
+(anonymous) @ react-dom.development.js:9288
+batchedUpdates$1 @ react-dom.development.js:26179
+batchedUpdates @ react-dom.development.js:3991
+dispatchEventForPluginEventSystem @ react-dom.development.js:9287
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ react-dom.development.js:6465
+dispatchEvent @ react-dom.development.js:6457
+dispatchDiscreteEvent @ react-dom.development.js:6430
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/companies/16/update_info/ Status: 403
+Onboard.js:563  Failed to save company data. Status: 403
+saveData @ Onboard.js:563
+await in saveData
+handleContinue @ Onboard.js:576
+callCallback @ react-dom.development.js:4164
+invokeGuardedCallbackDev @ react-dom.development.js:4213
+invokeGuardedCallback @ react-dom.development.js:4277
+invokeGuardedCallbackAndCatchFirstError @ react-dom.development.js:4291
+executeDispatch @ react-dom.development.js:9041
+processDispatchQueueItemsInOrder @ react-dom.development.js:9073
+processDispatchQueue @ react-dom.development.js:9086
+dispatchEventsForPlugins @ react-dom.development.js:9097
+(anonymous) @ react-dom.development.js:9288
+batchedUpdates$1 @ react-dom.development.js:26179
+batchedUpdates @ react-dom.development.js:3991
+dispatchEventForPluginEventSystem @ react-dom.development.js:9287
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ react-dom.development.js:6465
+dispatchEvent @ react-dom.development.js:6457
+dispatchDiscreteEvent @ react-dom.development.js:6430
+Onboard.js:565  Error response: {"detail":"CSRF Failed: CSRF cookie not set."}
+saveData @ Onboard.js:565
+await in saveData
+handleContinue @ Onboard.js:576
+callCallback @ react-dom.development.js:4164
+invokeGuardedCallbackDev @ react-dom.development.js:4213
+invokeGuardedCallback @ react-dom.development.js:4277
+invokeGuardedCallbackAndCatchFirstError @ react-dom.development.js:4291
+executeDispatch @ react-dom.development.js:9041
+processDispatchQueueItemsInOrder @ react-dom.development.js:9073
+processDispatchQueue @ react-dom.development.js:9086
+dispatchEventsForPlugins @ react-dom.development.js:9097
+(anonymous) @ react-dom.development.js:9288
+batchedUpdates$1 @ react-dom.development.js:26179
+batchedUpdates @ react-dom.development.js:3991
+dispatchEventForPluginEventSystem @ react-dom.development.js:9287
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ react-dom.development.js:6465
+dispatchEvent @ react-dom.development.js:6457
+dispatchDiscreteEvent @ react-dom.development.js:6430
+TopNavbar.js:146 TopNavbar rendering
+TopNavbar.js:150 Current location: /rame
+Rame.js:24 🔍 Fetching mandatory frameworks for company: 16
+Rame.js:32 📋 Backend frameworks: (3) [{…}, {…}, {…}]
+Rame.js:89 ✅ Mapped backend frameworks: (3) [{…}, {…}, {…}]
+Rame.js:103 ✅ Final mandatory frameworks: (4) [{…}, {…}, {…}, {…}]

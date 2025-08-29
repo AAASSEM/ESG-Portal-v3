@@ -5,7 +5,8 @@
       "Bash(npm run build:*)",
       "Bash(CI=false npm run build)",
       "Bash(python3 manage.py shell:*)",
-      "Bash(python3 manage.py migrate:*)"
+      "Bash(python3 manage.py migrate:*)",
+      "Bash(cp:*)"
     ],
     "deny": [],
     "ask": [],

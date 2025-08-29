@@ -67,8 +67,7 @@ const Onboard = () => {
           if (activitiesResponse.ok) {
             const activitiesData = await activitiesResponse.json();
             console.log('Loaded activities data:', activitiesData);
-            // Deduplicate activities by name
-            activityNames = [...new Set(activitiesData.map(a => a.name))];
+            activityNames = activitiesData.map(a => a.name);
           } else {
             console.log('No activities found for company or API error:', activitiesResponse.status);
           }
@@ -361,12 +360,11 @@ const Onboard = () => {
   };
 
   const handleAddCustomActivity = async () => {
-    const customActivityName = formData.customActivity.trim();
-    if (customActivityName && !formData.activities.includes(customActivityName)) {
-      // First add to local state using trimmed name
+    if (formData.customActivity && !formData.activities.includes(formData.customActivity)) {
+      // First add to local state
       setFormData(prev => ({
         ...prev,
-        activities: [...prev.activities, customActivityName],
+        activities: [...prev.activities, prev.customActivity],
         customActivity: ''
       }));
       
@@ -378,7 +376,7 @@ const Onboard = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            name: customActivityName,
+            name: formData.customActivity,
             company_id: companyId
           })
         });
@@ -447,10 +445,10 @@ const Onboard = () => {
       console.log('Company data to send:', companyData);
       
       if (isUpdate) {
-        // Update existing company using fixed CSRF-exempt authentication
+        // Update existing company using CSRF-exempt endpoint
         console.log('Updating existing company...');
-        response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/`, {
-          method: 'PUT',
+        response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/update_info/`, {
+          method: 'POST',
           body: JSON.stringify(companyData)
         });
       } else {
@@ -843,12 +841,8 @@ const Onboard = () => {
             return (
               <div 
                 key={`custom-${index}`}
-                className={`activity-card rounded-lg p-4 transition-all relative ${
-                  canEditCompanyInfo 
-                    ? 'cursor-pointer border-2 border-green-200 bg-green-50'
-                    : 'border-2 border-green-200 bg-green-50 opacity-75'
-                }`}
-                onClick={canEditCompanyInfo ? () => handleActivityToggle(customActivity) : undefined}
+                className="activity-card rounded-lg p-4 cursor-pointer transition-all border-2 border-green-200 bg-green-50"
+                onClick={() => handleActivityToggle(customActivity)}
               >
                 <div className="flex items-center space-x-3">
                   <input 
@@ -856,51 +850,41 @@ const Onboard = () => {
                     checked={true} 
                     onChange={() => {}}
                     className="w-5 h-5 text-green-600 rounded"
-                    disabled={!canEditCompanyInfo}
                   />
-                  <div className={`w-8 h-8 bg-${activityIcon.color}-100 rounded-lg flex items-center justify-center ${!canEditCompanyInfo ? 'opacity-60' : ''}`}>
+                  <div className={`w-8 h-8 bg-${activityIcon.color}-100 rounded-lg flex items-center justify-center`}>
                     <i className={`${activityIcon.icon} text-${activityIcon.color}-600`}></i>
                   </div>
-                  <span className={`font-medium ${canEditCompanyInfo ? 'text-gray-900' : 'text-gray-600'}`}>{customActivity}</span>
+                  <span className="font-medium text-gray-900">{customActivity}</span>
                 </div>
-                {isViewOnly && (
-                  <div className="absolute -top-1 -right-1">
-                    <div className="px-1 py-0.5 bg-blue-100 text-blue-600 text-xs rounded-full">
-                      <i className="fas fa-eye"></i>
-                    </div>
-                  </div>
-                )}
               </div>
             );
           })}
         </div>
 
         {/* Custom Activity Addition */}
-        {canEditCompanyInfo && (
-          <div className="border-t border-gray-200 pt-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Add Custom Activity</h3>
-            <div className="flex space-x-3">
-              <input 
-                type="text" 
-                placeholder="Enter custom business activity" 
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                value={formData.customActivity}
-                onChange={(e) => setFormData(prev => ({ ...prev, customActivity: e.target.value }))}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleAddCustomActivity();
-                  }
-                }}
-              />
-              <button 
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-                onClick={handleAddCustomActivity}
-              >
-                <i className="fas fa-plus mr-2"></i>Add Activity
-              </button>
-            </div>
+        <div className="border-t border-gray-200 pt-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Add Custom Activity</h3>
+          <div className="flex space-x-3">
+            <input 
+              type="text" 
+              placeholder="Enter custom business activity" 
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              value={formData.customActivity}
+              onChange={(e) => setFormData(prev => ({ ...prev, customActivity: e.target.value }))}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleAddCustomActivity();
+                }
+              }}
+            />
+            <button 
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+              onClick={handleAddCustomActivity}
+            >
+              <i className="fas fa-plus mr-2"></i>Add Activity
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Action Footer */}
@@ -940,13 +924,21 @@ const Onboard = () => {
               </button>
             </>
           ) : (
-            <button 
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg font-medium"
-              onClick={handleContinue}
-            >
-              Continue
-              <i className="fas fa-arrow-right ml-2"></i>
-            </button>
+            <>
+              <button 
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                onClick={() => {/* Export functionality for view-only users */}}
+              >
+                <i className="fas fa-download mr-2"></i>Export Info
+              </button>
+              <button 
+                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg font-medium"
+                onClick={handleContinue}
+              >
+                Continue
+                <i className="fas fa-arrow-right ml-2"></i>
+              </button>
+            </>
           )}
         </div>
       </div>

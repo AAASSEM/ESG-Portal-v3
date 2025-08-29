@@ -6,7 +6,7 @@ from .views import (
     MeterViewSet, DataCollectionViewSet, DashboardView
 )
 from .user_views import UserViewSet
-from .auth_views import SignupView, LoginView, LogoutView, UserProfileView, CsrfTokenView, UserSitesView, RoleSwitchView, ResetPasswordView, CompanyUpdateView
+from .auth_views import SignupView, LoginView, LogoutView, UserProfileView, CsrfTokenView, UserSitesView, RoleSwitchView, ResetPasswordView
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -32,6 +32,4 @@ urlpatterns = [
     path('auth/csrf/', CsrfTokenView.as_view(), name='csrf-token'),
     # User endpoints
     path('user/sites/', UserSitesView.as_view(), name='user-sites'),
-    # Direct company update (bypasses DRF router)
-    path('company/<int:company_id>/update/', CompanyUpdateView.as_view(), name='company-update'),
 ]

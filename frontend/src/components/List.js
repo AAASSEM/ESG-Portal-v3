@@ -587,9 +587,6 @@ const List = () => {
             </button>
           </div>
           <div className="flex space-x-4">
-            <button className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
-              <i className="fas fa-download mr-2"></i>Export Checklist
-            </button>
             <button 
               className="px-8 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:shadow-lg font-medium"
               onClick={handleContinue}
@@ -854,9 +851,13 @@ const List = () => {
         </div>
         <div className="text-center">
           <p className="text-sm text-gray-600">
-            {allQuestionsAnswered 
-              ? 'Generate your checklist to continue' 
-              : `Answer ${profilingQuestions.length - Object.keys(answers).length} more questions to continue`
+            {!allQuestionsAnswered 
+              ? `Answer ${profilingQuestions.length - Object.keys(answers).length} more questions to continue`
+              : checklistExists 
+                ? 'Your checklist is ready for review' 
+                : hasPermission('frameworkSelection', 'update') 
+                  ? 'Generate your checklist to continue' 
+                  : 'Waiting for checklist generation'
             }
           </p>
         </div>

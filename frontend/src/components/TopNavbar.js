@@ -146,7 +146,7 @@ const TopNavbar = () => {
   console.log('TopNavbar rendering');
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout, selectedCompany, companies, switchCompany, userSites, selectedSite, switchSite, hasPermission } = useAuth();
+  const { user, logout, selectedCompany, companies, userSites, selectedSite, switchSite, hasPermission } = useAuth();
   console.log('Current location:', location.pathname);
 
   // Function to get role colors
@@ -218,7 +218,7 @@ const TopNavbar = () => {
 
   const getBreadcrumb = () => {
     return [
-      { name: 'ESG Portal2', path: '/', isActive: false },
+      { name: 'ESG Portal', path: '/', isActive: false },
       { name: currentModule.name, path: currentModule.path, isActive: true }
     ];
   };
@@ -259,7 +259,7 @@ const TopNavbar = () => {
               <i className="fas fa-leaf text-white"></i>
             </div>
             <h1 className="text-lg font-bold bg-gradient-to-r from-purple-700 to-blue-600 bg-clip-text text-transparent">
-              ESG Portal2
+              ESG Portal
             </h1>
           </div>
 
@@ -287,22 +287,11 @@ const TopNavbar = () => {
             )}
 
             {/* Company Selector */}
-            {companies && companies.length > 1 && (
-              <div className="relative">
-                <select
-                  value={selectedCompany?.id || ''}
-                  onChange={(e) => {
-                    const company = companies.find(c => c.id === parseInt(e.target.value));
-                    if (company) switchCompany(company);
-                  }}
-                  className="text-sm bg-white border border-purple-200 rounded-md px-3 py-1 text-gray-700 hover:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  {companies.map(company => (
-                    <option key={company.id} value={company.id}>
-                      {company.name}
-                    </option>
-                  ))}
-                </select>
+            {/* Company name display only - no switching needed */}
+            {selectedCompany && (
+              <div className="text-sm text-gray-700 bg-purple-50 px-3 py-1 rounded-md border border-purple-200">
+                <i className="fas fa-building mr-2 text-purple-600"></i>
+                {selectedCompany.name}
               </div>
             )}
             

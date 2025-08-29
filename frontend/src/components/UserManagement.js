@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
 
 const UserManagement = () => {
   // ALL HOOKS DECLARED AT THE TOP
+  const navigate = useNavigate();
   const { user, selectedCompany, hasPermission, userSites } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -263,6 +265,20 @@ const UserManagement = () => {
 
   // Role Selection Modal
   const RoleSelectionModal = ({ isOpen, onClose, onRoleSelect }) => {
+    // Prevent body scroll when modal is open
+    useEffect(() => {
+      if (isOpen) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = 'unset';
+      }
+      
+      // Cleanup on unmount
+      return () => {
+        document.body.style.overflow = 'unset';
+      };
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     const availableRoles = getAvailableRoles();
@@ -271,8 +287,13 @@ const UserManagement = () => {
       <div 
         className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000]"
         style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh' }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            onClose();
+          }
+        }}
       >
-        <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
+        <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
           <h3 className="text-lg font-medium text-gray-900 mb-6">Select User Role</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -336,6 +357,20 @@ const UserManagement = () => {
     });
     const [submitting, setSubmitting] = useState(false);
 
+    // Prevent body scroll when modal is open
+    useEffect(() => {
+      if (isOpen) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = 'unset';
+      }
+      
+      // Cleanup on unmount
+      return () => {
+        document.body.style.overflow = 'unset';
+      };
+    }, [isOpen]);
+
     // Update role when selectedRole changes
     useEffect(() => {
       if (selectedRole) {
@@ -388,8 +423,17 @@ const UserManagement = () => {
     if (!isOpen) return null;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000]">
-        <div className="bg-white rounded-lg p-6 w-full max-w-md">
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000]"
+        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            onClose();
+            setShowRoleSelection(true);
+          }
+        }}
+      >
+        <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium text-gray-900">Add New {selectedRole?.label}</h3>
             <button
@@ -1002,14 +1046,9 @@ const UserManagement = () => {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
-                      {user.company?.company_code || 'N/A'}
-                    </span>
-                    <span className="text-gray-500 text-xs">
-                      (ID: {user.company?.id || 'N/A'})
-                    </span>
-                  </div>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    {user.company?.company_code || 'N/A'}
+                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {user.sites?.length || 0} sites
@@ -1068,6 +1107,31 @@ const UserManagement = () => {
             <p className="text-gray-500">No users found. Create your first team member!</p>
           </div>
         )}
+      </div>
+
+      {/* Navigation Buttons */}
+      <div className="flex items-center justify-between bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <button 
+          className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium transition-colors"
+          onClick={() => navigate('/data')}
+        >
+          <i className="fas fa-arrow-left mr-2"></i>Back
+        </button>
+        <div className="flex items-center space-x-4">
+          <span className="text-sm text-gray-600">
+            <i className="fas fa-users mr-2"></i>
+            {users.length} user{users.length !== 1 ? 's' : ''} in your team
+          </span>
+          <button 
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+            onClick={() => {
+              // Navigate to next section or dashboard
+              window.location.href = '/dashboard';
+            }}
+          >
+            Continue<i className="fas fa-arrow-right ml-2"></i>
+          </button>
+        </div>
       </div>
 
       {/* Role Selection Modal */}

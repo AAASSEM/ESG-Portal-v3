@@ -73,10 +73,10 @@ class FrameworkService:
         # UAE ESG Reporting Requirements - mandatory for listed companies
         # For now, we'll make it conditional based on a future profiling question
         
-        # Assign frameworks to company
+        # Assign frameworks to company (company-wide, not user-specific)
         for framework in frameworks_to_assign:
             CompanyFramework.objects.get_or_create(
-                user=user,
+                user=None,  # Company-wide framework assignment
                 company=company,
                 framework=framework,
                 defaults={'is_auto_assigned': True}
@@ -136,7 +136,7 @@ class ProfilingService:
                 try:
                     question = ProfilingQuestion.objects.get(question_id=question_id)
                     CompanyProfileAnswer.objects.update_or_create(
-                        user=user,
+                        user=None,  # Company-wide answer, not user-specific
                         company=company,
                         question=question,
                         defaults={'answer': answer}

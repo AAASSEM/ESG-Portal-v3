@@ -434,18 +434,17 @@ const Data = () => {
       
       if (isMeterDataOnly) {
         // Calculate meter-specific progress from the entries
-        const meterAnnualProgress = calculateMeterManagerProgress(entries);
-        const meterMonthlyProgress = calculateMeterManagerProgress(entries); // Same data since we're filtering by month already
+        const meterProgress = calculateMeterManagerProgress(entries);
         
         finalAnnualProgress = {
           ...annualProgress,
-          ...meterAnnualProgress
+          ...meterProgress
         };
         
         finalMonthlyProgress = {
           ...monthlyProgress,
-          ...meterMonthlyProgress,
-          items_remaining: Math.max(0, meterMonthlyProgress.total_points - meterMonthlyProgress.completed_points)
+          ...meterProgress,
+          items_remaining: Math.max(0, meterProgress.total_points - meterProgress.completed_points)
         };
         
         console.log('🔧 Meter Manager Progress Override:', {
@@ -1006,7 +1005,7 @@ const Data = () => {
   };
 
   const handleContinue = () => {
-    navigate('/dashboard');
+    navigate('/team');
   };
 
   // Check if user has permission to access data collection (moved after hooks)
@@ -1068,16 +1067,26 @@ const Data = () => {
       if (response.ok) {
         const users = await response.json();
         
-        // Filter users based on assignment permissions and exclude viewers (read-only role)
+        // Filter users based on assignment permissions and role hierarchy
         let filteredUsers = users.filter(u => u.role !== 'viewer'); // Viewers can't be assigned tasks
         
-        if (canAssignToUploadersAtOwnSites) {
-          // Site Manager: Can only assign to Uploaders and Meter Managers (exclude viewers)
-          filteredUsers = users.filter(u => 
+        // Apply role hierarchy - users cannot assign to higher or equal level roles
+        if (canAssignToAnyone) {
+          // Super User: Can assign to Admin, Site Manager, Uploader, Meter Manager (but not other Super Users)
+          filteredUsers = filteredUsers.filter(u => 
+            ['admin', 'site_manager', 'uploader', 'meter_manager'].includes(u.role)
+          );
+        } else if (canAssignInCompany) {
+          // Admin: Can assign to Site Manager, Uploader, Meter Manager (but not Super User or other Admins)
+          filteredUsers = filteredUsers.filter(u => 
+            ['site_manager', 'uploader', 'meter_manager'].includes(u.role)
+          );
+        } else if (canAssignToUploadersAtOwnSites) {
+          // Site Manager: Can only assign to Uploaders and Meter Managers
+          filteredUsers = filteredUsers.filter(u => 
             ['uploader', 'meter_manager'].includes(u.role)
           );
         }
-        // Super User and Admin can assign to all non-viewer users
         
         console.log('Available users for assignment:', filteredUsers);
         setAvailableUsers(filteredUsers);
@@ -1204,9 +1213,11 @@ const Data = () => {
                   {isMeterDataOnly ? (
                     (() => {
                       const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
-                      const dataCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
-                      const dataProgress = meteredEntries.length > 0 ? (dataCompleted / meteredEntries.length) * 100 : 0;
-                      return Math.round(dataProgress);
+                      const actualDataCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
+                      const monthlyTotal = meteredEntries.length;
+                      const annualTotal = monthlyTotal * 12;
+                      const annualDataProgress = annualTotal > 0 ? (actualDataCompleted / annualTotal) * 100 : 0;
+                      return Math.round(annualDataProgress);
                     })()
                   ) : (
                     Math.round(progressData.annual.data_progress)
@@ -1218,8 +1229,10 @@ const Data = () => {
                   width: `${isMeterDataOnly ? (
                     (() => {
                       const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
-                      const dataCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
-                      return meteredEntries.length > 0 ? (dataCompleted / meteredEntries.length) * 100 : 0;
+                      const actualDataCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
+                      const monthlyTotal = meteredEntries.length;
+                      const annualTotal = monthlyTotal * 12;
+                      return annualTotal > 0 ? (actualDataCompleted / annualTotal) * 100 : 0;
                     })()
                   ) : progressData.annual.data_progress}%` 
                 }}></div>
@@ -1232,9 +1245,11 @@ const Data = () => {
                   {isMeterDataOnly ? (
                     (() => {
                       const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
-                      const evidenceCompleted = meteredEntries.filter(entry => entry.evidence_file).length;
-                      const evidenceProgress = meteredEntries.length > 0 ? (evidenceCompleted / meteredEntries.length) * 100 : 0;
-                      return Math.round(evidenceProgress);
+                      const actualEvidenceCompleted = meteredEntries.filter(entry => entry.evidence_file).length;
+                      const monthlyTotal = meteredEntries.length;
+                      const annualTotal = monthlyTotal * 12;
+                      const annualEvidenceProgress = annualTotal > 0 ? (actualEvidenceCompleted / annualTotal) * 100 : 0;
+                      return Math.round(annualEvidenceProgress);
                     })()
                   ) : (
                     Math.round(progressData.annual.evidence_progress)
@@ -1246,8 +1261,10 @@ const Data = () => {
                   width: `${isMeterDataOnly ? (
                     (() => {
                       const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
-                      const evidenceCompleted = meteredEntries.filter(entry => entry.evidence_file).length;
-                      return meteredEntries.length > 0 ? (evidenceCompleted / meteredEntries.length) * 100 : 0;
+                      const actualEvidenceCompleted = meteredEntries.filter(entry => entry.evidence_file).length;
+                      const monthlyTotal = meteredEntries.length;
+                      const annualTotal = monthlyTotal * 12;
+                      return annualTotal > 0 ? (actualEvidenceCompleted / annualTotal) * 100 : 0;
                     })()
                   ) : progressData.annual.evidence_progress}%` 
                 }}></div>
@@ -1261,10 +1278,13 @@ const Data = () => {
                   {isMeterDataOnly ? (
                     (() => {
                       const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
-                      const dataCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
-                      const evidenceCompleted = meteredEntries.filter(entry => entry.evidence_file).length;
-                      const overallProgress = meteredEntries.length > 0 ? ((dataCompleted + evidenceCompleted) / (meteredEntries.length * 2)) * 100 : 0;
-                      return Math.round(overallProgress);
+                      const actualDataCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
+                      const actualEvidenceCompleted = meteredEntries.filter(entry => entry.evidence_file).length;
+                      const totalActualCompleted = actualDataCompleted + actualEvidenceCompleted;
+                      const monthlyTotal = meteredEntries.length * 2; // Data + Evidence
+                      const annualTotal = monthlyTotal * 12;
+                      const annualOverallProgress = annualTotal > 0 ? (totalActualCompleted / annualTotal) * 100 : 0;
+                      return Math.round(annualOverallProgress);
                     })()
                   ) : (
                     Math.round(progressData.annual.overall_progress || 0)
@@ -1276,9 +1296,12 @@ const Data = () => {
                   width: `${isMeterDataOnly ? (
                     (() => {
                       const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
-                      const dataCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
-                      const evidenceCompleted = meteredEntries.filter(entry => entry.evidence_file).length;
-                      return meteredEntries.length > 0 ? ((dataCompleted + evidenceCompleted) / (meteredEntries.length * 2)) * 100 : 0;
+                      const actualDataCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
+                      const actualEvidenceCompleted = meteredEntries.filter(entry => entry.evidence_file).length;
+                      const totalActualCompleted = actualDataCompleted + actualEvidenceCompleted;
+                      const monthlyTotal = meteredEntries.length * 2; // Data + Evidence
+                      const annualTotal = monthlyTotal * 12;
+                      return annualTotal > 0 ? (totalActualCompleted / annualTotal) * 100 : 0;
                     })()
                   ) : (progressData.annual.overall_progress || 0)}%` 
                 }}></div>
@@ -1288,13 +1311,14 @@ const Data = () => {
             <div className="pt-4 border-t border-gray-200 text-center">
               <div className="text-2xl font-bold text-gray-900">
                 {isMeterDataOnly ? (
-                  // For meter managers: only count metered tasks
+                  // For meter managers: show actual completed, but annual total
                   (() => {
                     const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
-                    const meteredCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length + 
-                                            meteredEntries.filter(entry => entry.evidence_file).length;
-                    const meteredTotal = meteredEntries.length * 2;
-                    return `${meteredCompleted} / ${meteredTotal}`;
+                    const actualCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length + 
+                                           meteredEntries.filter(entry => entry.evidence_file).length;
+                    const monthlyTotal = meteredEntries.length * 2;
+                    const annualTotal = monthlyTotal * 12;
+                    return `${actualCompleted} / ${annualTotal}`;
                   })()
                 ) : (
                   // For other users: show all tasks
@@ -1309,9 +1333,9 @@ const Data = () => {
                 {isMeterDataOnly ? (
                   (() => {
                     const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
-                    const dataComplete = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
-                    const evidenceComplete = meteredEntries.filter(entry => entry.evidence_file).length;
-                    return `Data Entries: ${dataComplete} | Evidence Files: ${evidenceComplete}`;
+                    const actualDataComplete = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
+                    const actualEvidenceComplete = meteredEntries.filter(entry => entry.evidence_file).length;
+                    return `Data Entries: ${actualDataComplete} | Evidence Files: ${actualEvidenceComplete}`;
                   })()
                 ) : (
                   `Data Entries: ${progressData.annual.data_complete || 0} | Evidence Files: ${progressData.annual.evidence_complete || 0}`

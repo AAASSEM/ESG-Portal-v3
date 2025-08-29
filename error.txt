@@ -1,29 +1,77 @@
-Failed to load resource: net::ERR_CONNECTION_RESET
-ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   Failed to load resource: net::ERR_CONNECTION_RESET
-ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   Failed to load resource: net::ERR_CONNECTION_RESET
-ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   Failed to load resource: net::ERR_INTERNET_DISCONNECTED
-ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   Failed to load resource: net::ERR_NETWORK_CHANGED
-AuthContext.js:351 ✅ Logout successful
-ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   Failed to load resource: net::ERR_CONNECTION_RESET
-ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   Failed to load resource: net::ERR_CONNECTION_RESET
-api/auth/signup/:1   Failed to load resource: net::ERR_NETWORK_CHANGED
-AuthContext.js:340  Signup error: TypeError: Failed to fetch
-    at signup (AuthContext.js:314:30)
-    at onSubmit (Signup.js:59:26)
-    at Object.Fe (react-dom.production.min.js:54:317)
-    at Ge (react-dom.production.min.js:54:471)
-    at react-dom.production.min.js:55:35
-    at Ln (react-dom.production.min.js:105:68)
-    at Un (react-dom.production.min.js:106:380)
-    at react-dom.production.min.js:117:104
-    at cc (react-dom.production.min.js:273:42)
-    at Te (react-dom.production.min.js:52:375)
-signup @ AuthContext.js:340
-ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   Failed to load resource: net::ERR_CONNECTION_RESET
-[NEW] Explain Console errors by using Copilot in Edge: click
-         
-         to explain an error. 
-        Learn more
-        Don't show again
-ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   GET https://ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB net::ERR_CONNECTION_RESET 200 (OK)
-ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   GET https://ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB net::ERR_NAME_NOT_RESOLVED
+Now the picture is clearer — your frontend is calling your backend at
+
+PUT http://localhost:8080/api/companies/16/
+
+
+and the backend replies with:
+
+403 Forbidden
+{"detail":"CSRF Failed: CSRF cookie not set."}
+
+
+This is a CSRF (Cross-Site Request Forgery) protection error, not a port issue.
+Your server (looks like Django REST Framework?) requires a CSRF token for modifying requests (PUT/POST/DELETE).
+
+✅ How to fix
+
+Depending on how your frontend and backend communicate:
+
+1. If using Django + DRF:
+
+Make sure your frontend sends the CSRF token in the request headers.
+
+The backend usually sets a cookie csrftoken. You need to include it in your PUT request.
+
+Example with fetch:
+
+fetch("http://localhost:8080/api/companies/16/", {
+  method: "PUT",
+  headers: {
+    "Content-Type": "application/json",
+    "X-CSRFToken": getCookie("csrftoken")  // 🔑 include CSRF token
+  },
+  body: JSON.stringify(data),
+  credentials: "include"  // 🔑 allow cookies
+});
+
+
+Helper to read cookies:
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + "=")) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+2. If this API is for React/SPA only:
+
+You can configure Django REST Framework to skip CSRF checks for APIs, by using SessionAuthentication → CSRF exempt, or better, switch to Token / JWT authentication.
+Example in Django settings.py:
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+}
+
+3. Quick temporary workaround (not recommended for production):
+
+In Django view, you can disable CSRF:
+
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def my_view(request):
+    ...
+
+
+But ⚠️ this weakens security — better to fix cookies/headers.

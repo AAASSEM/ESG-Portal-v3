@@ -1,0 +1,356 @@
+react refresh:37 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+App.js:24 App.js loaded
+index.js:7 index.js loaded
+index.js:10 Root element: <div id=​"root">​…​</div>​
+index.js:16 Rendering App...
+index.js:20 App render called
+App.js:27 App component rendering
+deprecations.ts:9  ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+warnOnce @ deprecations.ts:9
+logDeprecation @ deprecations.ts:13
+logV6DeprecationWarnings @ deprecations.ts:26
+(anonymous) @ index.tsx:816
+commitHookEffectListMount @ react-dom.development.js:23189
+commitPassiveMountOnFiber @ react-dom.development.js:24965
+commitPassiveMountEffects_complete @ react-dom.development.js:24930
+commitPassiveMountEffects_begin @ react-dom.development.js:24917
+commitPassiveMountEffects @ react-dom.development.js:24905
+flushPassiveEffectsImpl @ react-dom.development.js:27078
+flushPassiveEffects @ react-dom.development.js:27023
+(anonymous) @ react-dom.development.js:26808
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
+deprecations.ts:9  ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+warnOnce @ deprecations.ts:9
+logDeprecation @ deprecations.ts:13
+logV6DeprecationWarnings @ deprecations.ts:37
+(anonymous) @ index.tsx:816
+commitHookEffectListMount @ react-dom.development.js:23189
+commitPassiveMountOnFiber @ react-dom.development.js:24965
+commitPassiveMountEffects_complete @ react-dom.development.js:24930
+commitPassiveMountEffects_begin @ react-dom.development.js:24917
+commitPassiveMountEffects @ react-dom.development.js:24905
+flushPassiveEffectsImpl @ react-dom.development.js:27078
+flushPassiveEffects @ react-dom.development.js:27023
+(anonymous) @ react-dom.development.js:26808
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
+AuthContext.js:123 ✅ User authenticated: Object
+AuthContext.js:150 🏢 User companies fetched: Array(1)
+AuthContext.js:153 🔍 Available companies for user: Array(1)
+AuthContext.js:157 🏢 Using user assigned company: Object
+TopNavbar.js:146 TopNavbar rendering
+TopNavbar.js:150 Current location: /data
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/available_months/?year=2025
+Data.js:390 Navigated to Data page - refreshing data entries to include any meter changes
+Data.js:417 🔄 REFRESH START - Company: 16 Year: 2025 Month: 8
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/tasks/?company_id=16&year=2025&month=8
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=8
+Data.js:399 Setting up periodic refresh every 10 seconds
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/available_months/?year=2025 Status: 200
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=1
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=2
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=3
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=4
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=5
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=6
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=7
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=8 Status: 200
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=2 Status: 200
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=1 Status: 200
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=5 Status: 200
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=3 Status: 200
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=6 Status: 200
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=7 Status: 200
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=4 Status: 200
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/tasks/?company_id=16&year=2025&month=8 Status: 200
+Data.js:165 🔍 fetchDataEntries raw API response: Object
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025 Status: 200
+Data.js:426 📊 Raw API responses:
+Data.js:427 - Data entries count: 10
+Data.js:428 - Annual progress: Object
+Data.js:429 - Monthly progress: Object
+Data.js:463 🔄 Transforming entries: Object
+Data.js:501 ✅ REFRESH COMPLETE - Found 10 tasks
+Data.js:502 - Raw entries breakdown with assignments:
+Data.js:505   1. Electricity Consumption - Meter: Main (Electricity Consumption) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   2. Electricity Consumption - Meter: 2nd Electricity (Electricity Consumption) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   3. Employee Training Hours - Meter: N/A - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   4. Generator Fuel Consumption - Meter: Main (Generator Fuel Consumption) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   5. LPG Usage - Meter: Main (LPG Usage) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   6. Renewable Energy Usage - Meter: Main (Renewable Energy Usage) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   7. Sustainability Policy - Meter: N/A - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   8. Vehicle Fuel Consumption - Meter: Main (Vehicle Fuel Consumption) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   9. Waste to Landfill - Meter: Main (Waste to Landfill) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   10. Water Consumption - Meter: Main (Water Consumption) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:518 - Expected total points (entries * 2): 20
+Data.js:519 - Actual total points from API: 20
+Data.js:520 - Completed points: 0
+Data.js:521 - Items remaining: 20
+Data.js:522 - Progress calculations:
+Data.js:523   - Data progress: 0
+Data.js:524   - Evidence progress: 0
+Data.js:525   - Overall progress: 0
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025 Status: 200
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=8
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=8 Status: 200
+Data.js:324 Loading data entries for company: 16 year: 2025 month: 8
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/tasks/?company_id=16&year=2025&month=8
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/tasks/?company_id=16&year=2025&month=8 Status: 200
+Data.js:165 🔍 fetchDataEntries raw API response: Object
+Data.js:326 Raw entries from API: Array(10)
+Data.js:347 Transformed entries: Array(10)
+Data.js:402 Periodic refresh - checking for meter changes
+Data.js:417 🔄 REFRESH START - Company: 16 Year: 2025 Month: 8
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/tasks/?company_id=16&year=2025&month=8
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=8
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=8 Status: 200
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/tasks/?company_id=16&year=2025&month=8 Status: 200
+Data.js:165 🔍 fetchDataEntries raw API response: Object
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025 Status: 200
+Data.js:426 📊 Raw API responses:
+Data.js:427 - Data entries count: 10
+Data.js:428 - Annual progress: Object
+Data.js:429 - Monthly progress: Object
+Data.js:463 🔄 Transforming entries: Object
+Data.js:501 ✅ REFRESH COMPLETE - Found 10 tasks
+Data.js:502 - Raw entries breakdown with assignments:
+Data.js:505   1. Electricity Consumption - Meter: Main (Electricity Consumption) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   2. Electricity Consumption - Meter: 2nd Electricity (Electricity Consumption) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   3. Employee Training Hours - Meter: N/A - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   4. Generator Fuel Consumption - Meter: Main (Generator Fuel Consumption) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   5. LPG Usage - Meter: Main (LPG Usage) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   6. Renewable Energy Usage - Meter: Main (Renewable Energy Usage) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   7. Sustainability Policy - Meter: N/A - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   8. Vehicle Fuel Consumption - Meter: Main (Vehicle Fuel Consumption) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   9. Waste to Landfill - Meter: Main (Waste to Landfill) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   10. Water Consumption - Meter: Main (Water Consumption) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:518 - Expected total points (entries * 2): 20
+Data.js:519 - Actual total points from API: 20
+Data.js:520 - Completed points: 0
+Data.js:521 - Items remaining: 20
+Data.js:522 - Progress calculations:
+Data.js:523   - Data progress: 0
+Data.js:524   - Evidence progress: 0
+Data.js:525   - Overall progress: 0
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/1355/
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/1355/ Status: 200
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025 Status: 200
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=8
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=8 Status: 200
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/available_months/?year=2025
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/available_months/?year=2025 Status: 200
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=1
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=2
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=3
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=4
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=5
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=6
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=7
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=1 Status: 200
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=4 Status: 200
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=2 Status: 200
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=3 Status: 200
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=6 Status: 200
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=5 Status: 200
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=7 Status: 200
+Data.js:402 Periodic refresh - checking for meter changes
+Data.js:417 🔄 REFRESH START - Company: 16 Year: 2025 Month: 8
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/tasks/?company_id=16&year=2025&month=8
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=8
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:52 🔑 CSRF token: obtained
+TopNavbar.js:146 TopNavbar rendering
+TopNavbar.js:150 Current location: /dashboard
+Data.js:408 Clearing periodic refresh interval
+DashboardNew.js:1285 📊 Starting dashboard load for company: 16
+DashboardNew.js:1188 🚀 Loading dashboard (attempt 1)...
+DashboardNew.js:846 🔄 Fetching dashboard data for company: 16
+TopNavbar.js:146 TopNavbar rendering
+TopNavbar.js:150 Current location: /team
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/users/
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/tasks/?company_id=16&year=2025&month=8 Status: 200
+Data.js:165 🔍 fetchDataEntries raw API response: Object
+AuthContext.js:52 🔑 CSRF token: obtained
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025&month=8 Status: 200
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/users/ Status: 200
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=16&year=2025 Status: 200
+Data.js:426 📊 Raw API responses:
+Data.js:427 - Data entries count: 10
+Data.js:428 - Annual progress: Object
+Data.js:429 - Monthly progress: Object
+Data.js:463 🔄 Transforming entries: Object
+Data.js:501 ✅ REFRESH COMPLETE - Found 10 tasks
+Data.js:502 - Raw entries breakdown with assignments:
+Data.js:505   1. Electricity Consumption - Meter: Main (Electricity Consumption) - Status: partial
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   2. Electricity Consumption - Meter: 2nd Electricity (Electricity Consumption) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   3. Employee Training Hours - Meter: N/A - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   4. Generator Fuel Consumption - Meter: Main (Generator Fuel Consumption) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   5. LPG Usage - Meter: Main (LPG Usage) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   6. Renewable Energy Usage - Meter: Main (Renewable Energy Usage) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   7. Sustainability Policy - Meter: N/A - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   8. Vehicle Fuel Consumption - Meter: Main (Vehicle Fuel Consumption) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   9. Waste to Landfill - Meter: Main (Waste to Landfill) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:505   10. Water Consumption - Meter: Main (Water Consumption) - Status: missing
+Data.js:509     ❌ No assignment data
+Data.js:513     Submission keys: id,element,element_name,meter,meter_name,reporting_year,reporting_period,value,evidence_file,status,assigned_to,assigned_by_name,assigned_at,created_at,updated_at
+Data.js:515     Assignment is explicitly null/undefined
+Data.js:518 - Expected total points (entries * 2): 20
+Data.js:519 - Actual total points from API: 20
+Data.js:520 - Completed points: 1
+Data.js:521 - Items remaining: 19
+Data.js:522 - Progress calculations:
+Data.js:523   - Data progress: 10
+Data.js:524   - Evidence progress: 0
+Data.js:525   - Overall progress: 5
+DashboardNew.js:856 📊 API Response Status: Object
+DashboardNew.js:870 📋 Raw Frameworks Data: Array(3)
+DashboardNew.js:897 ✅ Processed Frameworks: Array(3)
+DashboardNew.js:904 🔧 Processed Meters: 8 meters found
+DashboardNew.js:1013 🏗️ Transforming frameworks: Array(3)
+DashboardNew.js:1060 🎯 Transformed Framework 1: Object
+DashboardNew.js:1060 🎯 Transformed Framework 2: Object
+DashboardNew.js:1060 🎯 Transformed Framework 3: Object
+DashboardNew.js:1064 ✅ All frameworks transformed: 3 frameworks
+DashboardNew.js:1202 ✅ Dashboard loaded successfully: Object
+ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR
+ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR
+ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR
+ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR
+ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR
+ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR
+ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR
+ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/users/
+AuthContext.js:52 🔑 CSRF token: obtained
+:8080/api/users/:1   Failed to load resource: the server responded with a status of 403 (Forbidden)
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/users/ Status: 403
+[NEW] Explain Console errors by using Copilot in Edge: click
+         
+         to explain an error. 
+        Learn more
+        Don't show again
+ab.reasonlabsapi.com/sub/sdk-QtSYWOMLlkHBbNMB:1   Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR

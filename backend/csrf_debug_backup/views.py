@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
-from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db import transaction
@@ -67,7 +66,7 @@ def get_user_company(request_user, company_id):
 class CompanyViewSet(viewsets.ModelViewSet):
     """ViewSet for company management"""
     serializer_class = CompanySerializer
-    authentication_classes = [CsrfExemptSessionAuthentication]  # Use CSRF-exempt auth
+    authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
@@ -216,17 +215,19 @@ class CompanyViewSet(viewsets.ModelViewSet):
         
         activity_ids = request.data.get('activity_ids', [])
         
-        # Show current database state BEFORE changes (company-wide)
+        # Show current database state BEFORE changes
         existing_activities = CompanyActivity.objects.filter(
+            user=request.user,
             company=company
         )
-        print(f"📊 BEFORE: {existing_activities.count()} existing CompanyActivity records for company")
+        print(f"📊 BEFORE: {existing_activities.count()} existing CompanyActivity records for user")
         for ca in existing_activities:
-            print(f"   - ID: {ca.id}, Activity: '{ca.activity.name}' (Activity ID: {ca.activity.id}, Created by: {ca.user.username if ca.user else 'System'})")
+            print(f"   - ID: {ca.id}, Activity: '{ca.activity.name}' (Activity ID: {ca.activity.id})")
         
         with transaction.atomic():
-            # Clear existing activities for this company (company-wide, not user-specific)
+            # Clear existing activities for this user's company
             deleted_count, _ = CompanyActivity.objects.filter(
+                user=request.user,
                 company=company
             ).delete()
             print(f"🗑️  Deleted {deleted_count} existing CompanyActivity records")
@@ -239,7 +240,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
                     print(f"🔍 Found activity: '{activity.name}' (ID: {activity.id}, is_custom: {activity.is_custom})")
                     
                     company_activity = CompanyActivity.objects.create(
-                        user=None,  # Company-wide activity, not tied to specific user
+                        user=request.user,
                         company=company,
                         activity=activity
                     )
@@ -256,20 +257,22 @@ class CompanyViewSet(viewsets.ModelViewSet):
             print(f"🔄 Re-assigning mandatory frameworks...")
             FrameworkService.assign_mandatory_frameworks(company, request.user)
         
-        # Show final database state AFTER changes (company-wide, not user-specific)
+        # Show final database state AFTER changes
         final_activities = Activity.objects.filter(
+            companyactivity__user=request.user,
             companyactivity__company=company
-        ).distinct()
+        )
         print(f"📊 AFTER: {final_activities.count()} activities now linked to company")
         for activity in final_activities:
             print(f"   - '{activity.name}' (ID: {activity.id}, is_custom: {activity.is_custom})")
         
         print(f"🏢 === ACTIVITY SAVE REQUEST END ===\n")
         
-        # Return updated activities (company-wide, visible to all users in company)
+        # Return updated activities
         activities = Activity.objects.filter(
+            companyactivity__user=request.user,
             companyactivity__company=company
-        ).distinct()
+        )
         serializer = ActivitySerializer(activities, many=True)
         return Response(serializer.data)
     
@@ -278,8 +281,9 @@ class CompanyViewSet(viewsets.ModelViewSet):
         """Get company's assigned mandatory frameworks"""
         company = self._get_user_company(pk)
         
-        # Get company's assigned frameworks (company-wide, visible to all users)
+        # Get company's assigned frameworks (filtered by user)
         company_frameworks = CompanyFramework.objects.filter(
+            user=request.user,
             company=company
         )
         frameworks = [cf.framework for cf in company_frameworks]
@@ -346,9 +350,9 @@ class CompanyViewSet(viewsets.ModelViewSet):
         try:
             question = ProfilingQuestion.objects.get(question_id=question_id)
             
-            # Update or create the answer (company-wide, not user-specific)
+            # Update or create the answer
             profile_answer, created = CompanyProfileAnswer.objects.update_or_create(
-                user=None,  # Company-wide answer, not tied to specific user
+                user=request.user,
                 company=company,
                 question=question,
                 defaults={'answer': answer}
@@ -503,7 +507,7 @@ class ProfilingQuestionViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for profiling questions"""
     queryset = ProfilingQuestion.objects.all()
     serializer_class = ProfilingQuestionSerializer
-    authentication_classes = [CsrfExemptSessionAuthentication]
+    authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
     
     @action(detail=False, methods=['get'])
@@ -569,7 +573,7 @@ class ProfilingQuestionViewSet(viewsets.ReadOnlyModelViewSet):
 class CompanyChecklistViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for company's personalized checklist"""
     serializer_class = CompanyChecklistSerializer
-    authentication_classes = [CsrfExemptSessionAuthentication]
+    authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
@@ -610,7 +614,7 @@ class CompanyChecklistViewSet(viewsets.ReadOnlyModelViewSet):
 class MeterViewSet(viewsets.ModelViewSet):
     """ViewSet for meter management"""
     serializer_class = MeterSerializer
-    authentication_classes = [CsrfExemptSessionAuthentication]
+    authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
@@ -657,9 +661,9 @@ class MeterViewSet(viewsets.ModelViewSet):
             meter_data['company_id'] = company_id
             print(f"🔧 Creating meter with data: {meter_data}")
             
-            # Create meter directly (company-wide, not user-specific)
+            # Create meter directly
             meter = Meter.objects.create(
-                user=None,  # Company-wide meter, not tied to specific user
+                user=request.user,  # CRITICAL: Set the user field
                 company=company,
                 type=meter_data.get('type'),
                 name=meter_data.get('name'),
@@ -750,7 +754,7 @@ class MeterViewSet(viewsets.ModelViewSet):
 class DataCollectionViewSet(viewsets.ModelViewSet):
     """ViewSet for data collection and submissions"""
     serializer_class = CompanyDataSubmissionSerializer
-    authentication_classes = [CsrfExemptSessionAuthentication]
+    authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
@@ -978,7 +982,7 @@ class DataCollectionViewSet(viewsets.ModelViewSet):
 @method_decorator(csrf_exempt, name='dispatch')
 class DashboardView(APIView):
     """API view for dashboard statistics"""
-    authentication_classes = [CsrfExemptSessionAuthentication]
+    authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]  # CRITICAL: Fixed security hole
     
     def get(self, request):

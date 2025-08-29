@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
+from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -12,30 +13,46 @@ from .models import UserProfile
 @method_decorator(csrf_exempt, name='dispatch')
 class UserViewSet(viewsets.ModelViewSet):
     """ViewSet for user management"""
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [CsrfExemptSessionAuthentication]
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         """Return users based on current user's permissions"""
         current_user = self.request.user
         
+        print(f"\n👥 === USER VIEWSET QUERYSET START ===")
+        print(f"👤 Current user: {current_user.username} (ID: {current_user.id})")
+        
         # Get current user's role and company
         try:
             user_profile = current_user.userprofile
             user_role = user_profile.role
             user_company = user_profile.company
-        except:
+            print(f"📋 User profile found - Role: {user_role}, Company: {user_company.name if user_company else 'None'}")
+        except Exception as e:
+            print(f"❌ User profile error: {str(e)}")
             user_role = 'viewer'
             user_company = None
         
+        # Check if user has company through User.company field as well
+        if not user_company and hasattr(current_user, 'company') and current_user.company:
+            user_company = current_user.company
+            print(f"🔄 Using User.company field: {user_company.name}")
+        
         # All users should only see users from their company
         if user_company:
-            return User.objects.filter(
+            queryset = User.objects.filter(
                 userprofile__company=user_company
             ).select_related('userprofile')
+            print(f"🏢 Returning users for company: {user_company.name} (found {queryset.count()} users)")
+            print(f"👥 === USER VIEWSET QUERYSET END ===\n")
+            return queryset
         else:
             # If user has no company, they see only themselves
-            return User.objects.filter(id=current_user.id).select_related('userprofile')
+            queryset = User.objects.filter(id=current_user.id).select_related('userprofile')
+            print(f"⚠️ No company found, returning only current user ({queryset.count()} users)")
+            print(f"👥 === USER VIEWSET QUERYSET END ===\n")
+            return queryset
     
     def create(self, request, *args, **kwargs):
         """Create a new user"""
@@ -122,6 +139,10 @@ class UserViewSet(viewsets.ModelViewSet):
                 last_name=' '.join(name.split(' ')[1:]) if ' ' in name else '',
                 is_active=False  # Set as inactive until first login
             )
+            
+            # Set company directly on User for fast access
+            user.company = user_company
+            user.save()
             
             # Create or update user profile
             profile, created = UserProfile.objects.get_or_create(user=user)

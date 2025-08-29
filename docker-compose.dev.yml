@@ -1,0 +1,75 @@
+version: '3.8'
+
+# Development version of docker-compose with live reload
+services:
+  # PostgreSQL Database (same as production)
+  db:
+    image: postgres:15-alpine
+    container_name: esg_postgres_dev
+    environment:
+      POSTGRES_DB: esg_portal_dev
+      POSTGRES_USER: esg_user
+      POSTGRES_PASSWORD: esg_password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"  # Different port to avoid conflicts
+    networks:
+      - esg_network_dev
+
+  # Django Backend (Development with live reload)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: esg_backend_dev
+    environment:
+      - DEBUG=True
+      - DATABASE_URL=postgresql://esg_user:esg_password@db:5432/esg_portal_dev
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,frontend,host.docker.internal
+      - SECRET_KEY=dev-secret-key-not-for-production
+    volumes:
+      - ./backend:/app  # Live reload
+      - backend_dev_media:/app/media
+    ports:
+      - "8001:8000"  # Different port to avoid conflicts
+    depends_on:
+      - db
+    networks:
+      - esg_network_dev
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  # React Frontend (Development with live reload)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: esg_frontend_dev
+    environment:
+      - REACT_APP_API_BASE_URL=http://localhost:8001
+      - CHOKIDAR_USEPOLLING=true  # For file watching in Docker
+    volumes:
+      - ./frontend:/app  # Live reload
+      - /app/node_modules  # Exclude node_modules from volume
+    ports:
+      - "3001:3000"  # Different port to avoid conflicts
+    depends_on:
+      - backend
+    networks:
+      - esg_network_dev
+
+# Networks
+networks:
+  esg_network_dev:
+    driver: bridge
+
+# Volumes
+volumes:
+  postgres_dev_data:
+    driver: local
+  backend_dev_media:
+    driver: local

@@ -386,67 +386,6 @@ class UserSitesView(APIView):
         return Response([])
 
 
-@method_decorator(csrf_exempt, name='dispatch')
-class CompanyUpdateView(APIView):
-    """Direct company update endpoint (bypasses DRF router)"""
-    
-    def post(self, request, company_id):
-        print(f"\n🏢 === DIRECT COMPANY UPDATE REQUEST START ===")
-        print(f"👤 User: {request.user.username} (ID: {request.user.id})")
-        print(f"🏢 Company ID: {company_id}")
-        print(f"📝 Request data: {request.data}")
-        
-        if not request.user.is_authenticated:
-            return Response({
-                'error': 'Not authenticated'
-            }, status=status.HTTP_401_UNAUTHORIZED)
-        
-        try:
-            from .models import Company
-            from .views import get_user_company
-            
-            company = get_user_company(request.user, company_id)
-            print(f"✅ Company found: {company.name} (ID: {company.id})")
-            
-            # Update allowed fields
-            if 'name' in request.data:
-                company.name = request.data['name']
-                print(f"📝 Updated name to: {company.name}")
-                
-            if 'emirate' in request.data:
-                company.emirate = request.data['emirate'].lower()
-                print(f"📍 Updated emirate to: {company.emirate}")
-                
-            if 'sector' in request.data:
-                company.sector = request.data['sector'].lower().replace(' & ', '_').replace(' ', '_')
-                print(f"🏭 Updated sector to: {company.sector}")
-            
-            company.save()
-            print(f"✅ Company saved successfully")
-            
-            # Return updated company data
-            response_data = {
-                'id': company.id,
-                'name': company.name,
-                'emirate': company.emirate,
-                'sector': company.sector,
-                'created_at': company.created_at.isoformat() if company.created_at else None
-            }
-            
-            print(f"📤 Returning company data: {response_data}")
-            print(f"🏢 === DIRECT COMPANY UPDATE REQUEST END ===\n")
-            
-            return Response(response_data)
-            
-        except Exception as e:
-            print(f"❌ Error updating company: {str(e)}")
-            print(f"🏢 === DIRECT COMPANY UPDATE REQUEST END (ERROR) ===\n")
-            return Response(
-                {'error': f'Failed to update company: {str(e)}'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-
 class CsrfTokenView(APIView):
     """
     View to get CSRF token

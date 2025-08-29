@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+# Add company field to User model dynamically
+User.add_to_class('company', models.ForeignKey('core.Company', on_delete=models.CASCADE, null=True, blank=True, related_name='members'))
+
 
 class UserProfile(models.Model):
     """Extended user profile with role-based access control"""
@@ -54,7 +57,7 @@ class Company(models.Model):
         ('retail', 'Retail'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='owned_companies')
     name = models.CharField(max_length=255)
     company_code = models.CharField(max_length=10, unique=True, help_text="Unique company identifier code (e.g., DXB001)")
     emirate = models.CharField(max_length=100, choices=EMIRATE_CHOICES)
