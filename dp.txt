@@ -1,0 +1,304 @@
+Unified ESG Dashboard Component Specification
+Core Structure
+javascriptconst DashboardComponent = ({ user, dashboardData, chartData }) => {
+  // Dynamic rendering based on user role
+  // No hardcoded values - all data from API
+}
+Navigation Components
+1. Meter Navigation Bar
+javascript// Horizontal scrollable meter selector
+<div className="meter-navigation">
+  <button onClick={() => navigateMeter('prev')}>←</button>
+  <div className="meter-tabs">
+    {chartData.meters.map(meter => (
+      <div 
+        key={meter.id} 
+        className={selectedMeter === meter.id ? 'active' : ''}
+        onClick={() => setSelectedMeter(meter.id)}
+      >
+        {meter.type} - {meter.name}
+      </div>
+    ))}
+  </div>
+  <button onClick={() => navigateMeter('next')}>→</button>
+</div>
+Role-Specific Component Visibility
+Super User Components
+javascript// System-wide metrics
+- SystemOverview: Total companies, users, global compliance
+- CrossCompanyComparison: ESG scores across companies
+- GlobalEmissionsAnalysis: Aggregated emissions data
+- PlatformHealthMetrics: System performance indicators
+- RecentActivities: All system activities
+Admin Components
+javascript// Company-wide analytics
+- CompanyESGScores: E/S/G breakdown with trends
+- AllMetersOverview: Complete meter infrastructure
+- EmissionsScoping: Full Scope 1/2/3 analysis
+- SiteComparison: Multi-site performance metrics
+- RecentActivities: Company-wide activities
+- ReductionOpportunities: All identified opportunities
+- FrameworkCompliance: Status across all frameworks
+Site Manager Components
+javascript// Site-specific metrics
+- SiteESGScores: Site-level E/S/G performance
+- SiteMeters: Meters for assigned sites only
+- SiteEmissions: Site-specific emissions breakdown
+- TeamPerformance: Uploader productivity metrics
+- RecentActivities: Site-level activities only
+- SiteReductionOpportunities: Relevant to site
+Uploader Components
+javascript// Task-focused view
+- PersonalProgress: Individual completion metrics
+- AssignedMeters: Meters they need to update
+- TaskQueue: Pending data entries
+- RecentActivities: Own submissions only
+- DataEntryTrends: Personal performance over time
+Viewer/Auditor Components
+javascript// Read-only comprehensive view
+- ESGScoresOverview: All scores (read-only)
+- MetersMonitoring: All meters (view-only)
+- EmissionsAnalysis: Complete scoping data
+- ComplianceTracking: Framework adherence
+- RecentActivities: All activities (audit trail)
+- ReportGenerator: Export capabilities
+Meter Manager Components
+javascript// Infrastructure focus
+- MeterHealthDashboard: Overall meter status
+- MeterPerformance: Individual meter analytics
+- MaintenanceSchedule: Upcoming maintenance
+- MeterAlerts: Critical meter issues
+- RecentActivities: Meter-related activities only
+- CalibrationTracking: Accuracy metrics
+Recent Activities Component
+javascriptconst RecentActivities = ({ activities, userRole }) => {
+  // Filter activities based on user role and permissions
+  const filteredActivities = filterByRole(activities, userRole);
+  
+  return (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        Recent Activity
+      </h3>
+      <div className="space-y-3">
+        {filteredActivities.map(activity => (
+          <ActivityItem 
+            key={activity.id}
+            type={activity.type}
+            description={activity.description}
+            timestamp={activity.timestamp}
+            user={activity.user}
+            value={activity.value}
+            icon={getActivityIcon(activity.type)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Activity types to track
+const activityTypes = {
+  DATA_SUBMISSION: 'data',
+  METER_UPDATE: 'meter',
+  FRAMEWORK_PROGRESS: 'framework',
+  USER_ACTION: 'user',
+  SYSTEM_ALERT: 'alert',
+  REPORT_GENERATION: 'report',
+  TASK_COMPLETION: 'task'
+};
+Data Flow Structure
+javascript// Main dashboard data structure (no hardcoded values)
+const dashboardState = {
+  // ESG Scores Section
+  esgScores: {
+    environmental: {
+      score: null, // From API
+      grade: null,
+      trend: null,
+      metrics: []
+    },
+    social: {
+      score: null,
+      grade: null,
+      trend: null,
+      metrics: []
+    },
+    governance: {
+      score: null,
+      grade: null,
+      trend: null,
+      metrics: []
+    },
+    overall: null // Calculated
+  },
+  
+  // Meters Section
+  meters: {
+    active: [],
+    inactive: [],
+    alerts: [],
+    consumption: {},
+    trends: {}
+  },
+  
+  // Emissions Section
+  emissions: {
+    scope1: {
+      value: null,
+      percentage: null,
+      sources: []
+    },
+    scope2: {
+      value: null,
+      percentage: null,
+      sources: []
+    },
+    scope3: {
+      value: null,
+      percentage: null,
+      sources: []
+    },
+    total: null,
+    intensity: {},
+    opportunities: []
+  },
+  
+  // Activities
+  recentActivities: []
+};
+Component Rendering Logic
+javascriptconst renderDashboardSection = (section, userRole, data) => {
+  const rolePermissions = {
+    super_user: ['all'],
+    admin: ['esg', 'meters', 'emissions', 'activities', 'frameworks'],
+    site_manager: ['esg_limited', 'meters_site', 'emissions_site', 'activities_site'],
+    uploader: ['personal_progress', 'assigned_meters', 'activities_own'],
+    viewer: ['esg_view', 'meters_view', 'emissions_view', 'activities_view'],
+    meter_manager: ['meters_full', 'meter_health', 'activities_meter']
+  };
+  
+  const userPermissions = rolePermissions[userRole];
+  
+  // Conditionally render based on permissions
+  if (!hasPermission(section, userPermissions)) return null;
+  
+  return <SectionComponent data={data} readOnly={isReadOnly(userRole)} />;
+};
+Key Features Implementation
+1. Dynamic KPI Cards
+javascriptconst KPICard = ({ title, value, unit, change, trend, icon, color }) => (
+  <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="flex items-center">
+      <div className={`w-12 h-12 bg-${color}-100 rounded-lg flex items-center justify-center`}>
+        <i className={`fas fa-${icon} text-${color}-600 text-xl`}></i>
+      </div>
+      <div className="ml-4">
+        <p className="text-sm text-gray-600">{title}</p>
+        <p className="text-2xl font-bold text-gray-800">
+          {value || '--'} {unit}
+        </p>
+        {change && (
+          <span className={`text-sm ${trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+            {trend === 'up' ? '↑' : '↓'} {Math.abs(change)}%
+          </span>
+        )}
+      </div>
+    </div>
+  </div>
+);
+2. Framework Progress Bars
+javascriptconst FrameworkProgress = ({ frameworks }) => (
+  <div className="bg-white rounded-lg shadow-md p-6">
+    {frameworks.map(framework => (
+      <div key={framework.id} className="mb-4">
+        <div className="flex justify-between mb-2">
+          <span className="font-medium">{framework.name}</span>
+          <span className="text-sm text-gray-600">{framework.progress}%</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+            style={{ width: `${framework.progress}%` }}
+          />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+3. Emissions Breakdown Chart
+javascriptconst EmissionsChart = ({ emissionsData, selectedScope, onScopeChange }) => (
+  <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="flex items-center justify-between mb-4">
+      <h3 className="text-lg font-semibold">Emissions by Scope</h3>
+      <select 
+        value={selectedScope} 
+        onChange={(e) => onScopeChange(e.target.value)}
+        className="border rounded px-3 py-1"
+      >
+        <option value="all">All Scopes</option>
+        <option value="scope1">Scope 1</option>
+        <option value="scope2">Scope 2</option>
+        <option value="scope3">Scope 3</option>
+      </select>
+    </div>
+    {/* Chart rendering logic using emissionsData */}
+  </div>
+);
+Dashboard Layout Structure
+javascriptreturn (
+  <div className="min-h-screen bg-gray-50">
+    {/* Time Range Selector */}
+    <TimeRangeSelector 
+      selected={selectedTimeRange} 
+      onChange={setSelectedTimeRange} 
+    />
+    
+    {/* Main Grid */}
+    <div className="max-w-7xl mx-auto p-6">
+      {/* KPI Cards Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {kpiData.map(kpi => <KPICard key={kpi.id} {...kpi} />)}
+      </div>
+      
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* ESG Scores Section */}
+        {hasPermission('esg') && <ESGScoresCard />}
+        
+        {/* Meters Section with Navigation */}
+        {hasPermission('meters') && (
+          <div>
+            <MeterNavigation />
+            <MeterChart selectedMeter={selectedMeter} />
+          </div>
+        )}
+      </div>
+      
+      {/* Emissions Section */}
+      {hasPermission('emissions') && (
+        <EmissionsBreakdown data={emissionsData} />
+      )}
+      
+      {/* Framework Compliance */}
+      {hasPermission('frameworks') && (
+        <FrameworkProgress frameworks={frameworkData} />
+      )}
+      
+      {/* Recent Activities */}
+      <RecentActivities 
+        activities={recentActivities} 
+        userRole={user.role} 
+      />
+    </div>
+  </div>
+);
+This prompt provides a complete specification for a unified dashboard that:
+
+Combines ESG scores, meters, and emissions data
+Includes meter navigation as requested
+Shows role-specific components
+Includes Recent Activities section
+Uses no hardcoded data (all from API)
+Maintains the existing styling from your uploaded file
+Provides appropriate visibility based on user roles

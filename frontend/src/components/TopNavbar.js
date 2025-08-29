@@ -218,7 +218,7 @@ const TopNavbar = () => {
 
   const getBreadcrumb = () => {
     return [
-      { name: 'ESG Portal', path: '/', isActive: false },
+      { name: selectedCompany?.name || 'ESG Portal', path: '/', isActive: false },
       { name: currentModule.name, path: currentModule.path, isActive: true }
     ];
   };
@@ -286,14 +286,6 @@ const TopNavbar = () => {
               </div>
             )}
 
-            {/* Company Selector */}
-            {/* Company name display only - no switching needed */}
-            {selectedCompany && (
-              <div className="text-sm text-gray-700 bg-purple-50 px-3 py-1 rounded-md border border-purple-200">
-                <i className="fas fa-building mr-2 text-purple-600"></i>
-                {selectedCompany.name}
-              </div>
-            )}
             
             
             

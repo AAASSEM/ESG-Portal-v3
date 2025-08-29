@@ -29,6 +29,9 @@ const Data = () => {
   const [availableUsers, setAvailableUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [assignmentFilter, setAssignmentFilter] = useState('all'); // 'all', 'assigned', 'unassigned'
+  const [showViewFilterModal, setShowViewFilterModal] = useState(false);
+  const [showGroupByModal, setShowGroupByModal] = useState(false);
+  const [showAssignmentFilterModal, setShowAssignmentFilterModal] = useState(false);
   const [progressData, setProgressData] = useState({
     annual: { 
       data_progress: 0, 
@@ -1553,39 +1556,36 @@ const Data = () => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700">View by:</label>
-              <select 
-                className="border border-gray-300 rounded-lg px-3 py-1 text-sm"
-                value={viewFilter}
-                onChange={(e) => setViewFilter(e.target.value)}
+              <button
+                onClick={() => setShowViewFilterModal(true)}
+                className="flex items-center space-x-2 px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
               >
-                <option>All Items</option>
-                <option>Metered</option>
-                <option>Non-metered</option>
-              </select>
+                <i className="fas fa-filter"></i>
+                <span>{viewFilter || 'All Items'}</span>
+                <i className="fas fa-chevron-down ml-1"></i>
+              </button>
             </div>
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700">Group by:</label>
-              <select 
-                className="border border-gray-300 rounded-lg px-3 py-1 text-sm"
-                value={groupBy}
-                onChange={(e) => setGroupBy(e.target.value)}
+              <button
+                onClick={() => setShowGroupByModal(true)}
+                className="flex items-center space-x-2 px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
               >
-                <option>Category</option>
-                <option>Frequency</option>
-                <option>Status</option>
-              </select>
+                <i className="fas fa-layer-group"></i>
+                <span>{groupBy}</span>
+                <i className="fas fa-chevron-down ml-1"></i>
+              </button>
             </div>
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700">Assignment:</label>
-              <select 
-                className="border border-gray-300 rounded-lg px-3 py-1 text-sm"
-                value={assignmentFilter}
-                onChange={(e) => setAssignmentFilter(e.target.value)}
+              <button
+                onClick={() => setShowAssignmentFilterModal(true)}
+                className="flex items-center space-x-2 px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
               >
-                <option value="all">All Tasks</option>
-                <option value="assigned">Assigned</option>
-                <option value="unassigned">Unassigned</option>
-              </select>
+                <i className="fas fa-tasks"></i>
+                <span>{assignmentFilter === 'all' ? 'All Tasks' : assignmentFilter === 'assigned' ? 'Assigned' : 'Unassigned'}</span>
+                <i className="fas fa-chevron-down ml-1"></i>
+              </button>
             </div>
             <div className="flex-1">
               <input 
@@ -2035,6 +2035,188 @@ const Data = () => {
           </div>
         </div>, document.body
       )}
+
+      {/* Filter Modals */}
+      {showViewFilterModal && <ViewFilterModal 
+        isOpen={showViewFilterModal}
+        currentFilter={viewFilter || 'All Items'}
+        onApply={(selected) => {
+          setViewFilter(selected === 'All Items' ? 'All' : selected);
+          setShowViewFilterModal(false);
+        }}
+        onClose={() => setShowViewFilterModal(false)}
+      />}
+
+      {showGroupByModal && <GroupByModal 
+        isOpen={showGroupByModal}
+        currentFilter={groupBy}
+        onApply={(selected) => {
+          setGroupBy(selected);
+          setShowGroupByModal(false);
+        }}
+        onClose={() => setShowGroupByModal(false)}
+      />}
+
+      {showAssignmentFilterModal && <AssignmentFilterModal 
+        isOpen={showAssignmentFilterModal}
+        currentFilter={assignmentFilter}
+        onApply={(selected) => {
+          setAssignmentFilter(selected);
+          setShowAssignmentFilterModal(false);
+        }}
+        onClose={() => setShowAssignmentFilterModal(false)}
+      />}
+    </div>
+  );
+};
+
+// Filter Modal Components
+const ViewFilterModal = ({ isOpen, currentFilter, onApply, onClose }) => {
+  const handleSelect = (option) => {
+    onApply(option);
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  const options = [
+    { value: 'All Items', label: 'All Items', description: 'Show all data items', icon: 'fa-th', color: 'text-blue-600', bgColor: 'bg-blue-100' },
+    { value: 'Metered', label: 'Metered', description: 'Show metered items only', icon: 'fa-tachometer-alt', color: 'text-green-600', bgColor: 'bg-green-100' },
+    { value: 'Non-metered', label: 'Non-metered', description: 'Show non-metered items only', icon: 'fa-file-alt', color: 'text-orange-600', bgColor: 'bg-orange-100' }
+  ];
+
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-[100000]">
+      <div className="bg-white rounded-md p-3 border w-80 shadow-lg mx-4">
+        <div className="mt-1">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-medium text-gray-900">View Filter</h3>
+            <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+          <div className="space-y-2">
+            {options.map(option => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => handleSelect(option.value)}
+                className="w-full text-left p-2 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className={`w-8 h-8 ${option.bgColor} rounded-lg flex items-center justify-center`}>
+                    <i className={`fas ${option.icon} ${option.color}`}></i>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{option.label}</p>
+                    <p className="text-sm text-gray-500">{option.description}</p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const GroupByModal = ({ isOpen, currentFilter, onApply, onClose }) => {
+  const handleSelect = (option) => {
+    onApply(option);
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  const options = [
+    { value: 'Category', label: 'Category', description: 'Group by data categories', icon: 'fa-folder', color: 'text-purple-600', bgColor: 'bg-purple-100' },
+    { value: 'Frequency', label: 'Frequency', description: 'Group by reporting frequency', icon: 'fa-clock', color: 'text-blue-600', bgColor: 'bg-blue-100' },
+    { value: 'Status', label: 'Status', description: 'Group by completion status', icon: 'fa-check-circle', color: 'text-green-600', bgColor: 'bg-green-100' }
+  ];
+
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-[100000]">
+      <div className="bg-white rounded-md p-3 border w-80 shadow-lg mx-4">
+        <div className="mt-1">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-medium text-gray-900">Group By</h3>
+            <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+          <div className="space-y-2">
+            {options.map(option => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => handleSelect(option.value)}
+                className="w-full text-left p-2 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className={`w-8 h-8 ${option.bgColor} rounded-lg flex items-center justify-center`}>
+                    <i className={`fas ${option.icon} ${option.color}`}></i>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{option.label}</p>
+                    <p className="text-sm text-gray-500">{option.description}</p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AssignmentFilterModal = ({ isOpen, currentFilter, onApply, onClose }) => {
+  const handleSelect = (option) => {
+    onApply(option);
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  const options = [
+    { value: 'all', label: 'All Tasks', description: 'Show all tasks', icon: 'fa-list', color: 'text-blue-600', bgColor: 'bg-blue-100' },
+    { value: 'assigned', label: 'Assigned', description: 'Show assigned tasks only', icon: 'fa-user-check', color: 'text-green-600', bgColor: 'bg-green-100' },
+    { value: 'unassigned', label: 'Unassigned', description: 'Show unassigned tasks only', icon: 'fa-user-times', color: 'text-red-600', bgColor: 'bg-red-100' }
+  ];
+
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-[100000]">
+      <div className="bg-white rounded-md p-3 border w-80 shadow-lg mx-4">
+        <div className="mt-1">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-medium text-gray-900">Assignment Filter</h3>
+            <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+          <div className="space-y-2">
+            {options.map(option => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => handleSelect(option.value)}
+                className="w-full text-left p-2 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className={`w-8 h-8 ${option.bgColor} rounded-lg flex items-center justify-center`}>
+                    <i className={`fas ${option.icon} ${option.color}`}></i>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{option.label}</p>
+                    <p className="text-sm text-gray-500">{option.description}</p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

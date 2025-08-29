@@ -17,6 +17,8 @@ const Meter = () => {
   const [typeFilter, setTypeFilter] = useState('All Types');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [showTypeFilterModal, setShowTypeFilterModal] = useState(false);
+  const [showStatusFilterModal, setShowStatusFilterModal] = useState(false);
   
   // Modal state
   const [modal, setModal] = useState({ show: false, type: 'info', title: '', message: '', onConfirm: null, onCancel: null });
@@ -585,27 +587,22 @@ const Meter = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <select 
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
+              <button
+                onClick={() => setShowTypeFilterModal(true)}
+                className="flex items-center space-x-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
               >
-                <option>All Types</option>
-                {uniqueTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-              <select 
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                <i className="fas fa-filter"></i>
+                <span>{typeFilter}</span>
+                <i className="fas fa-chevron-down ml-1"></i>
+              </button>
+              <button
+                onClick={() => setShowStatusFilterModal(true)}
+                className="flex items-center space-x-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
               >
-                <option>All Status</option>
-                <option>Active</option>
-                <option>Inactive</option>
-                <option>Warning</option>
-                <option>Maintenance</option>
-              </select>
+                <i className="fas fa-circle"></i>
+                <span>{statusFilter}</span>
+                <i className="fas fa-chevron-down ml-1"></i>
+              </button>
             </div>
             <div className="flex items-center space-x-2">
               <button 
@@ -1069,6 +1066,29 @@ const Meter = () => {
         </div>
       </div>
 
+      {/* Type Filter Modal */}
+      {showTypeFilterModal && <TypeFilterModal 
+        isOpen={showTypeFilterModal}
+        currentFilter={typeFilter}
+        uniqueTypes={uniqueTypes}
+        onApply={(selectedType) => {
+          setTypeFilter(selectedType);
+          setShowTypeFilterModal(false);
+        }}
+        onClose={() => setShowTypeFilterModal(false)}
+      />}
+
+      {/* Status Filter Modal */}
+      {showStatusFilterModal && <StatusFilterModal 
+        isOpen={showStatusFilterModal}
+        currentFilter={statusFilter}
+        onApply={(selectedStatus) => {
+          setStatusFilter(selectedStatus);
+          setShowStatusFilterModal(false);
+        }}
+        onClose={() => setShowStatusFilterModal(false)}
+      />}
+
       {/* Alert/Confirm Modal */}
       {modal.show && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-[100000]">
@@ -1255,7 +1275,7 @@ const MeterFormModal = ({ isOpen, title, meter, meterTypes, onSave, onClose }) =
                   <button
                     key={type.id}
                     type="button"
-                    className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-colors"
+                    className="w-full text-left p-2 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-colors"
                     onClick={() => handleTypeSelect(type.name.replace(' Meters', '').replace(' Trackers', ''))}
                   >
                     <div className="flex items-center space-x-3">
@@ -1368,6 +1388,156 @@ const MeterFormModal = ({ isOpen, title, meter, meterTypes, onSave, onClose }) =
               </div>
             </form>
           )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const TypeFilterModal = ({ isOpen, currentFilter, uniqueTypes, onApply, onClose }) => {
+  const [selectedType, setSelectedType] = useState(currentFilter);
+
+  // Initialize selected type when modal opens
+  React.useEffect(() => {
+    setSelectedType(currentFilter);
+  }, [currentFilter, isOpen]);
+
+  const handleTypeSelect = (type) => {
+    setSelectedType(type);
+    onApply(type);
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-[100000]">
+      <div className="bg-white rounded-md p-3 border w-80 shadow-lg mx-4">
+        <div className="mt-1">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-medium text-gray-900">Select Meter Type</h3>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            {/* All Types Option */}
+            <button
+              type="button"
+              onClick={() => handleTypeSelect('All Types')}
+              className="w-full text-left p-2 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-colors"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <i className="fas fa-th text-blue-600"></i>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">All Types</p>
+                  <p className="text-sm text-gray-500">Show all meter types</p>
+                </div>
+              </div>
+            </button>
+
+            {/* Individual Type Options */}
+            {uniqueTypes.map(type => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => handleTypeSelect(type)}
+                className="w-full text-left p-2 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <i className={`fas ${
+                      type.includes('Electricity') ? 'fa-bolt text-yellow-600' :
+                      type.includes('Water') ? 'fa-tint text-blue-600' :
+                      type.includes('Waste') ? 'fa-trash text-red-600' :
+                      type.includes('Generator') ? 'fa-cog text-orange-600' :
+                      type.includes('Vehicle') ? 'fa-car text-green-600' :
+                      type.includes('LPG') ? 'fa-fire text-purple-600' :
+                      type.includes('Renewable') ? 'fa-leaf text-green-600' :
+                      'fa-gauge text-gray-600'
+                    }`}></i>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{type}</p>
+                    <p className="text-sm text-gray-500">Filter by {type.toLowerCase()}</p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const StatusFilterModal = ({ isOpen, currentFilter, onApply, onClose }) => {
+  const [selectedStatus, setSelectedStatus] = useState(currentFilter);
+
+  // Initialize selected status when modal opens
+  React.useEffect(() => {
+    setSelectedStatus(currentFilter);
+  }, [currentFilter, isOpen]);
+
+  const handleStatusSelect = (status) => {
+    setSelectedStatus(status);
+    onApply(status);
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  const statusOptions = [
+    { value: 'All Status', label: 'All Status', description: 'Show all meter statuses', icon: 'fa-th', color: 'text-blue-600', bgColor: 'bg-blue-100' },
+    { value: 'Active', label: 'Active', description: 'Show active meters only', icon: 'fa-check-circle', color: 'text-green-600', bgColor: 'bg-green-100' },
+    { value: 'Inactive', label: 'Inactive', description: 'Show inactive meters only', icon: 'fa-times-circle', color: 'text-gray-600', bgColor: 'bg-gray-100' },
+    { value: 'Warning', label: 'Warning', description: 'Show meters with warnings', icon: 'fa-exclamation-triangle', color: 'text-yellow-600', bgColor: 'bg-yellow-100' },
+    { value: 'Maintenance', label: 'Maintenance', description: 'Show meters under maintenance', icon: 'fa-wrench', color: 'text-orange-600', bgColor: 'bg-orange-100' }
+  ];
+
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-[100000]">
+      <div className="bg-white rounded-md p-3 border w-80 shadow-lg mx-4">
+        <div className="mt-1">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-medium text-gray-900">Select Status</h3>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            {statusOptions.map(status => (
+              <button
+                key={status.value}
+                type="button"
+                onClick={() => handleStatusSelect(status.value)}
+                className="w-full text-left p-2 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className={`w-8 h-8 ${status.bgColor} rounded-lg flex items-center justify-center`}>
+                    <i className={`fas ${status.icon} ${status.color}`}></i>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{status.label}</p>
+                    <p className="text-sm text-gray-500">{status.description}</p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

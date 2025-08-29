@@ -10,9 +10,10 @@ import Rame from './components/Rame';
 import List from './components/List';
 import Meter from './components/Meter';
 import Data from './components/Data';
-import Dashboard from './components/Dashboard';
+import Dashboard from './components/Dashboardv1';
 import DashboardNew from './components/DashboardNew';
 import DashboardTest from './components/DashboardTest';
+import UnifiedDashboard from './components/UnifiedDashboard';
 import UserManagement from './components/UserManagement';
 import SiteManagement from './components/SiteManagement';
 import TaskAssignment from './components/TaskAssignment';
@@ -94,7 +95,7 @@ function App() {
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <TopNavbar />
-                <DashboardNew />
+                <Dashboard />
               </ProtectedRoute>
             } />
             <Route path="/dashboard-test" element={
@@ -111,6 +112,12 @@ function App() {
                 <div className="container mx-auto p-8">
                   <Dashboard />
                 </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/unified-dashboard" element={
+              <ProtectedRoute>
+                <TopNavbar />
+                <UnifiedDashboard />
               </ProtectedRoute>
             } />
             <Route path="/team" element={

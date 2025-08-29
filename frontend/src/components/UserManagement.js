@@ -19,6 +19,11 @@ const UserManagement = () => {
   const [userToDelete, setUserToDelete] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [notification, setNotification] = useState({ show: false, type: '', title: '', message: '', details: '' });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [showRoleFilterModal, setShowRoleFilterModal] = useState(false);
+  const [showStatusFilterModal, setShowStatusFilterModal] = useState(false);
 
   const roleOptions = [
     { value: 'admin', label: 'Admin', description: 'Company-level administrator' },
@@ -93,7 +98,15 @@ const UserManagement = () => {
       
       if (response.ok) {
         const data = await response.json();
-        setUsers(Array.isArray(data) ? data : data.results || []);
+        const usersData = Array.isArray(data) ? data : data.results || [];
+        console.log('🏢 Company Data Structure Debug:');
+        console.log('selectedCompany:', selectedCompany);
+        console.log('users array:', usersData);
+        if (usersData.length > 0) {
+          console.log('First user object:', usersData[0]);
+          console.log('First user company:', usersData[0].company);
+        }
+        setUsers(usersData);
       }
     } catch (error) {
       console.error('Failed to fetch users:', error);
@@ -345,6 +358,127 @@ const UserManagement = () => {
       case 'meter_manager': return 'fa-tachometer-alt';
       default: return 'fa-user';
     }
+  };
+
+  // Role Filter Modal
+  const RoleFilterModal = ({ isOpen, onClose }) => {
+    if (!isOpen) return null;
+
+    const handleRoleSelect = (roleValue) => {
+      setRoleFilter(roleValue);
+      onClose();
+    };
+
+    const modalContent = (
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000]"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            onClose();
+          }
+        }}
+      >
+        <div className="bg-white rounded-lg p-4 w-full max-w-sm mx-4">
+          <h3 className="text-base font-medium text-gray-900 mb-3">Filter by Role</h3>
+          
+          <div className="space-y-2">
+            <button
+              onClick={() => handleRoleSelect('all')}
+              className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                roleFilter === 'all'
+                  ? 'border-purple-300 bg-purple-50'
+                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <i className="fas fa-users text-gray-600"></i>
+                </div>
+                <span className="font-medium text-gray-900">All Roles</span>
+              </div>
+            </button>
+            
+            {roleOptions.map(role => (
+              <button
+                key={role.value}
+                onClick={() => handleRoleSelect(role.value)}
+                className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                  roleFilter === role.value
+                    ? 'border-purple-300 bg-purple-50'
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${getRoleBadgeColor(role.value)}`}>
+                    <i className={`fas ${getRoleIcon(role.value)} text-sm`}></i>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{role.label}</p>
+                    <p className="text-xs text-gray-500">{role.description}</p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+
+    return createPortal(modalContent, document.body);
+  };
+
+  // Status Filter Modal
+  const StatusFilterModal = ({ isOpen, onClose }) => {
+    if (!isOpen) return null;
+
+    const handleStatusSelect = (statusValue) => {
+      setStatusFilter(statusValue);
+      onClose();
+    };
+
+    const statusOptions = [
+      { value: 'all', label: 'All Status', icon: 'fa-users', color: 'bg-gray-100 text-gray-600' },
+      { value: 'active', label: 'Active', icon: 'fa-check-circle', color: 'bg-green-100 text-green-600' },
+      { value: 'inactive', label: 'Inactive', icon: 'fa-times-circle', color: 'bg-red-100 text-red-600' }
+    ];
+
+    const modalContent = (
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000]"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            onClose();
+          }
+        }}
+      >
+        <div className="bg-white rounded-lg p-4 w-full max-w-sm mx-4">
+          <h3 className="text-base font-medium text-gray-900 mb-3">Filter by Status</h3>
+          
+          <div className="space-y-2">
+            {statusOptions.map(status => (
+              <button
+                key={status.value}
+                onClick={() => handleStatusSelect(status.value)}
+                className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                  statusFilter === status.value
+                    ? 'border-purple-300 bg-purple-50'
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${status.color}`}>
+                    <i className={`fas ${status.icon} text-sm`}></i>
+                  </div>
+                  <span className="font-medium text-gray-900">{status.label}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+
+    return createPortal(modalContent, document.body);
   };
 
   const AddUserModal = ({ isOpen, onClose, onSuccess, selectedRole }) => {
@@ -977,13 +1111,34 @@ const UserManagement = () => {
     );
   }
 
+  // Filter users based on search and filters
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    const matchesStatus = statusFilter === 'all' || 
+                         (statusFilter === 'active' && user.is_active) || 
+                         (statusFilter === 'inactive' && !user.is_active);
+    
+    return matchesSearch && matchesRole && matchesStatus;
+  });
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Team Management</h1>
-          <p className="text-gray-600">Manage users and their access to the platform</p>
+          <div className="flex items-center space-x-4 mt-1">
+            <p className="text-gray-600">Manage users and their access to the platform</p>
+            {selectedCompany && (
+              <div className="flex items-center text-sm text-purple-700 bg-purple-50 px-3 py-1 rounded-md border border-purple-200">
+                <i className="fas fa-building mr-2 text-purple-600"></i>
+                <span className="font-medium">Code:</span>
+                <span className="ml-1">{users[0]?.company?.company_code || selectedCompany?.company_code || 'N/A'}</span>
+              </div>
+            )}
+          </div>
         </div>
         {hasPermission('userManagement', 'create') && (
           <button
@@ -994,6 +1149,51 @@ const UserManagement = () => {
             Add User
           </button>
         )}
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="flex flex-wrap gap-4 items-center">
+          {/* Search */}
+          <div className="flex-1 min-w-64">
+            <div className="relative">
+              <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              <input
+                type="text"
+                placeholder="Search by name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+            </div>
+          </div>
+          
+          {/* Role Filter */}
+          <button
+            onClick={() => setShowRoleFilterModal(true)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white hover:bg-gray-50 transition-colors flex items-center space-x-2"
+          >
+            <span>{roleFilter === 'all' ? 'All Roles' : roleOptions.find(r => r.value === roleFilter)?.label}</span>
+            <i className="fas fa-chevron-down text-gray-400"></i>
+          </button>
+          
+          {/* Status Filter */}
+          <button
+            onClick={() => setShowStatusFilterModal(true)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white hover:bg-gray-50 transition-colors flex items-center space-x-2"
+          >
+            <span>
+              {statusFilter === 'all' ? 'All Status' : 
+               statusFilter === 'active' ? 'Active' : 'Inactive'}
+            </span>
+            <i className="fas fa-chevron-down text-gray-400"></i>
+          </button>
+          
+          {/* Results Count */}
+          <div className="text-sm text-gray-600">
+            Showing {filteredUsers.length} of {users.length} users
+          </div>
+        </div>
       </div>
 
       {/* Users Table */}
@@ -1007,9 +1207,9 @@ const UserManagement = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Role
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Company ID
-              </th>
+              {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Company Code
+              </th> */}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Sites/Access
               </th>
@@ -1025,7 +1225,7 @@ const UserManagement = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {users.map((user) => (
+            {filteredUsers.map((user) => (
               <tr key={user.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
@@ -1045,11 +1245,11 @@ const UserManagement = () => {
                     {roleOptions.find(r => r.value === user.role)?.label || user.role}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {user.company?.company_code || 'N/A'}
+                    {user.company?.company_code || selectedCompany?.company_code || 'N/A'}
                   </span>
-                </td>
+                </td> */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {user.sites?.length || 0} sites
                 </td>
@@ -1107,6 +1307,23 @@ const UserManagement = () => {
             <p className="text-gray-500">No users found. Create your first team member!</p>
           </div>
         )}
+        
+        {users.length > 0 && filteredUsers.length === 0 && (
+          <div className="text-center py-8">
+            <i className="fas fa-search text-4xl text-gray-400 mb-4"></i>
+            <p className="text-gray-500">No users match your current filters.</p>
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setRoleFilter('all');
+                setStatusFilter('all');
+              }}
+              className="mt-2 text-purple-600 hover:text-purple-800 text-sm"
+            >
+              Clear all filters
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Navigation Buttons */}
@@ -1121,6 +1338,9 @@ const UserManagement = () => {
           <span className="text-sm text-gray-600">
             <i className="fas fa-users mr-2"></i>
             {users.length} user{users.length !== 1 ? 's' : ''} in your team
+            {filteredUsers.length !== users.length && (
+              <span className="ml-2 text-purple-600">({filteredUsers.length} shown)</span>
+            )}
           </span>
           <button 
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
@@ -1197,6 +1417,17 @@ const UserManagement = () => {
         user={userToDelete}
         onConfirm={confirmDelete}
         isProcessing={isProcessing}
+      />
+
+      {/* Filter Modals */}
+      <RoleFilterModal
+        isOpen={showRoleFilterModal}
+        onClose={() => setShowRoleFilterModal(false)}
+      />
+      
+      <StatusFilterModal
+        isOpen={showStatusFilterModal}
+        onClose={() => setShowStatusFilterModal(false)}
       />
 
       {/* Notification Modal */}
