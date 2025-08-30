@@ -344,7 +344,7 @@ const Onboard = () => {
     { id: 'spa', name: 'Spa & Wellness', icon: 'fas fa-spa', color: 'orange' },
     { id: 'events', name: 'Event Management', icon: 'fas fa-calendar-alt', color: 'purple' },
     { id: 'retail', name: 'Retail Operations', icon: 'fas fa-shopping-bag', color: 'red' },
-    { id: 'recreation', name: 'Recreation Facilities', icon: 'fas fa-swimmer', color: 'teal' },
+    { id: 'recreation', name: 'Recreation Facilities', icon: 'fas fa-tree', color: 'teal' },
     { id: 'conference', name: 'Conference & Meeting Rooms', icon: 'fas fa-users', color: 'indigo' },
     { id: 'housekeeping', name: 'Housekeeping Services', icon: 'fas fa-broom', color: 'cyan' },
     { id: 'laundry', name: 'Laundry Services', icon: 'fas fa-tshirt', color: 'blue' },
@@ -921,24 +921,14 @@ const Onboard = () => {
         </div>
         <div className="flex space-x-4">
           {canEditCompanyInfo ? (
-            <>
-              <button 
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
-                onClick={() => saveData(true)}
-                disabled={saving}
-              >
-                <i className={`fas ${saving ? 'fa-spinner fa-spin' : 'fa-save'} mr-2`}></i>
-                {saving ? 'Saving...' : 'Save Draft'}
-              </button>
-              <button 
-                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg font-medium"
-                onClick={handleContinue}
-                disabled={saving}
-              >
-                {saving ? 'Saving...' : 'Save & Continue'}
-                <i className={`fas ${saving ? 'fa-spinner fa-spin' : 'fa-arrow-right'} ml-2`}></i>
-              </button>
-            </>
+            <button 
+              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg font-medium"
+              onClick={handleContinue}
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : 'Save & Continue'}
+              <i className={`fas ${saving ? 'fa-spinner fa-spin' : 'fa-arrow-right'} ml-2`}></i>
+            </button>
           ) : (
             <button 
               className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg font-medium"

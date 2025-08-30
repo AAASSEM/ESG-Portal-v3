@@ -5,6 +5,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import TopNavbar from './components/TopNavbar';
+import Home from './components/Home';
+import DashboardHome from './components/DashboardHome';
 import Onboard from './components/Onboard';
 import Rame from './components/Rame';
 import List from './components/List';
@@ -43,12 +45,15 @@ function App() {
               </ProtectedRoute>
             } />
             
+            {/* Public home page */}
+            <Route path="/" element={<Home />} />
+            
             {/* Protected routes */}
-            <Route path="/" element={
+            <Route path="/home" element={
               <ProtectedRoute>
                 <TopNavbar />
                 <div className="container mx-auto p-8">
-                  <Onboard />
+                  <DashboardHome />
                 </div>
               </ProtectedRoute>
             } />

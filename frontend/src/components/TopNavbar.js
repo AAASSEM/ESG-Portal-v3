@@ -218,7 +218,7 @@ const TopNavbar = () => {
 
   const getBreadcrumb = () => {
     return [
-      { name: selectedCompany?.name || 'ESG Portal', path: '/', isActive: false },
+      { name: selectedCompany?.name || 'ESG Portal', path: '/onboard', isActive: false },
       { name: currentModule.name, path: currentModule.path, isActive: true }
     ];
   };
@@ -254,14 +254,17 @@ const TopNavbar = () => {
           </nav>
 
           {/* Center Logo */}
-          <div className="flex items-center space-x-3">
+          <button 
+            onClick={() => navigate('/')}
+            className="flex items-center space-x-3 hover:scale-105 transition-transform duration-200 cursor-pointer"
+          >
             <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
               <i className="fas fa-leaf text-white"></i>
             </div>
             <h1 className="text-lg font-bold bg-gradient-to-r from-purple-700 to-blue-600 bg-clip-text text-transparent">
               ESG Portal
             </h1>
-          </div>
+          </button>
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
@@ -376,7 +379,7 @@ const TopNavbar = () => {
         <div className="absolute bottom-0 left-0 right-0 px-8 pb-4">
           <div className="flex items-center justify-center space-x-3">
             {[
-              { id: 1, name: 'Company Info', path: '/' },
+              { id: 1, name: 'Company Info', path: '/onboard' },
               { id: 2, name: 'Frameworks', path: '/rame' },
               { id: 3, name: 'Profiling', path: '/list' },
               { id: 4, name: 'Meters', path: '/meter' },

@@ -419,18 +419,13 @@ const Rame = () => {
         </div>
         <div className="flex space-x-4">
           {canEditFrameworks ? (
-            <>
-              <button className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
-                <i className="fas fa-save mr-2"></i>Save Draft
-              </button>
-              <button 
-                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg font-medium"
-                onClick={handleContinue}
-              >
-                Save & Continue
-                <i className="fas fa-arrow-right ml-2"></i>
-              </button>
-            </>
+            <button 
+              className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg font-medium"
+              onClick={handleContinue}
+            >
+              Save & Continue
+              <i className="fas fa-arrow-right ml-2"></i>
+            </button>
           ) : (
             <button 
               className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg font-medium"
