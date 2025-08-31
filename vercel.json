@@ -1,0 +1,44 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "backend/vercel_app.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/backend/staticfiles/$1"
+    },
+    {
+      "src": "/media/(.*)",
+      "dest": "/backend/media/$1"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/backend/vercel_app.py"
+    },
+    {
+      "src": "/admin/(.*)",
+      "dest": "/backend/vercel_app.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/build/index.html"
+    }
+  ],
+  "env": {
+    "DEBUG": "False",
+    "SECRET_KEY": "@secret_key",
+    "DATABASE_URL": "@database_url",
+    "VERCEL": "1"
+  }
+}

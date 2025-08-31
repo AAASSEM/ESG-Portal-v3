@@ -25,11 +25,18 @@ ALLOWED_HOSTS = [
     '.ngrok.io',        # ngrok legacy domain
     '.ngrok.app',       # ngrok new domain
     '.ngrok.dev',       # ngrok dev domain
+    '.vercel.app',      # Vercel deployment domains
+    '.vercel.com',      # Vercel custom domains
+    'esg-portal-v2-0-v5jv-qy71s8853-aaassems-projects.vercel.app',  # Your specific Vercel URL
 ]
 
 # Add your specific Render app URL if known
 if os.environ.get('RENDER_EXTERNAL_HOSTNAME'):
     ALLOWED_HOSTS.append(os.environ.get('RENDER_EXTERNAL_HOSTNAME'))
+
+# Add Vercel deployment URL if known
+if os.environ.get('VERCEL_URL'):
+    ALLOWED_HOSTS.append(os.environ.get('VERCEL_URL'))
 
 # Application definition
 INSTALLED_APPS = [
@@ -206,6 +213,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8080",
     "http://127.0.0.1:8080",
+    "https://esg-portal-v2-0-v5jv-qy71s8853-aaassems-projects.vercel.app",  # Your Vercel URL
 ]
 
 # Add Render URLs to CORS if in production
@@ -223,6 +231,8 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://.*\.ngrok\.io$",
     r"^https://.*\.ngrok\.app$",
     r"^https://.*\.ngrok\.dev$",
+    r"^https://.*\.vercel\.app$",  # Vercel domains
+    r"^https://.*\.vercel\.com$",  # Vercel custom domains
 ]
 
 CORS_ALLOW_CREDENTIALS = True
