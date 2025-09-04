@@ -300,15 +300,18 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
       
       if (response.ok) {
-        setUser(data.user);
-        // Set the company that was created during signup
-        if (data.user.company) {
-          setSelectedCompany(data.user.company);
-          setCompanies([data.user.company]);
-        }
-        console.log('✅ Signup successful:', data.user);
-        navigate('/onboard'); // Go to onboarding for new users
-        return { success: true };
+        console.log('✅ Signup successful:', data);
+        // With email verification, user is not immediately logged in
+        // Return the verification response instead
+        return { 
+          success: true, 
+          emailVerification: true,
+          message: data.message,
+          userEmail: data.user_email,
+          verificationCode: data.verification_code,  // For testing notifications
+          emailSent: data.email_sent,
+          nextStep: data.next_step
+        };
       } else {
         console.error('❌ Signup failed:', data.error);
         return { success: false, error: data.error || 'Signup failed' };

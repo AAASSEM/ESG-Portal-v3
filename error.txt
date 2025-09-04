@@ -1,77 +1,14 @@
-Now the picture is clearer — your frontend is calling your backend at
-
-PUT http://localhost:8080/api/companies/16/
-
-
-and the backend replies with:
-
-403 Forbidden
-{"detail":"CSRF Failed: CSRF cookie not set."}
-
-
-This is a CSRF (Cross-Site Request Forgery) protection error, not a port issue.
-Your server (looks like Django REST Framework?) requires a CSRF token for modifying requests (PUT/POST/DELETE).
-
-✅ How to fix
-
-Depending on how your frontend and backend communicate:
-
-1. If using Django + DRF:
-
-Make sure your frontend sends the CSRF token in the request headers.
-
-The backend usually sets a cookie csrftoken. You need to include it in your PUT request.
-
-Example with fetch:
-
-fetch("http://localhost:8080/api/companies/16/", {
-  method: "PUT",
-  headers: {
-    "Content-Type": "application/json",
-    "X-CSRFToken": getCookie("csrftoken")  // 🔑 include CSRF token
-  },
-  body: JSON.stringify(data),
-  credentials: "include"  // 🔑 allow cookies
-});
-
-
-Helper to read cookies:
-
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== "") {
-    const cookies = document.cookie.split(";");
-    for (let cookie of cookies) {
-      cookie = cookie.trim();
-      if (cookie.startsWith(name + "=")) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-}
-
-2. If this API is for React/SPA only:
-
-You can configure Django REST Framework to skip CSRF checks for APIs, by using SessionAuthentication → CSRF exempt, or better, switch to Token / JWT authentication.
-Example in Django settings.py:
-
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-    ),
-}
-
-3. Quick temporary workaround (not recommended for production):
-
-In Django view, you can disable CSRF:
-
-from django.views.decorators.csrf import csrf_exempt
-
-@csrf_exempt
-def my_view(request):
-    ...
-
-
-But ⚠️ this weakens security — better to fix cookies/headers.
+AuthContext.js:71 
+ 
+ POST http://localhost:8080/api/element-assignments/assign_element/ 500 (Internal Server Error)
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/element-assignments/assign_element/ Status: 500
+List.js:189 
+ Error assigning element: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+List.js:36 List component - selectedCompany: 
+{id: 19, name: 'aaa', emirate: 'dubai', sector: 'hospitality', created_at: '2025-09-04T00:28:55.115001+04:00'}
+List.js:37 List component - companyId: 19
+List.js:38 List component - user: 
+{id: 41, username: 'assem', email: 'aaassem.10@gmail.com', name: 'assem', role: 'super_user', …}
+List.js:501 🔍 Component render state: 
+{companyId: 19, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
+﻿

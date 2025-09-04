@@ -12,6 +12,7 @@ import Rame from './components/Rame';
 import List from './components/List';
 import Meter from './components/Meter';
 import Data from './components/Data';
+import ElementAssignments from './components/ElementAssignments';
 import Dashboard from './components/Dashboardv1';
 import DashboardNew from './components/DashboardNew';
 import DashboardTest from './components/DashboardTest';
@@ -21,6 +22,7 @@ import SiteManagement from './components/SiteManagement';
 import TaskAssignment from './components/TaskAssignment';
 import ResetPassword from './components/ResetPassword';
 import ChangePassword from './components/ChangePassword';
+import EmailVerification from './components/EmailVerification';
 // import DashboardSimple from './components/DashboardSimple'; // Unused
 import './App.css';
 
@@ -37,6 +39,7 @@ function App() {
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/verify-email/:token" element={<EmailVerification />} />
             
             {/* Password reset route (semi-public, requires authentication but no navbar) */}
             <Route path="/reset-password" element={
@@ -94,6 +97,14 @@ function App() {
                 <TopNavbar />
                 <div className="container mx-auto p-8">
                   <Data />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/element-assignments" element={
+              <ProtectedRoute>
+                <TopNavbar />
+                <div className="container mx-auto p-8">
+                  <ElementAssignments />
                 </div>
               </ProtectedRoute>
             } />

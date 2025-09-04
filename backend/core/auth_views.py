@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny
 from django.middleware.csrf import get_token
+from .email_service import send_email_verification, verify_email_token, verify_email_code, send_password_reset_email, verify_password_reset_code
 import re
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -63,11 +64,12 @@ class SignupView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            # Create superuser by default
+            # Create inactive user (email verification required)
             user = User.objects.create_user(
                 username=username,
                 email=email or '',
                 password=password,
+                is_active=False,    # User must verify email first
                 is_staff=True,      # Can access Django admin
                 is_superuser=True   # Has all permissions
             )
@@ -96,32 +98,35 @@ class SignupView(APIView):
             UserProfile.objects.create(
                 user=user,
                 role='super_user',
-                company=company
+                company=company,
+                email_verified=False  # Will be set to True after email verification
             )
             
             # Auto-assign mandatory frameworks to the new company
             from .services import FrameworkService
             FrameworkService.assign_mandatory_frameworks(company, user)
             
-            # Auto-login after signup
-            login(request, user)
+            # Send email verification
+            email_result = send_email_verification(user, request)
             
-            return Response({
-                'message': 'Superuser and company created successfully',
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email,
-                    'name': f"{user.first_name} {user.last_name}".strip() or user.username,
-                    'role': 'super_user',
-                    'is_superuser': True,
-                    'company': {
-                        'id': company.id,
-                        'name': company.name,
-                        'company_code': company.company_code
-                    }
-                }
-            }, status=status.HTTP_201_CREATED)
+            if email_result and email_result.get('success'):
+                return Response({
+                    'message': 'Account created successfully! Please check your email to verify your account.',
+                    'email_sent': email_result.get('email_sent', False),
+                    'user_email': user.email,
+                    'verification_code': email_result.get('verification_code'),  # For testing
+                    'next_step': 'Enter the 6-digit verification code to activate your account.'
+                }, status=status.HTTP_201_CREATED)
+            else:
+                # If email sending fails, still return success but mention the issue
+                error_message = email_result.get('message', 'Unknown error') if email_result else 'Failed to generate verification code'
+                return Response({
+                    'message': 'Account created successfully, but there was an issue with the verification process.',
+                    'email_sent': False,
+                    'user_email': user.email,
+                    'error': error_message,
+                    'next_step': 'Please try signing up again or contact support.'
+                }, status=status.HTTP_201_CREATED)
             
         except Exception as e:
             return Response({
@@ -457,3 +462,267 @@ class CsrfTokenView(APIView):
         from django.middleware.csrf import get_token
         token = get_token(request)
         return Response({'csrfToken': token})
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class EmailVerificationView(APIView):
+    """
+    View to verify email address using token
+    """
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        token = request.data.get('token', '').strip()
+        
+        if not token:
+            return Response({
+                'error': 'Verification token is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            success, message, user = verify_email_token(token)
+            
+            if success:
+                return Response({
+                    'message': message,
+                    'verified': True,
+                    'user': {
+                        'id': user.id,
+                        'username': user.username,
+                        'email': user.email,
+                        'is_active': user.is_active
+                    }
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    'error': message,
+                    'verified': False
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Exception as e:
+            return Response({
+                'error': 'An error occurred during verification'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class EmailCodeVerificationView(APIView):
+    """
+    View to verify email address using verification code
+    """
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        email = request.data.get('email', '').strip()
+        verification_code = request.data.get('verification_code', '').strip()
+        
+        if not email:
+            return Response({
+                'error': 'Email address is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not verification_code:
+            return Response({
+                'error': 'Verification code is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            success, message, user = verify_email_code(email, verification_code)
+            
+            if success:
+                return Response({
+                    'message': message,
+                    'verified': True,
+                    'user': {
+                        'id': user.id,
+                        'username': user.username,
+                        'email': user.email,
+                        'is_active': user.is_active
+                    }
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    'error': message,
+                    'verified': False
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Exception as e:
+            return Response({
+                'error': 'An error occurred during verification'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ResendVerificationView(APIView):
+    """
+    View to resend verification email
+    """
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        email = request.data.get('email', '').strip()
+        
+        if not email:
+            return Response({
+                'error': 'Email address is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Find user by email
+            user = User.objects.get(email=email, is_active=False)
+            
+            # Check if user profile exists and email is not verified
+            if hasattr(user, 'userprofile') and user.userprofile.email_verified:
+                return Response({
+                    'error': 'Email is already verified'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Send verification email
+            email_sent = send_email_verification(user, request)
+            
+            if email_sent:
+                return Response({
+                    'message': 'Verification email has been resent. Please check your inbox.',
+                    'email_sent': True
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    'error': 'Failed to send verification email. Please try again later.'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
+        except User.DoesNotExist:
+            return Response({
+                'error': 'No unverified account found with this email address'
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({
+                'error': 'An error occurred while sending verification email'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SendResetCodeView(APIView):
+    """
+    View to send password reset verification code
+    """
+    permission_classes = [AllowAny]  # Allow both authenticated and unauthenticated
+    
+    def post(self, request):
+        print(f"🔐 Password reset code request received")
+        print(f"📧 Request data: {request.data}")
+        print(f"👤 User authenticated: {request.user.is_authenticated}")
+        
+        # Get email from request
+        email = request.data.get('email', '').strip()
+        
+        # If no email provided but user is authenticated, use their email
+        if not email and request.user.is_authenticated:
+            email = request.user.email
+            print(f"📧 Using authenticated user's email: {email}")
+        
+        if not email:
+            return Response({
+                'error': 'Email address is required',
+                'success': False
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Find user by email
+            user = User.objects.get(email=email)
+            print(f"✅ User found: {user.username}")
+            
+            # For testing mode, return hardcoded verification code
+            # In production, you would call send_password_reset_email(user)
+            verification_code = '654321'  # Hardcoded for testing
+            
+            print(f"🔢 Verification code: {verification_code}")
+            
+            return Response({
+                'message': 'Password reset verification code generated successfully',
+                'success': True,
+                'email_sent': False,  # Set to True in production when email is actually sent
+                'verification_code': verification_code,  # Remove this in production for security
+                'user_email': user.email
+            }, status=status.HTTP_200_OK)
+            
+        except User.DoesNotExist:
+            print(f"❌ User not found with email: {email}")
+            return Response({
+                'error': 'No user found with this email address',
+                'success': False
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(f"❌ Error in SendResetCodeView: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return Response({
+                'error': f'An error occurred: {str(e)}',
+                'success': False
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class VerifyResetCodeView(APIView):
+    """
+    View to verify password reset verification code
+    """
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        print(f"🔐 Password reset code verification request")
+        print(f"📧 Request data: {request.data}")
+        
+        email = request.data.get('email', '').strip()
+        verification_code = request.data.get('verification_code', '').strip()
+        
+        # If no email provided but user is authenticated, use their email
+        if not email and request.user.is_authenticated:
+            email = request.user.email
+            print(f"📧 Using authenticated user's email: {email}")
+        
+        if not email:
+            return Response({
+                'error': 'Email address is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not verification_code:
+            return Response({
+                'error': 'Verification code is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # For testing, accept hardcoded code
+            if verification_code == '654321':
+                print(f"✅ Verification code matched (test mode)")
+                
+                # Find user for response
+                user = User.objects.get(email=email)
+                
+                return Response({
+                    'message': 'Verification successful',
+                    'verified': True,
+                    'user': {
+                        'id': user.id,
+                        'username': user.username,
+                        'email': user.email
+                    }
+                }, status=status.HTTP_200_OK)
+            
+            # For testing, if code doesn't match
+            return Response({
+                'error': 'Invalid verification code',
+                'verified': False
+            }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except User.DoesNotExist:
+            return Response({
+                'error': 'User not found',
+                'verified': False
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(f"❌ Error in VerifyResetCodeView: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return Response({
+                'error': f'An error occurred during verification: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

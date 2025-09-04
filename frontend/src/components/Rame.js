@@ -9,8 +9,46 @@ const Rame = () => {
   const { user, selectedCompany } = useAuth();
   const [selectedVoluntaryFrameworks, setSelectedVoluntaryFrameworks] = useState([]);
   const [mandatoryFrameworks, setMandatoryFrameworks] = useState([]);
-  // const [loading, setLoading] = useState(true);
+  const [loadingFrameworks, setLoadingFrameworks] = useState(true);
+  const [savingFramework, setSavingFramework] = useState(false);
   const companyId = selectedCompany?.id;
+
+  // Fetch existing voluntary frameworks from database
+  useEffect(() => {
+    if (!companyId) {
+      console.log('⏸️ No company selected, skipping voluntary framework fetch');
+      return;
+    }
+    
+    const fetchExistingVoluntaryFrameworks = async () => {
+      try {
+        console.log('🔍 Fetching existing voluntary frameworks for company:', companyId);
+        
+        // Get all company frameworks
+        const response = await fetch(`${API_BASE_URL}/api/companies/${companyId}/frameworks/`, {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const frameworks = await response.json();
+          
+          // Filter for voluntary frameworks (type === 'voluntary')
+          const voluntaryIds = frameworks
+            .filter(fw => fw.type === 'voluntary')
+            .map(fw => fw.framework_id);
+          
+          console.log('📋 Existing voluntary frameworks from DB:', voluntaryIds);
+          setSelectedVoluntaryFrameworks(voluntaryIds);
+        }
+      } catch (error) {
+        console.error('❌ Error fetching voluntary frameworks:', error);
+      } finally {
+        setLoadingFrameworks(false);
+      }
+    };
+    
+    fetchExistingVoluntaryFrameworks();
+  }, [companyId]);
 
   // Fetch company's assigned mandatory frameworks
   useEffect(() => {
@@ -31,7 +69,7 @@ const Rame = () => {
           const frameworks = await response.json();
           console.log('📋 Backend frameworks:', frameworks);
           
-          // Always ensure we have the 3 mandatory frameworks regardless of backend response
+          // Only DST and ESG are mandatory frameworks
           const defaultMandatoryFrameworks = [
             {
               id: 'esg',
@@ -50,31 +88,21 @@ const Rame = () => {
               color: 'green',
               coverage: 'Energy, Water, Waste, Community',
               reason: 'Mandatory for all Dubai hospitality entities'
-            },
-            {
-              id: 'gri',
-              name: 'GRI Standards',
-              description: 'Global Reporting Initiative standards for sustainability reporting',
-              icon: 'fas fa-globe',
-              color: 'purple',
-              coverage: 'Economic, Environmental, Social',
-              reason: 'International sustainability reporting standard'
             }
           ];
           
           let mappedFrameworks = [];
           
-          // If backend has frameworks, try to map them
+          // If backend has frameworks, filter for only mandatory ones (DST and ESG)
           if (frameworks && Array.isArray(frameworks) && frameworks.length > 0) {
-            mappedFrameworks = frameworks.map(framework => {
+            const mandatoryFrameworks = frameworks.filter(f => f.type === 'mandatory');
+            mappedFrameworks = mandatoryFrameworks.map(framework => {
               if (framework.framework_id === 'DST') {
                 return defaultMandatoryFrameworks[1]; // DST
               } else if (framework.framework_id === 'ESG') {
                 return defaultMandatoryFrameworks[0]; // ESG
-              } else if (framework.framework_id === 'GRI') {
-                return defaultMandatoryFrameworks[2]; // GRI
               }
-              // Default mapping for other frameworks
+              // Default mapping for other frameworks (shouldn't happen)
               return {
                 id: framework.framework_id.toLowerCase(),
                 name: framework.name || framework.framework_id,
@@ -92,7 +120,7 @@ const Rame = () => {
             mappedFrameworks = defaultMandatoryFrameworks;
           }
           
-          // Ensure we always have at least the 3 mandatory frameworks
+          // Ensure we always have at least the 2 mandatory frameworks
           const frameworkIds = mappedFrameworks.map(f => f.id);
           defaultMandatoryFrameworks.forEach(defaultFw => {
             if (!frameworkIds.includes(defaultFw.id)) {
@@ -104,7 +132,7 @@ const Rame = () => {
           setMandatoryFrameworks(mappedFrameworks);
         } else {
           console.error('Failed to fetch frameworks, using fallback');
-          // Fallback to all 3 mandatory frameworks
+          // Fallback to only 2 mandatory frameworks
           setMandatoryFrameworks([
             {
               id: 'esg',
@@ -123,21 +151,12 @@ const Rame = () => {
               color: 'green',
               coverage: 'Energy, Water, Waste, Community',
               reason: 'Mandatory for all Dubai hospitality entities'
-            },
-            {
-              id: 'gri',
-              name: 'GRI Standards',
-              description: 'Global Reporting Initiative standards for sustainability reporting',
-              icon: 'fas fa-globe',
-              color: 'purple',
-              coverage: 'Economic, Environmental, Social',
-              reason: 'International sustainability reporting standard'
             }
           ]);
         }
       } catch (error) {
         console.error('Error fetching mandatory frameworks:', error);
-        // Fallback to all 3 mandatory frameworks
+        // Fallback to only 2 mandatory frameworks
         setMandatoryFrameworks([
           {
             id: 'esg',
@@ -156,15 +175,6 @@ const Rame = () => {
             color: 'green',
             coverage: 'Energy, Water, Waste, Community',
             reason: 'Mandatory for all Dubai hospitality entities'
-          },
-          {
-            id: 'gri',
-            name: 'GRI Standards',
-            description: 'Global Reporting Initiative standards for sustainability reporting',
-            icon: 'fas fa-globe',
-            color: 'purple',
-            coverage: 'Economic, Environmental, Social',
-            reason: 'International sustainability reporting standard'
           }
         ]);
       }
@@ -175,7 +185,7 @@ const Rame = () => {
 
   const voluntaryFrameworks = [
     {
-      id: 'green_key',
+      id: 'GREEN_KEY',
       name: 'Green Key Certification',
       description: 'Eco-label for tourism establishments with comprehensive sustainability criteria',
       icon: 'fas fa-key',
@@ -184,7 +194,7 @@ const Rame = () => {
       bestFor: 'Hotels seeking eco-certification'
     },
     {
-      id: 'gri',
+      id: 'GRI',
       name: 'GRI Standards',
       description: 'Global Reporting Initiative - Comprehensive sustainability reporting standards',
       icon: 'fas fa-globe',
@@ -193,7 +203,7 @@ const Rame = () => {
       bestFor: 'Comprehensive sustainability reporting'
     },
     {
-      id: 'sasb',
+      id: 'SASB',
       name: 'SASB Standards',
       description: 'Sustainability Accounting Standards Board - Industry-specific sustainability metrics',
       icon: 'fas fa-chart-bar',
@@ -202,7 +212,7 @@ const Rame = () => {
       bestFor: 'Public companies, Investor relations'
     },
     {
-      id: 'tcfd',
+      id: 'TCFD',
       name: 'TCFD',
       description: 'Task Force on Climate-related Financial Disclosures - Climate risk reporting',
       icon: 'fas fa-thermometer-half',
@@ -211,7 +221,7 @@ const Rame = () => {
       bestFor: 'Climate-focused reporting'
     },
     {
-      id: 'cdp',
+      id: 'CDP',
       name: 'CDP',
       description: 'Carbon Disclosure Project - Environmental disclosure system for companies',
       icon: 'fas fa-cloud',
@@ -221,12 +231,57 @@ const Rame = () => {
     }
   ];
 
-  const toggleVoluntaryFramework = (frameworkId) => {
-    setSelectedVoluntaryFrameworks(prev => 
-      prev.includes(frameworkId)
-        ? prev.filter(id => id !== frameworkId)
-        : [...prev, frameworkId]
-    );
+  const toggleVoluntaryFramework = async (frameworkId) => {
+    const isCurrentlySelected = selectedVoluntaryFrameworks.includes(frameworkId);
+    setSavingFramework(true);
+    
+    try {
+      if (isCurrentlySelected) {
+        // Remove framework
+        const response = await fetch(`${API_BASE_URL}/api/frameworks/remove_voluntary/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            company_id: companyId,
+            framework_id: frameworkId
+          })
+        });
+        
+        if (response.ok) {
+          console.log('✅ Framework removed successfully:', frameworkId);
+          setSelectedVoluntaryFrameworks(prev => prev.filter(id => id !== frameworkId));
+        } else {
+          console.error('❌ Failed to remove framework:', response.status);
+        }
+      } else {
+        // Add framework
+        const response = await fetch(`${API_BASE_URL}/api/frameworks/assign_voluntary/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            company_id: companyId,
+            framework_id: frameworkId
+          })
+        });
+        
+        if (response.ok) {
+          console.log('✅ Framework assigned successfully:', frameworkId);
+          setSelectedVoluntaryFrameworks(prev => [...prev, frameworkId]);
+        } else {
+          console.error('❌ Failed to assign framework:', response.status);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error toggling framework:', error);
+    } finally {
+      setSavingFramework(false);
+    }
   };
 
   const handleContinue = () => {
@@ -420,7 +475,7 @@ const Rame = () => {
         <div className="flex space-x-4">
           {canEditFrameworks ? (
             <button 
-              className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg font-medium"
+              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg font-medium"
               onClick={handleContinue}
             >
               Save & Continue
@@ -428,7 +483,7 @@ const Rame = () => {
             </button>
           ) : (
             <button 
-              className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg font-medium"
+              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg font-medium"
               onClick={handleContinue}
             >
               Continue

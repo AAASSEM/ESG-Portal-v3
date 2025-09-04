@@ -13,6 +13,12 @@ const TaskAssignment = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [viewMode, setViewMode] = useState('all'); // 'all', 'assigned', 'unassigned'
   const [showBulkAssign, setShowBulkAssign] = useState(false);
+  
+  // Task assignment modal states (same as Data.js)
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [selectedTaskForAssignment, setSelectedTaskForAssignment] = useState(null);
+  const [availableUsers, setAvailableUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   useEffect(() => {
     if (selectedCompany && hasPermission('dataChecklist', 'assign')) {
@@ -97,6 +103,50 @@ const TaskAssignment = () => {
       }
     } catch (error) {
       console.error('Failed to assign task:', error);
+    }
+  };
+
+  // Individual task assignment functions (from Data.js)
+  const handleAssignTaskToUser = async (userId, taskId) => {
+    try {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/data-collection/assign-task/`, {
+        method: 'POST',
+        body: JSON.stringify({
+          task_id: taskId,
+          assigned_user_id: userId
+        })
+      });
+
+      if (response.ok) {
+        setShowAssignModal(false);
+        setSelectedTaskForAssignment(null);
+        // Refresh data to show new assignment
+        fetchAssignments();
+      } else {
+        console.error('Failed to assign task');
+      }
+    } catch (error) {
+      console.error('Error assigning task:', error);
+    }
+  };
+
+  const handleAssignModalOpen = async (task) => {
+    setSelectedTaskForAssignment(task);
+    setShowAssignModal(true);
+    
+    // Fetch available users for assignment
+    setLoadingUsers(true);
+    try {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/users/my-team/`);
+      if (response.ok) {
+        const users = await response.json();
+        setAvailableUsers(users);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setAvailableUsers([]);
+    } finally {
+      setLoadingUsers(false);
     }
   };
 
@@ -368,27 +418,59 @@ const TaskAssignment = () => {
                             <div className="text-xs text-gray-500">
                               {new Date(assignment.assigned_at).toLocaleDateString()}
                             </div>
-                            <button
-                              onClick={() => handleUnassignTask(assignment.id)}
-                              className="text-xs text-red-600 hover:text-red-800 mt-1"
-                            >
-                              Unassign
-                            </button>
+                            <div className="flex items-center space-x-1 mt-1">
+                              <button
+                                onClick={() => handleAssignModalOpen({
+                                  id: assignment.id,
+                                  name: element.name,
+                                  description: element.category,
+                                  unit: element.unit || 'N/A',
+                                  frequency: element.frequency,
+                                  meter: element.is_metered ? 'Metered' : 'N/A'
+                                })}
+                                className="text-xs text-blue-600 hover:text-blue-800"
+                              >
+                                Reassign
+                              </button>
+                              <button
+                                onClick={() => handleUnassignTask(assignment.id)}
+                                className="text-xs text-red-600 hover:text-red-800"
+                              >
+                                Unassign
+                              </button>
+                            </div>
                           </div>
                         ) : (
-                          <select
-                            className="text-sm border border-gray-300 rounded px-2 py-1"
-                            onChange={(e) => {
-                              if (e.target.value) {
-                                handleAssignTask(element.id, site.id, e.target.value);
-                              }
-                            }}
-                          >
-                            <option value="">Assign to...</option>
-                            {users.filter(u => ['uploader', 'site_manager'].includes(u.role)).map(user => (
-                              <option key={user.id} value={user.id}>{user.name}</option>
-                            ))}
-                          </select>
+                          <div className="space-y-1">
+                            <select
+                              className="text-sm border border-gray-300 rounded px-2 py-1 w-full"
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  handleAssignTask(element.id, site.id, e.target.value);
+                                }
+                              }}
+                            >
+                              <option value="">Quick assign...</option>
+                              {users.filter(u => ['uploader', 'site_manager'].includes(u.role)).map(user => (
+                                <option key={user.id} value={user.id}>{user.name}</option>
+                              ))}
+                            </select>
+                            <button
+                              onClick={() => handleAssignModalOpen({
+                                id: `${element.id}-${site.id}`,
+                                name: element.name,
+                                description: element.category,
+                                unit: element.unit || 'N/A',
+                                frequency: element.frequency,
+                                meter: element.is_metered ? 'Metered' : 'N/A',
+                                site: site.name
+                              })}
+                              className="text-xs text-purple-600 hover:text-purple-800 bg-purple-50 px-2 py-1 rounded w-full"
+                            >
+                              <i className="fas fa-user-plus mr-1"></i>
+                              Assign Task
+                            </button>
+                          </div>
                         )}
                       </div>
                     </td>
@@ -444,6 +526,100 @@ const TaskAssignment = () => {
           fetchAssignments();
         }}
       />
+
+      {/* Task Assignment Modal */}
+      {showAssignModal && selectedTaskForAssignment && createPortal(
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000]"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh' }}
+        >
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 max-h-96 overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Assign Task</h3>
+              <button 
+                className="text-gray-400 hover:text-gray-600"
+                onClick={() => {
+                  setShowAssignModal(false);
+                  setSelectedTaskForAssignment(null);
+                }}
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            
+            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+              <h4 className="font-medium text-gray-900 mb-1">{selectedTaskForAssignment.name}</h4>
+              <p className="text-sm text-gray-600">{selectedTaskForAssignment.description}</p>
+              <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                <span>Unit: {selectedTaskForAssignment.unit}</span>
+                <span>Frequency: {selectedTaskForAssignment.frequency}</span>
+                {selectedTaskForAssignment.meter && (
+                  <span>Meter: {selectedTaskForAssignment.meter}</span>
+                )}
+                {selectedTaskForAssignment.site && (
+                  <span>Site: {selectedTaskForAssignment.site}</span>
+                )}
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select User to Assign:
+              </label>
+              {loadingUsers ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                  <span className="ml-2 text-sm text-gray-600">Loading users...</span>
+                </div>
+              ) : availableUsers.length === 0 ? (
+                <div className="text-sm text-gray-500 py-4 text-center">
+                  No users available for assignment
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {availableUsers.map(availableUser => (
+                    <div
+                      key={availableUser.id}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                      onClick={() => handleAssignTaskToUser(availableUser.id, selectedTaskForAssignment.id)}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                          <i className="fas fa-user text-purple-600"></i>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {availableUser.name || `${availableUser.first_name} ${availableUser.last_name}`.trim() || availableUser.username}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {availableUser.role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} • {availableUser.email}
+                          </div>
+                        </div>
+                      </div>
+                      <button className="text-blue-600 hover:text-blue-800">
+                        <i className="fas fa-plus-circle"></i>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowAssignModal(false);
+                  setSelectedTaskForAssignment(null);
+                }}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };

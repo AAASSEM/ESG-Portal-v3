@@ -1,0 +1,17 @@
+ESG Portal - Email Verification
+
+Welcome, {{ user_name }}!
+
+Thank you for signing up for ESG Portal. To complete your registration and start managing your company's ESG data, please verify your email address using the code below.
+
+Your verification code: {{ verification_code }}
+
+Enter this code on the verification page to activate your account.
+
+⏰ This verification code expires in 24 hours.
+
+If you didn't create an account with us, please ignore this email.
+
+---
+ESG Portal - Sustainable Business Management
+If you have any questions, contact our support team.

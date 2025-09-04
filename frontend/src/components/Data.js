@@ -364,6 +364,11 @@ const Data = () => {
   useEffect(() => {
     let filtered = applyFiltersAndSearch(dataEntries);
     
+    // Uploaders only see tasks assigned to them
+    if (canEditAssignedTasks) {
+      filtered = filtered.filter(entry => entry.assignedUserId === user?.id);
+    }
+    
     // Filter by assignment status
     if (assignmentFilter === 'assigned') {
       filtered = filtered.filter(entry => entry.assignedTo);
@@ -859,9 +864,9 @@ const Data = () => {
         total_points: monthlyProgress.total_points || 0
       };
       
-      if (isMeterDataOnly && dataEntries.length > 0) {
+      if (isMeterDataOnly && filteredEntries.length > 0) {
         // Calculate meter-specific progress from current entries
-        const meterProgress = calculateMeterManagerProgress(dataEntries);
+        const meterProgress = calculateMeterManagerProgress(filteredEntries);
         
         finalAnnualProgress = {
           ...finalAnnualProgress,
@@ -875,8 +880,8 @@ const Data = () => {
         };
         
         console.log('🔧 Meter Manager Progress Refresh:', {
-          entries_count: dataEntries.length,
-          metered_count: dataEntries.filter(e => e.meter_id !== null).length,
+          entries_count: filteredEntries.length,
+          metered_count: filteredEntries.filter(e => e.meter_id !== null).length,
           progress: meterProgress
         });
       }
@@ -1215,7 +1220,7 @@ const Data = () => {
                 <span className="text-sm font-bold text-blue-600">
                   {isMeterDataOnly ? (
                     (() => {
-                      const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
+                      const meteredEntries = filteredEntries.filter(entry => entry.meter_id !== null);
                       const actualDataCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
                       const monthlyTotal = meteredEntries.length;
                       const annualTotal = monthlyTotal * 12;
@@ -1223,7 +1228,14 @@ const Data = () => {
                       return Math.round(annualDataProgress);
                     })()
                   ) : (
-                    Math.round(progressData.annual.data_progress)
+                    (() => {
+                      const userVisibleEntries = filteredEntries;
+                      const dataCompleted = userVisibleEntries.filter(entry => entry.value !== null && entry.value !== '').length;
+                      const monthlyTotal = userVisibleEntries.length;
+                      const annualTotal = monthlyTotal * 12;
+                      const annualDataProgress = annualTotal > 0 ? (dataCompleted / annualTotal) * 100 : 0;
+                      return Math.round(annualDataProgress);
+                    })()
                   )}%
                 </span>
               </div>
@@ -1231,13 +1243,21 @@ const Data = () => {
                 <div className="bg-blue-500 h-3 rounded-full" style={{ 
                   width: `${isMeterDataOnly ? (
                     (() => {
-                      const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
+                      const meteredEntries = filteredEntries.filter(entry => entry.meter_id !== null);
                       const actualDataCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
                       const monthlyTotal = meteredEntries.length;
                       const annualTotal = monthlyTotal * 12;
                       return annualTotal > 0 ? (actualDataCompleted / annualTotal) * 100 : 0;
                     })()
-                  ) : progressData.annual.data_progress}%` 
+                  ) : (
+                    (() => {
+                      const userVisibleEntries = filteredEntries;
+                      const dataCompleted = userVisibleEntries.filter(entry => entry.value !== null && entry.value !== '').length;
+                      const monthlyTotal = userVisibleEntries.length;
+                      const annualTotal = monthlyTotal * 12;
+                      return annualTotal > 0 ? (dataCompleted / annualTotal) * 100 : 0;
+                    })()
+                  )}%` 
                 }}></div>
               </div>
             </div>
@@ -1247,7 +1267,7 @@ const Data = () => {
                 <span className="text-sm font-bold text-green-600">
                   {isMeterDataOnly ? (
                     (() => {
-                      const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
+                      const meteredEntries = filteredEntries.filter(entry => entry.meter_id !== null);
                       const actualEvidenceCompleted = meteredEntries.filter(entry => entry.evidence_file).length;
                       const monthlyTotal = meteredEntries.length;
                       const annualTotal = monthlyTotal * 12;
@@ -1255,7 +1275,14 @@ const Data = () => {
                       return Math.round(annualEvidenceProgress);
                     })()
                   ) : (
-                    Math.round(progressData.annual.evidence_progress)
+                    (() => {
+                      const userVisibleEntries = filteredEntries;
+                      const evidenceCompleted = userVisibleEntries.filter(entry => entry.evidence_file).length;
+                      const monthlyTotal = userVisibleEntries.length;
+                      const annualTotal = monthlyTotal * 12;
+                      const annualEvidenceProgress = annualTotal > 0 ? (evidenceCompleted / annualTotal) * 100 : 0;
+                      return Math.round(annualEvidenceProgress);
+                    })()
                   )}%
                 </span>
               </div>
@@ -1263,50 +1290,21 @@ const Data = () => {
                 <div className="bg-green-500 h-3 rounded-full" style={{ 
                   width: `${isMeterDataOnly ? (
                     (() => {
-                      const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
+                      const meteredEntries = filteredEntries.filter(entry => entry.meter_id !== null);
                       const actualEvidenceCompleted = meteredEntries.filter(entry => entry.evidence_file).length;
                       const monthlyTotal = meteredEntries.length;
                       const annualTotal = monthlyTotal * 12;
                       return annualTotal > 0 ? (actualEvidenceCompleted / annualTotal) * 100 : 0;
                     })()
-                  ) : progressData.annual.evidence_progress}%` 
-                }}></div>
-              </div>
-            </div>
-            {/* Overall Progress */}
-            <div className="pt-4 border-t border-gray-200">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-700">Overall Progress</span>
-                <span className="text-sm font-bold text-indigo-600">
-                  {isMeterDataOnly ? (
-                    (() => {
-                      const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
-                      const actualDataCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
-                      const actualEvidenceCompleted = meteredEntries.filter(entry => entry.evidence_file).length;
-                      const totalActualCompleted = actualDataCompleted + actualEvidenceCompleted;
-                      const monthlyTotal = meteredEntries.length * 2; // Data + Evidence
-                      const annualTotal = monthlyTotal * 12;
-                      const annualOverallProgress = annualTotal > 0 ? (totalActualCompleted / annualTotal) * 100 : 0;
-                      return Math.round(annualOverallProgress);
-                    })()
                   ) : (
-                    Math.round(progressData.annual.overall_progress || 0)
-                  )}%
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-4">
-                <div className="bg-indigo-500 h-4 rounded-full" style={{ 
-                  width: `${isMeterDataOnly ? (
                     (() => {
-                      const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
-                      const actualDataCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
-                      const actualEvidenceCompleted = meteredEntries.filter(entry => entry.evidence_file).length;
-                      const totalActualCompleted = actualDataCompleted + actualEvidenceCompleted;
-                      const monthlyTotal = meteredEntries.length * 2; // Data + Evidence
+                      const userVisibleEntries = filteredEntries;
+                      const evidenceCompleted = userVisibleEntries.filter(entry => entry.evidence_file).length;
+                      const monthlyTotal = userVisibleEntries.length;
                       const annualTotal = monthlyTotal * 12;
-                      return annualTotal > 0 ? (totalActualCompleted / annualTotal) * 100 : 0;
+                      return annualTotal > 0 ? (evidenceCompleted / annualTotal) * 100 : 0;
                     })()
-                  ) : (progressData.annual.overall_progress || 0)}%` 
+                  )}%` 
                 }}></div>
               </div>
             </div>
@@ -1316,7 +1314,7 @@ const Data = () => {
                 {isMeterDataOnly ? (
                   // For meter managers: show actual completed, but annual total
                   (() => {
-                    const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
+                    const meteredEntries = filteredEntries.filter(entry => entry.meter_id !== null);
                     const actualCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length + 
                                            meteredEntries.filter(entry => entry.evidence_file).length;
                     const monthlyTotal = meteredEntries.length * 2;
@@ -1324,8 +1322,16 @@ const Data = () => {
                     return `${actualCompleted} / ${annualTotal}`;
                   })()
                 ) : (
-                  // For other users: show all tasks
-                  `${progressData.annual.completed_points || 0} / ${progressData.annual.total_points || 0}`
+                  // For other users: show filtered tasks only
+                  (() => {
+                    const userVisibleEntries = filteredEntries;
+                    const dataCompleted = userVisibleEntries.filter(entry => entry.value !== null && entry.value !== '').length;
+                    const evidenceCompleted = userVisibleEntries.filter(entry => entry.evidence_file).length;
+                    const totalCompleted = dataCompleted + evidenceCompleted;
+                    const monthlyTotal = userVisibleEntries.length * 2; // Each task has data + evidence
+                    const annualTotal = monthlyTotal * 12;
+                    return `${totalCompleted} / ${annualTotal}`;
+                  })()
                 )}
               </div>
               <div className="text-sm text-gray-500">
@@ -1335,7 +1341,7 @@ const Data = () => {
               <div className="text-xs text-gray-400 mt-1">
                 {isMeterDataOnly ? (
                   (() => {
-                    const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
+                    const meteredEntries = filteredEntries.filter(entry => entry.meter_id !== null);
                     const actualDataComplete = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
                     const actualEvidenceComplete = meteredEntries.filter(entry => entry.evidence_file).length;
                     return `Data Entries: ${actualDataComplete} | Evidence Files: ${actualEvidenceComplete}`;
@@ -1359,12 +1365,16 @@ const Data = () => {
                 <span className="text-sm font-bold text-orange-600">
                   {isMeterDataOnly ? (
                     (() => {
-                      const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
+                      const meteredEntries = filteredEntries.filter(entry => entry.meter_id !== null);
                       const dataCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
                       return meteredEntries.length > 0 ? Math.round((dataCompleted / meteredEntries.length) * 100) : 0;
                     })()
                   ) : (
-                    Math.round(progressData.monthly.data_progress || 0)
+                    (() => {
+                      const userVisibleEntries = filteredEntries;
+                      const dataCompleted = userVisibleEntries.filter(entry => entry.value !== null && entry.value !== '').length;
+                      return userVisibleEntries.length > 0 ? Math.round((dataCompleted / userVisibleEntries.length) * 100) : 0;
+                    })()
                   )}%
                 </span>
               </div>
@@ -1372,11 +1382,17 @@ const Data = () => {
                 <div className="bg-orange-500 h-3 rounded-full" style={{ 
                   width: `${Math.min(100, Math.max(0, isMeterDataOnly ? (
                     (() => {
-                      const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
+                      const meteredEntries = filteredEntries.filter(entry => entry.meter_id !== null);
                       const dataCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
                       return meteredEntries.length > 0 ? (dataCompleted / meteredEntries.length) * 100 : 0;
                     })()
-                  ) : (progressData.monthly.data_progress || 0)))}%` 
+                  ) : (
+                    (() => {
+                      const userVisibleEntries = filteredEntries;
+                      const dataCompleted = userVisibleEntries.filter(entry => entry.value !== null && entry.value !== '').length;
+                      return userVisibleEntries.length > 0 ? (dataCompleted / userVisibleEntries.length) * 100 : 0;
+                    })()
+                  )))}%` 
                 }}></div>
               </div>
             </div>
@@ -1386,12 +1402,16 @@ const Data = () => {
                 <span className="text-sm font-bold text-purple-600">
                   {isMeterDataOnly ? (
                     (() => {
-                      const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
+                      const meteredEntries = filteredEntries.filter(entry => entry.meter_id !== null);
                       const evidenceCompleted = meteredEntries.filter(entry => entry.evidence_file).length;
                       return meteredEntries.length > 0 ? Math.round((evidenceCompleted / meteredEntries.length) * 100) : 0;
                     })()
                   ) : (
-                    Math.round(progressData.monthly.evidence_progress || 0)
+                    (() => {
+                      const userVisibleEntries = filteredEntries;
+                      const evidenceCompleted = userVisibleEntries.filter(entry => entry.evidence_file).length;
+                      return userVisibleEntries.length > 0 ? Math.round((evidenceCompleted / userVisibleEntries.length) * 100) : 0;
+                    })()
                   )}%
                 </span>
               </div>
@@ -1399,41 +1419,17 @@ const Data = () => {
                 <div className="bg-purple-500 h-3 rounded-full" style={{ 
                   width: `${Math.min(100, Math.max(0, isMeterDataOnly ? (
                     (() => {
-                      const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
+                      const meteredEntries = filteredEntries.filter(entry => entry.meter_id !== null);
                       const evidenceCompleted = meteredEntries.filter(entry => entry.evidence_file).length;
                       return meteredEntries.length > 0 ? (evidenceCompleted / meteredEntries.length) * 100 : 0;
                     })()
-                  ) : (progressData.monthly.evidence_progress || 0)))}%` 
-                }}></div>
-              </div>
-            </div>
-            {/* Overall Monthly Progress */}
-            <div className="pt-4 border-t border-gray-200">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-700">Overall Progress</span>
-                <span className="text-sm font-bold text-indigo-600">
-                  {isMeterDataOnly ? (
-                    (() => {
-                      const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
-                      const dataCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
-                      const evidenceCompleted = meteredEntries.filter(entry => entry.evidence_file).length;
-                      return meteredEntries.length > 0 ? Math.round(((dataCompleted + evidenceCompleted) / (meteredEntries.length * 2)) * 100) : 0;
-                    })()
                   ) : (
-                    Math.round(progressData.monthly.overall_progress || 0)
-                  )}%
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-4">
-                <div className="bg-indigo-500 h-4 rounded-full" style={{ 
-                  width: `${Math.min(100, Math.max(0, isMeterDataOnly ? (
                     (() => {
-                      const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
-                      const dataCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
-                      const evidenceCompleted = meteredEntries.filter(entry => entry.evidence_file).length;
-                      return meteredEntries.length > 0 ? ((dataCompleted + evidenceCompleted) / (meteredEntries.length * 2)) * 100 : 0;
+                      const userVisibleEntries = filteredEntries;
+                      const evidenceCompleted = userVisibleEntries.filter(entry => entry.evidence_file).length;
+                      return userVisibleEntries.length > 0 ? (evidenceCompleted / userVisibleEntries.length) * 100 : 0;
                     })()
-                  ) : (progressData.monthly.overall_progress || 0)))}%` 
+                  )))}%` 
                 }}></div>
               </div>
             </div>
@@ -1443,15 +1439,22 @@ const Data = () => {
                 {isMeterDataOnly ? (
                   // For meter managers: only count metered tasks
                   (() => {
-                    const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
+                    const meteredEntries = filteredEntries.filter(entry => entry.meter_id !== null);
                     const meteredCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length + 
                                             meteredEntries.filter(entry => entry.evidence_file).length;
                     const meteredTotal = meteredEntries.length * 2;
                     return `${meteredCompleted} / ${meteredTotal}`;
                   })()
                 ) : (
-                  // For other users: show all tasks
-                  `${progressData.monthly.completed_points || 0} / ${progressData.monthly.total_points || 0}`
+                  // For other users: show filtered tasks
+                  (() => {
+                    const userVisibleEntries = filteredEntries;
+                    const dataCompleted = userVisibleEntries.filter(entry => entry.value !== null && entry.value !== '').length;
+                    const evidenceCompleted = userVisibleEntries.filter(entry => entry.evidence_file).length;
+                    const totalCompleted = dataCompleted + evidenceCompleted;
+                    const totalTasks = userVisibleEntries.length * 2; // Each entry needs data + evidence
+                    return `${totalCompleted} / ${totalTasks}`;
+                  })()
                 )}
               </div>
               <div className="text-sm text-gray-500">
@@ -1461,26 +1464,39 @@ const Data = () => {
               <div className="text-xs text-red-500 mt-1">
                 {isMeterDataOnly ? (
                   (() => {
-                    const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
+                    const meteredEntries = filteredEntries.filter(entry => entry.meter_id !== null);
                     const meteredCompleted = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length + 
                                             meteredEntries.filter(entry => entry.evidence_file).length;
                     const meteredTotal = meteredEntries.length * 2;
                     return `${meteredTotal - meteredCompleted} Tasks Remaining`;
                   })()
                 ) : (
-                  `${progressData.monthly.items_remaining || 0} Tasks Remaining`
+                  (() => {
+                    const userVisibleEntries = filteredEntries;
+                    const dataCompleted = userVisibleEntries.filter(entry => entry.value !== null && entry.value !== '').length;
+                    const evidenceCompleted = userVisibleEntries.filter(entry => entry.evidence_file).length;
+                    const totalCompleted = dataCompleted + evidenceCompleted;
+                    const totalTasks = userVisibleEntries.length * 2; // Each entry needs data + evidence
+                    const remaining = Math.max(0, totalTasks - totalCompleted);
+                    return `${remaining} Tasks Remaining`;
+                  })()
                 )}
               </div>
               <div className="text-xs text-gray-400 mt-1">
                 {isMeterDataOnly ? (
                   (() => {
-                    const meteredEntries = dataEntries.filter(entry => entry.meter_id !== null);
+                    const meteredEntries = filteredEntries.filter(entry => entry.meter_id !== null);
                     const dataComplete = meteredEntries.filter(entry => entry.value !== null && entry.value !== '').length;
                     const evidenceComplete = meteredEntries.filter(entry => entry.evidence_file).length;
                     return `Data Entries: ${dataComplete} | Evidence Files: ${evidenceComplete}`;
                   })()
                 ) : (
-                  `Data Entries: ${progressData.monthly.data_complete || 0} | Evidence Files: ${progressData.monthly.evidence_complete || 0}`
+                  (() => {
+                    const userVisibleEntries = filteredEntries;
+                    const dataComplete = userVisibleEntries.filter(entry => entry.value !== null && entry.value !== '').length;
+                    const evidenceComplete = userVisibleEntries.filter(entry => entry.evidence_file).length;
+                    return `Data Entries: ${dataComplete} | Evidence Files: ${evidenceComplete}`;
+                  })()
                 )}
               </div>
             </div>
@@ -1600,7 +1616,7 @@ const Data = () => {
         </div>
 
         <div className="p-6">
-          {dataEntries.length === 0 ? (
+          {filteredEntries.length === 0 ? (
             <div className="text-center py-12">
               <i className="fas fa-gauge text-gray-400 text-4xl mb-4"></i>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No data entries found</h3>
@@ -1849,7 +1865,7 @@ const Data = () => {
         </div>
         <div className="flex space-x-4">
           <button 
-            className="px-8 py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-lg hover:shadow-lg font-medium"
+            className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg font-medium"
             onClick={handleContinue}
           >
             Complete Setup

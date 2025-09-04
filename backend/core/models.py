@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
+import secrets
+from datetime import timedelta
+from django.utils import timezone
 
 # Add company field to User model dynamically
 User.add_to_class('company', models.ForeignKey('core.Company', on_delete=models.CASCADE, null=True, blank=True, related_name='members'))
@@ -23,6 +26,7 @@ class UserProfile(models.Model):
     company = models.ForeignKey('Company', on_delete=models.CASCADE, null=True, blank=True)
     site = models.ForeignKey('Site', on_delete=models.CASCADE, null=True, blank=True)
     must_reset_password = models.BooleanField(default=False, help_text="User must reset password on next login")
+    email_verified = models.BooleanField(default=False, help_text="Email address has been verified")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -157,9 +161,16 @@ class DataElement(models.Model):
         ('conditional', 'Conditional'),
     ]
     
+    CATEGORY_CHOICES = [
+        ('Environmental', 'Environmental'),
+        ('Social', 'Social'),
+        ('Governance', 'Governance'),
+    ]
+    
     element_id = models.CharField(max_length=50, primary_key=True)
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='Environmental')
     is_metered = models.BooleanField(default=False)
     type = models.CharField(max_length=50, choices=ELEMENT_TYPES)
     unit = models.CharField(max_length=50, blank=True)
@@ -312,3 +323,126 @@ class ChecklistFrameworkMapping(models.Model):
     
     class Meta:
         unique_together = ('checklist_item', 'framework')
+
+
+class EmailVerificationToken(models.Model):
+    """Email verification tokens for user signup"""
+    TOKEN_TYPE_CHOICES = [
+        ('email_verification', 'Email Verification'),
+        ('password_reset', 'Password Reset'),
+        ('invitation', 'User Invitation'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    token = models.CharField(max_length=64, unique=True)  # Still keep for password reset/invitation links
+    verification_code = models.CharField(max_length=6, blank=True)  # 6-digit code for email verification
+    token_type = models.CharField(max_length=20, choices=TOKEN_TYPE_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+    
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.token = secrets.token_urlsafe(48)
+        if not self.verification_code and self.token_type in ['email_verification', 'password_reset']:
+            # Generate 6-digit code for email verification and password reset
+            import random
+            self.verification_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        if not self.expires_at:
+            # Set expiration based on token type
+            if self.token_type == 'email_verification':
+                self.expires_at = timezone.now() + timedelta(hours=24)
+            elif self.token_type == 'password_reset':
+                self.expires_at = timezone.now() + timedelta(hours=2)
+            elif self.token_type == 'invitation':
+                self.expires_at = timezone.now() + timedelta(days=7)
+        super().save(*args, **kwargs)
+    
+    def is_valid(self):
+        """Check if token is still valid (not expired and not used)"""
+        return not self.used_at and self.expires_at > timezone.now()
+    
+    def mark_as_used(self):
+        """Mark token as used"""
+        self.used_at = timezone.now()
+        self.save()
+    
+    def __str__(self):
+        return f"{self.user.email} - {self.get_token_type_display()} - {self.token[:8]}..."
+    
+    class Meta:
+        ordering = ['-created_at']
+
+
+class ElementAssignment(models.Model):
+    """Assigns checklist items or categories to users for data collection"""
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('overdue', 'Overdue'),
+    ]
+    
+    ASSIGNMENT_LEVEL_CHOICES = [
+        ('element', 'Individual Element'),
+        ('category', 'Category Level'),
+    ]
+    
+    CATEGORY_CHOICES = [
+        ('Environmental', 'Environmental'),
+        ('Social', 'Social'),
+        ('Governance', 'Governance'),
+    ]
+    
+    # Can be either a specific element or a category assignment
+    checklist_item = models.ForeignKey(CompanyChecklist, on_delete=models.CASCADE, related_name='assignments', null=True, blank=True)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, null=True, blank=True)
+    assignment_level = models.CharField(max_length=20, choices=ASSIGNMENT_LEVEL_CHOICES, default='element')
+    
+    assigned_to = models.ForeignKey(User, on_delete=models.CASCADE, related_name='element_assignments')
+    assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='assigned_elements')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    priority = models.IntegerField(default=0)  # 0=low, 1=medium, 2=high
+    notes = models.TextField(blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-priority', 'due_date', '-assigned_at']
+    
+    def __str__(self):
+        if self.assignment_level == 'category':
+            return f"{self.category} Category -> {self.assigned_to.username} ({self.company.name})"
+        else:
+            return f"{self.checklist_item.element_name if self.checklist_item else 'Unknown'} -> {self.assigned_to.username} ({self.company.name})"
+    
+    def save(self, *args, **kwargs):
+        # Ensure either checklist_item or category is set, but not both
+        if self.assignment_level == 'category':
+            self.checklist_item = None
+            if not self.category:
+                raise ValueError("Category must be set for category-level assignments")
+        else:
+            self.category = None
+            if not self.checklist_item:
+                raise ValueError("Checklist item must be set for element-level assignments")
+        super().save(*args, **kwargs)
+    
+    def is_overdue(self):
+        """Check if assignment is overdue"""
+        if self.due_date and self.status not in ['completed']:
+            from django.utils import timezone
+            return self.due_date < timezone.now().date()
+        return False
+    
+    def mark_completed(self):
+        """Mark assignment as completed"""
+        from django.utils import timezone
+        self.status = 'completed'
+        self.completed_at = timezone.now()
+        self.save()

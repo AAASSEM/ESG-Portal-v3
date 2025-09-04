@@ -496,6 +496,35 @@ class FrameworkViewSet(viewsets.ReadOnlyModelViewSet):
                 {'error': 'Company not found'}, 
                 status=status.HTTP_404_NOT_FOUND
             )
+    
+    @action(detail=False, methods=['post'])
+    def remove_voluntary(self, request):
+        """Remove voluntary framework from company"""
+        company_id = request.data.get('company_id')
+        framework_id = request.data.get('framework_id')
+        
+        try:
+            company = Company.objects.get(pk=company_id)
+            framework = Framework.objects.get(framework_id=framework_id, type='voluntary')
+            
+            # Remove the framework assignment
+            CompanyFramework.objects.filter(
+                company=company,
+                framework=framework,
+                is_auto_assigned=False  # Only remove voluntary frameworks
+            ).delete()
+            
+            return Response({'message': 'Framework removed successfully'})
+        except Company.DoesNotExist:
+            return Response(
+                {'error': 'Company not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Framework.DoesNotExist:
+            return Response(
+                {'error': 'Framework not found or not voluntary'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 @method_decorator(csrf_exempt, name='dispatch')

@@ -457,6 +457,36 @@ const Meter = () => {
     return matchesSearch && matchesType && matchesStatus;
   });
 
+  // Group meters by category
+  const groupedMeters = filteredMeters.reduce((groups, meter) => {
+    const category = meter.type;
+    if (!groups[category]) {
+      groups[category] = [];
+    }
+    groups[category].push(meter);
+    return groups;
+  }, {});
+
+  // Sort categories for consistent display order
+  const categoryOrder = [
+    'Electricity Consumption',
+    'Water Consumption', 
+    'Waste to Landfill',
+    'Generator Fuel Consumption',
+    'Vehicle Fuel Consumption',
+    'LPG Usage',
+    'Renewable Energy Usage'
+  ];
+
+  const sortedCategories = Object.keys(groupedMeters).sort((a, b) => {
+    const indexA = categoryOrder.indexOf(a);
+    const indexB = categoryOrder.indexOf(b);
+    if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+    return indexA - indexB;
+  });
+
   // Get unique types for filter dropdown
   const uniqueTypes = [...new Set(meters.map(meter => meter.type))];
 
@@ -627,8 +657,41 @@ const Meter = () => {
           {/* Meters Display */}
           {viewMode === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredMeters.map((meter) => (
-              <div key={meter.id} className="meter-card bg-gray-50 rounded-lg p-6 border border-gray-200 hover:shadow-md transition-all">
+              {sortedCategories.map((category) => (
+                <div key={category} className="category-column">
+                  {/* Category Header */}
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      category === 'Electricity Consumption' ? 'bg-yellow-100' :
+                      category === 'Water Consumption' ? 'bg-cyan-100' :
+                      category === 'Waste to Landfill' ? 'bg-green-100' :
+                      category === 'Generator Fuel Consumption' ? 'bg-red-100' :
+                      category === 'Vehicle Fuel Consumption' ? 'bg-purple-100' :
+                      category === 'LPG Usage' ? 'bg-orange-100' :
+                      category === 'Renewable Energy Usage' ? 'bg-teal-100' :
+                      'bg-gray-100'
+                    }`}>
+                      <i className={`${
+                        category === 'Electricity Consumption' ? 'fas fa-bolt text-yellow-600' :
+                        category === 'Water Consumption' ? 'fas fa-tint text-cyan-600' :
+                        category === 'Waste to Landfill' ? 'fas fa-trash-alt text-green-600' :
+                        category === 'Generator Fuel Consumption' ? 'fas fa-gas-pump text-red-600' :
+                        category === 'Vehicle Fuel Consumption' ? 'fas fa-car text-purple-600' :
+                        category === 'LPG Usage' ? 'fas fa-fire text-orange-600' :
+                        category === 'Renewable Energy Usage' ? 'fas fa-solar-panel text-teal-600' :
+                        'fas fa-gauge text-gray-600'
+                      }`}></i>
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900">{category}</h4>
+                      <p className="text-sm text-gray-500">{groupedMeters[category].length} meter{groupedMeters[category].length !== 1 ? 's' : ''}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Meters List for this Category */}
+                  <div className="space-y-4">
+                    {groupedMeters[category].map((meter) => (
+                      <div key={meter.id} className="meter-card bg-gray-50 rounded-lg p-6 border border-gray-200 hover:shadow-md transition-all">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
@@ -751,25 +814,60 @@ const Meter = () => {
                   )}
                 </div>
               </div>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           ) : (
-            /* List View */
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account #</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredMeters.map((meter) => (
+            /* List View - Grouped by Category */
+            <div className="space-y-6">
+              {sortedCategories.map((category) => (
+                <div key={category} className="category-section">
+                  {/* Category Header */}
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      category === 'Electricity Consumption' ? 'bg-yellow-100' :
+                      category === 'Water Consumption' ? 'bg-cyan-100' :
+                      category === 'Waste to Landfill' ? 'bg-green-100' :
+                      category === 'Generator Fuel Consumption' ? 'bg-red-100' :
+                      category === 'Vehicle Fuel Consumption' ? 'bg-purple-100' :
+                      category === 'LPG Usage' ? 'bg-orange-100' :
+                      category === 'Renewable Energy Usage' ? 'bg-teal-100' :
+                      'bg-gray-100'
+                    }`}>
+                      <i className={`${
+                        category === 'Electricity Consumption' ? 'fas fa-bolt text-yellow-600' :
+                        category === 'Water Consumption' ? 'fas fa-tint text-cyan-600' :
+                        category === 'Waste to Landfill' ? 'fas fa-trash-alt text-green-600' :
+                        category === 'Generator Fuel Consumption' ? 'fas fa-gas-pump text-red-600' :
+                        category === 'Vehicle Fuel Consumption' ? 'fas fa-car text-purple-600' :
+                        category === 'LPG Usage' ? 'fas fa-fire text-orange-600' :
+                        category === 'Renewable Energy Usage' ? 'fas fa-solar-panel text-teal-600' :
+                        'fas fa-gauge text-gray-600'
+                      } text-sm`}></i>
+                    </div>
+                    <div>
+                      <h4 className="text-md font-semibold text-gray-900">{category}</h4>
+                      <p className="text-xs text-gray-500">{groupedMeters[category].length} meter{groupedMeters[category].length !== 1 ? 's' : ''}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Table for this Category */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account #</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {groupedMeters[category].map((meter) => (
                     <tr key={meter.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-3">
@@ -806,100 +904,89 @@ const Meter = () => {
                             <div className="text-sm text-gray-500">{meter.id}</div>
                           </div>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          meter.type === 'Electricity Consumption' ? 'bg-yellow-100 text-yellow-800' :
-                          meter.type === 'Water Consumption' ? 'bg-cyan-100 text-cyan-800' :
-                          meter.type === 'Waste to Landfill' ? 'bg-green-100 text-green-800' :
-                          meter.type === 'Generator Fuel Consumption' ? 'bg-red-100 text-red-800' :
-                          meter.type === 'Vehicle Fuel Consumption' ? 'bg-purple-100 text-purple-800' :
-                          meter.type === 'LPG Usage' ? 'bg-orange-100 text-orange-800' :
-                          meter.type === 'Renewable Energy Usage' ? 'bg-teal-100 text-teal-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {meter.type}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {meter.location}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center space-x-2">
-                          <div className={`w-3 h-3 rounded-full ${
-                            meter.status === 'Active' ? 'bg-green-500' :
-                            meter.status === 'Inactive' ? 'bg-red-500' :
-                            meter.status === 'Warning' ? 'bg-yellow-500' :
-                            meter.status === 'Maintenance' ? 'bg-orange-500' :
-                            'bg-gray-500'
-                          }`}></div>
-                          <span className={`text-sm font-medium ${
-                            meter.status === 'Active' ? 'text-green-600' :
-                            meter.status === 'Inactive' ? 'text-red-600' :
-                            meter.status === 'Warning' ? 'text-yellow-600' :
-                            meter.status === 'Maintenance' ? 'text-orange-600' :
-                            'text-gray-600'
-                          }`}>
-                            {meter.status}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {meter.account_number || meter.id}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          meter.isAutoCreated ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800'
-                        }`}>
-                          {meter.isAutoCreated ? 'System' : 'Manual'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center space-x-2">
-                          <button 
-                            className="text-blue-600 hover:text-blue-900"
-                            onClick={() => handleEditMeterClick(meter)}
-                          >
-                            <i className="fas fa-edit"></i>
-                          </button>
-                          
-                          {/* Activate/Deactivate Button */}
-                          <button 
-                            type="button"
-                            className={`${
-                              meter.status === 'Active'
-                                ? 'text-red-600 hover:text-red-900' 
-                                : 'text-green-600 hover:text-green-900'
-                            }`}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleToggleMeterStatus(meter.id);
-                            }}
-                            title={meter.status === 'Active' ? 'Deactivate Meter' : 'Activate Meter'}
-                          >
-                            <i className={`fas ${meter.status === 'Active' ? 'fa-power-off' : 'fa-play'}`}></i>
-                          </button>
-                          
-                          {/* Delete Button */}
-                          <button 
-                            type="button"
-                            className="text-red-600 hover:text-red-900"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleDeleteMeter(meter.id);
-                            }}
-                            title="Delete Meter"
-                          >
-                            <i className="fas fa-trash"></i>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {meter.location}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center space-x-2">
+                              <div className={`w-3 h-3 rounded-full ${
+                                meter.status === 'Active' ? 'bg-green-500' :
+                                meter.status === 'Inactive' ? 'bg-red-500' :
+                                meter.status === 'Warning' ? 'bg-yellow-500' :
+                                meter.status === 'Maintenance' ? 'bg-orange-500' :
+                                'bg-gray-500'
+                              }`}></div>
+                              <span className={`text-sm font-medium ${
+                                meter.status === 'Active' ? 'text-green-600' :
+                                meter.status === 'Inactive' ? 'text-red-600' :
+                                meter.status === 'Warning' ? 'text-yellow-600' :
+                                meter.status === 'Maintenance' ? 'text-orange-600' :
+                                'text-gray-600'
+                              }`}>
+                                {meter.status}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {meter.account_number || meter.id}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              meter.isAutoCreated ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800'
+                            }`}>
+                              {meter.isAutoCreated ? 'System' : 'Manual'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex items-center space-x-2">
+                              <button 
+                                className="text-blue-600 hover:text-blue-900"
+                                onClick={() => handleEditMeterClick(meter)}
+                              >
+                                <i className="fas fa-edit"></i>
+                              </button>
+                              
+                              {/* Activate/Deactivate Button */}
+                              <button 
+                                type="button"
+                                className={`${
+                                  meter.status === 'Active'
+                                    ? 'text-red-600 hover:text-red-900' 
+                                    : 'text-green-600 hover:text-green-900'
+                                }`}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleToggleMeterStatus(meter.id);
+                                }}
+                                title={meter.status === 'Active' ? 'Deactivate Meter' : 'Activate Meter'}
+                              >
+                                <i className={`fas ${meter.status === 'Active' ? 'fa-power-off' : 'fa-play'}`}></i>
+                              </button>
+                              
+                              {/* Delete Button */}
+                              <button 
+                                type="button"
+                                className="text-red-600 hover:text-red-900"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleDeleteMeter(meter.id);
+                                }}
+                                title="Delete Meter"
+                              >
+                                <i className="fas fa-trash"></i>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 
@@ -1057,7 +1144,7 @@ const Meter = () => {
         </div>
         <div className="flex space-x-4">
           <button 
-            className="px-8 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-lg hover:shadow-lg font-medium"
+            className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg font-medium"
             onClick={handleContinue}
           >
             Save & Continue
@@ -1230,7 +1317,7 @@ const MeterFormModal = ({ isOpen, title, meter, meterTypes, onSave, onClose }) =
     setFormData(prev => ({
       ...prev,
       type: fullTypeName,
-      name: meter?.name?.includes('Copy') ? `${selectedType} Copy` : `Main ${selectedType}`,
+      name: meter?.name?.includes('Copy') ? `${selectedType} Copy` : '',
       location: 'To be configured'
     }));
     setShowTypeSelection(false);

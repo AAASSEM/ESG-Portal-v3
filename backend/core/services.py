@@ -152,7 +152,7 @@ class ChecklistService:
     def generate_personalized_checklist(company):
         """
         Generate the final personalized checklist based on:
-        1. Company's assigned frameworks
+        1. Company's assigned frameworks (at minimum ESG framework)
         2. Profiling wizard answers
         3. De-duplication and frequency consolidation
         """
@@ -162,10 +162,14 @@ class ChecklistService:
             
             company_frameworks = company.companyframework_set.all().values_list('framework_id', flat=True)
             
-            # Get all must-have elements for company's frameworks
+            # Ensure at least ESG framework is included
+            if not company_frameworks:
+                # If no frameworks assigned, use ESG as default
+                company_frameworks = ['ESG']
+            
+            # Get ALL must-have elements (they should always be included)
             must_have_elements = DataElement.objects.filter(
-                type='must_have',
-                dataelementframeworkmapping__framework_id__in=company_frameworks
+                type='must_have'
             ).distinct()
             
             # Get conditional elements activated by "Yes" answers
@@ -174,9 +178,9 @@ class ChecklistService:
                 answer=True
             ).values_list('question__activates_element_id', flat=True)
             
+            # Get conditional elements that were activated
             conditional_elements = DataElement.objects.filter(
-                element_id__in=yes_answers,
-                dataelementframeworkmapping__framework_id__in=company_frameworks
+                element_id__in=yes_answers
             ).distinct()
             
             # Combine all elements
@@ -190,24 +194,45 @@ class ChecklistService:
                     framework_id__in=company_frameworks
                 )
                 
-                # Determine most frequent cadence (monthly > quarterly > annually)
-                cadence_priority = {'monthly': 1, 'quarterly': 2, 'annually': 3}
-                final_cadence = min(mappings, key=lambda x: cadence_priority.get(x.cadence, 4)).cadence
-                
-                # Create checklist item
-                checklist_item = CompanyChecklist.objects.create(
-                    company=company,
-                    element=element,
-                    is_required=True,
-                    cadence=final_cadence
-                )
-                
-                # Map to frameworks
-                for mapping in mappings:
-                    ChecklistFrameworkMapping.objects.create(
-                        checklist_item=checklist_item,
-                        framework=mapping.framework
+                # If no mappings exist for this element with company's frameworks,
+                # use default ESG framework mapping
+                if not mappings.exists():
+                    mappings = DataElementFrameworkMapping.objects.filter(
+                        element=element,
+                        framework_id='ESG'
                     )
+                
+                # If still no mappings, create a default one
+                if not mappings.exists():
+                    # Default cadence based on element type
+                    default_cadence = 'monthly' if element.is_metered else 'annually'
+                    
+                    # Create checklist item with default cadence
+                    checklist_item = CompanyChecklist.objects.create(
+                        company=company,
+                        element=element,
+                        is_required=True,
+                        cadence=default_cadence
+                    )
+                else:
+                    # Determine most frequent cadence (monthly > quarterly > annually)
+                    cadence_priority = {'monthly': 1, 'quarterly': 2, 'annually': 3}
+                    final_cadence = min(mappings, key=lambda x: cadence_priority.get(x.cadence, 4)).cadence
+                    
+                    # Create checklist item
+                    checklist_item = CompanyChecklist.objects.create(
+                        company=company,
+                        element=element,
+                        is_required=True,
+                        cadence=final_cadence
+                    )
+                    
+                    # Map to frameworks
+                    for mapping in mappings:
+                        ChecklistFrameworkMapping.objects.create(
+                            checklist_item=checklist_item,
+                            framework=mapping.framework
+                        )
             
             return CompanyChecklist.objects.filter(company=company)
 

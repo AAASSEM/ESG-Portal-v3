@@ -1488,9 +1488,8 @@ const Dashboard = () => {
       'Scope 3': { value: 0, color: '#6b7280', items: [] }
     };
 
-    console.log('Processing', chartData.dataEntries.length, 'data entries');
-
     if (chartData?.dataEntries && Array.isArray(chartData.dataEntries)) {
+      console.log('Processing', chartData.dataEntries.length, 'data entries');
       chartData.dataEntries.forEach((entry, index) => {
       console.log(`Entry ${index}:`, entry);
       

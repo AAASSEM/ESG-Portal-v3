@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
 import Modal from './Modal';
+import Layout from './Layout';
 
 const List = () => {
   const navigate = useNavigate();
@@ -19,6 +20,15 @@ const List = () => {
     message: ''
   });
   const [checklistExists, setChecklistExists] = useState(false);
+  
+  // Assignment states
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [selectedElement, setSelectedElement] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [availableUsers, setAvailableUsers] = useState([]);
+  const [assignments, setAssignments] = useState({ category_assignments: {}, element_assignments: {} });
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [backendChecklist, setBackendChecklist] = useState([]);
   
   // Get company ID from auth context
   const companyId = selectedCompany?.id;
@@ -85,6 +95,118 @@ const List = () => {
       }
   };
 
+  // Fetch available users for assignment
+  const fetchAvailableUsers = async () => {
+    if (!companyId) return;
+    
+    setLoadingUsers(true);
+    try {
+      const response = await makeAuthenticatedRequest(
+        `${API_BASE_URL}/api/element-assignments/available_users/?company_id=${companyId}`
+      );
+      if (response.ok) {
+        const users = await response.json();
+        setAvailableUsers(users);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+    setLoadingUsers(false);
+  };
+
+  // Fetch existing assignments
+  const fetchAssignments = async () => {
+    if (!companyId) return;
+    
+    try {
+      const response = await makeAuthenticatedRequest(
+        `${API_BASE_URL}/api/element-assignments/get_assignments/?company_id=${companyId}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setAssignments(data);
+      }
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
+    }
+  };
+
+  // Handle category assignment
+  const handleCategoryAssignment = async (category, userId) => {
+    try {
+      const response = await makeAuthenticatedRequest(
+        `${API_BASE_URL}/api/element-assignments/assign_category/`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            company_id: companyId,
+            category: category,
+            user_id: userId
+          })
+        }
+      );
+      
+      if (response.ok) {
+        const result = await response.json();
+        showModal('success', 'Success', result.message);
+        fetchAssignments(); // Refresh assignments
+        setShowUserModal(false);
+        setSelectedCategory(null);
+      } else {
+        const error = await response.json();
+        showModal('error', 'Error', error.error || 'Failed to assign category');
+      }
+    } catch (error) {
+      console.error('Error assigning category:', error);
+      showModal('error', 'Error', 'Failed to assign category');
+    }
+  };
+
+  // Handle element assignment
+  const handleElementAssignment = async (elementId, userId) => {
+    try {
+      console.log('Assigning element - elementId:', elementId, 'userId:', userId);
+      console.log('Selected element object:', selectedElement);
+      const response = await makeAuthenticatedRequest(
+        `${API_BASE_URL}/api/element-assignments/assign_element/`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            checklist_item_id: elementId,
+            user_id: userId
+          })
+        }
+      );
+      
+      if (response.ok) {
+        const result = await response.json();
+        showModal('success', 'Success', result.message);
+        fetchAssignments(); // Refresh assignments
+        setShowUserModal(false);
+        setSelectedElement(null);
+      } else {
+        const error = await response.json();
+        showModal('error', 'Error', error.error || 'Failed to assign element');
+      }
+    } catch (error) {
+      console.error('Error assigning element:', error);
+      showModal('error', 'Error', 'Failed to assign element');
+    }
+  };
+
+  // Get assigned user for an element (considering hierarchy)
+  const getAssignedUser = (elementId, category) => {
+    // Check element-level assignment first (overrides category)
+    if (assignments.element_assignments && assignments.element_assignments[elementId]) {
+      return assignments.element_assignments[elementId];
+    }
+    // Fall back to category-level assignment
+    if (assignments.category_assignments && assignments.category_assignments[category]) {
+      return assignments.category_assignments[category];
+    }
+    return null;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -106,6 +228,13 @@ const List = () => {
       fetchData();
     }
   }, [companyId]); // Re-run when companyId changes
+
+  // Fetch assignments when checklist is shown
+  useEffect(() => {
+    if (showChecklist && companyId) {
+      fetchAssignments();
+    }
+  }, [showChecklist, companyId]);
 
   // Fetch existing answers from database
   const fetchExistingAnswers = async () => {
@@ -140,18 +269,37 @@ const List = () => {
     }
   };
 
-  // Check if checklist exists
+  // Check if checklist exists and fetch it
   const checkChecklistExists = async () => {
     if (!companyId) return false;
     
     try {
       console.log('🔍 Checking if checklist exists for company:', companyId);
-      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/checklist/?company_id=${companyId}`);
+      // Add timestamp to force cache bypass
+      const timestamp = new Date().getTime();
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/checklist/?company_id=${companyId}&t=${timestamp}`);
       if (response.ok) {
         const checklistData = await response.json();
         const exists = checklistData.results && checklistData.results.length > 0;
         console.log('✅ Checklist exists check result:', exists);
         setChecklistExists(exists);
+        
+        // Store the backend checklist with proper IDs
+        if (exists) {
+          const transformedChecklist = checklistData.results.map(item => ({
+            id: item.id,  // This is the actual database ID we need for assignments
+            name: item.element_name,
+            description: item.element_description,
+            unit: item.element_unit,
+            cadence: item.cadence,
+            frameworks: item.frameworks_list,
+            category: item.category || (item.is_metered ? 'Environmental' : 'Social'),
+            isMetered: item.is_metered
+          }));
+          setBackendChecklist(transformedChecklist);
+          console.log('✅ Loaded backend checklist with', transformedChecklist.length, 'items:', transformedChecklist);
+        }
+        
         return exists;
       } else {
         console.log('❌ Failed to check checklist:', response.status);
@@ -416,15 +564,18 @@ const List = () => {
           
           // Transform backend checklist to frontend format for display
           const transformedChecklist = checklistData.results.map(item => ({
-            id: item.id,
+            id: item.id,  // This is the actual database ID we need for assignments
             name: item.element_name,
             description: item.element_description,
             unit: item.element_unit,
-            frequency: item.cadence,
+            cadence: item.cadence,
             frameworks: item.frameworks_list,
-            category: item.is_metered ? 'Environmental' : 'Social',
+            category: item.category || (item.is_metered ? 'Environmental' : 'Social'),
             isMetered: item.is_metered
           }));
+          
+          // Store in state for use in assignments
+          setBackendChecklist(transformedChecklist);
           
           // Checklist is now stored in database, no need for localStorage
           return transformedChecklist;
@@ -442,7 +593,7 @@ const List = () => {
   };
 
   const generateChecklist = () => {
-    if (!allQuestionsAnswered) return;
+    if (!allQuestionsAnswered) return [];
     
     // Start with must-have elements
     const checklist = [...mustHaveElements];
@@ -458,7 +609,19 @@ const List = () => {
     return checklist.sort((a, b) => a.category.localeCompare(b.category));
   };
 
-  const finalChecklist = generateChecklist();
+  // IMPORTANT: Use backend checklist if available for proper IDs
+  // Only use generateChecklist() for display when backend data isn't loaded yet
+  const localChecklist = generateChecklist() || [];
+  const finalChecklist = backendChecklist.length > 0 ? backendChecklist : localChecklist;
+  const canAssign = backendChecklist.length > 0; // Only allow assignment when backend data is loaded
+  
+  // Debug logging
+  console.log('📊 Checklist Status:', {
+    backendChecklistCount: backendChecklist.length,
+    localChecklistCount: localChecklist.length,
+    finalChecklistCount: finalChecklist.length,
+    usingBackend: backendChecklist.length > 0
+  });
   
   const getCategoryStats = () => {
     if (!finalChecklist) return { environmental: 0, social: 0, governance: 0 };
@@ -513,16 +676,58 @@ const List = () => {
           </div>
         </div>
 
-        {/* Checklist Items */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Data Collection Requirements</h3>
-            <p className="text-gray-600">Complete list of data elements you need to track</p>
-          </div>
+        {/* Checklist Items Grouped by Category */}
+        {['Environmental', 'Social', 'Governance'].map(category => {
+          const categoryItems = finalChecklist.filter(item => item.category === category);
+          const categoryAssignment = assignments.category_assignments?.[category];
           
-          <div className="divide-y divide-gray-100">
-            {finalChecklist.map((item, index) => (
-              <div key={item.id} className="p-6 hover:bg-blue-50 transition-colors">
+          if (categoryItems.length === 0) return null;
+          
+          return (
+            <div key={category} className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+              <div className={`p-6 border-b border-gray-200 ${
+                category === 'Environmental' ? 'bg-green-50' :
+                category === 'Social' ? 'bg-purple-50' :
+                'bg-orange-50'
+              }`}>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">{category} Elements</h3>
+                    <p className="text-gray-600">{categoryItems.length} elements in this category</p>
+                    {categoryAssignment && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        <i className="fas fa-user mr-1"></i>
+                        Default assignee: <span className="font-medium">{categoryAssignment.username}</span>
+                      </p>
+                    )}
+                  </div>
+                  {hasPermission('elementAssignment', 'create') && canAssign && (
+                    <button
+                      onClick={() => {
+                        setSelectedCategory(category);
+                        setSelectedElement(null);
+                        fetchAvailableUsers();
+                        setShowUserModal(true);
+                      }}
+                      className={`px-4 py-2 rounded-lg text-white font-medium ${
+                        category === 'Environmental' ? 'bg-green-600 hover:bg-green-700' :
+                        category === 'Social' ? 'bg-purple-600 hover:bg-purple-700' :
+                        'bg-orange-600 hover:bg-orange-700'
+                      }`}
+                    >
+                      <i className="fas fa-users mr-2"></i>
+                      Assign Category
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              <div className="divide-y divide-gray-100">
+                {categoryItems.map((item, index) => {
+                  const assignedUser = getAssignedUser(item.id, category);
+                  
+                  return (
+                    <div key={item.id} className="p-6 hover:bg-blue-50 transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-3">
@@ -566,11 +771,43 @@ const List = () => {
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Assignment Section */}
+                  <div className="ml-6 text-right">
+                    {assignedUser ? (
+                      <div className="mb-2">
+                        <p className="text-sm text-gray-500">Assigned to:</p>
+                        <p className="font-medium text-gray-900">{assignedUser.username}</p>
+                        <p className="text-xs text-gray-500">{assignedUser.email}</p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-400 mb-2">Unassigned</p>
+                    )}
+                    
+                    {hasPermission('elementAssignment', 'create') && canAssign && (
+                      <button
+                        onClick={() => {
+                          console.log('Assigning item:', item); // Debug log
+                          setSelectedElement(item);
+                          setSelectedCategory(null);
+                          fetchAvailableUsers();
+                          setShowUserModal(true);
+                        }}
+                        className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                      >
+                        <i className="fas fa-user-edit mr-1"></i>
+                        {assignedUser ? 'Reassign' : 'Assign'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
 
         {/* Action Footer */}
         <div className="flex items-center justify-between bg-white rounded-xl p-6 shadow-sm border border-gray-200">
@@ -588,7 +825,7 @@ const List = () => {
           </div>
           <div className="flex space-x-4">
             <button 
-              className="px-8 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:shadow-lg font-medium"
+              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg font-medium"
               onClick={handleContinue}
             >
               Save & Continue
@@ -596,6 +833,63 @@ const List = () => {
             </button>
           </div>
         </div>
+        
+        {/* User Selection Modal */}
+        {showUserModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white rounded-xl p-6 max-w-md w-full">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">
+                {selectedCategory ? `Assign ${selectedCategory} Category` : `Assign ${selectedElement?.name}`}
+              </h3>
+              
+              {loadingUsers ? (
+                <div className="text-center py-4">
+                  <i className="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
+                  <p className="text-gray-500 mt-2">Loading users...</p>
+                </div>
+              ) : (
+                <div className="max-h-64 overflow-y-auto">
+                  {availableUsers.length === 0 ? (
+                    <p className="text-gray-500">No users available</p>
+                  ) : (
+                    availableUsers.map(user => (
+                      <button
+                        key={user.id}
+                        onClick={() => {
+                          if (selectedCategory) {
+                            handleCategoryAssignment(selectedCategory, user.id);
+                          } else if (selectedElement) {
+                            handleElementAssignment(selectedElement.id, user.id);
+                          }
+                        }}
+                        className="w-full text-left p-3 hover:bg-gray-50 rounded-lg mb-2 border border-gray-200"
+                      >
+                        <div className="font-medium text-gray-900">{user.full_name}</div>
+                        <div className="text-sm text-gray-500">{user.email}</div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          Role: {user.role} | Active assignments: {user.assignment_count}
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+              
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => {
+                    setShowUserModal(false);
+                    setSelectedCategory(null);
+                    setSelectedElement(null);
+                  }}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

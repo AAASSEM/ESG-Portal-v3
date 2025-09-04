@@ -2,7 +2,8 @@ from rest_framework import serializers
 from .models import (
     Company, Activity, CompanyActivity, Framework, CompanyFramework,
     DataElement, DataElementFrameworkMapping, ProfilingQuestion,
-    CompanyProfileAnswer, Meter, CompanyDataSubmission, CompanyChecklist
+    CompanyProfileAnswer, Meter, CompanyDataSubmission, CompanyChecklist,
+    ElementAssignment
 )
 
 
@@ -121,13 +122,14 @@ class CompanyChecklistSerializer(serializers.ModelSerializer):
     element_description = serializers.CharField(source='element.description', read_only=True)
     element_unit = serializers.CharField(source='element.unit', read_only=True)
     is_metered = serializers.BooleanField(source='element.is_metered', read_only=True)
+    category = serializers.CharField(source='element.category', read_only=True)
     frameworks_list = serializers.SerializerMethodField()
     
     class Meta:
         model = CompanyChecklist
         fields = [
             'id', 'element', 'element_name', 'element_description', 'element_unit',
-            'is_metered', 'is_required', 'cadence', 'frameworks_list', 'created_at'
+            'is_metered', 'is_required', 'cadence', 'frameworks_list', 'created_at', 'category'
         ]
     
     def get_frameworks_list(self, obj):
@@ -163,3 +165,31 @@ class DashboardStatsSerializer(serializers.Serializer):
         child=serializers.DictField(),
         allow_empty=True
     )
+
+
+class ElementAssignmentSerializer(serializers.ModelSerializer):
+    """Serializer for ElementAssignment model"""
+    element_name = serializers.CharField(source='checklist_item.element_name', read_only=True)
+    element_description = serializers.CharField(source='checklist_item.element_description', read_only=True)
+    element_unit = serializers.CharField(source='checklist_item.element_unit', read_only=True)
+    assigned_to_username = serializers.CharField(source='assigned_to.username', read_only=True)
+    assigned_to_email = serializers.CharField(source='assigned_to.email', read_only=True)
+    assigned_by_username = serializers.CharField(source='assigned_by.username', read_only=True)
+    company_name = serializers.CharField(source='company.name', read_only=True)
+    is_overdue = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ElementAssignment
+        fields = [
+            'id', 'checklist_item', 'element_name', 'element_description', 'element_unit',
+            'assigned_to', 'assigned_to_username', 'assigned_to_email',
+            'assigned_by', 'assigned_by_username',
+            'company', 'company_name',
+            'status', 'priority', 'notes', 'due_date',
+            'assigned_at', 'updated_at', 'completed_at',
+            'is_overdue'
+        ]
+        read_only_fields = ['id', 'assigned_at', 'updated_at']
+    
+    def get_is_overdue(self, obj):
+        return obj.is_overdue()
