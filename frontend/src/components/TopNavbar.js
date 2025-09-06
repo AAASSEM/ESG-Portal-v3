@@ -200,8 +200,8 @@ const TopNavbar = () => {
             onClick={() => navigate('/')}
             className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
           >
-            <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-teal-600 rounded-xl flex items-center justify-center">
-              <i className="fas fa-leaf text-white text-lg"></i>
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
+              <i className="fas fa-leaf text-purple-600 text-lg"></i>
             </div>
             <span className="text-white font-bold text-lg md:text-xl">ESG Portal</span>
           </button>
