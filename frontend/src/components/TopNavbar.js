@@ -139,7 +139,6 @@ const RoleSwitcherDropdown = ({ currentRole }) => {
 };
 
 const TopNavbar = () => {
-  console.log('TopNavbar rendering');
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout, selectedCompany, companies, userSites, selectedSite, switchSite, hasPermission } = useAuth();
@@ -187,14 +186,15 @@ const TopNavbar = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-blue-700 shadow-2xl relative overflow-hidden">
+    <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-blue-700 shadow-2xl relative"
+         style={{ zIndex: 1000 }}>
       {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-blue-600/20 backdrop-blur-sm"></div>
       <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-48 -mt-48"></div>
       <div className="absolute bottom-0 left-0 w-72 h-72 bg-white/5 rounded-full -ml-36 -mb-36"></div>
       
-      <header className="relative z-20 px-6 lg:px-20 py-6">
-        <nav className="flex items-center justify-between gap-6">
+      <header className="relative z-20 px-4 md:px-6 lg:px-20 py-4 md:py-6">
+        <nav className="flex items-center justify-between gap-2 md:gap-4 lg:gap-6">
           {/* Logo */}
           <button 
             onClick={() => navigate('/')}
@@ -203,7 +203,7 @@ const TopNavbar = () => {
             <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-teal-600 rounded-xl flex items-center justify-center">
               <i className="fas fa-leaf text-white text-lg"></i>
             </div>
-            <span className="text-white font-bold text-xl">ESG Portal</span>
+            <span className="text-white font-bold text-lg md:text-xl">ESG Portal</span>
           </button>
 
           {/* Desktop Navigation */}
@@ -289,8 +289,9 @@ const TopNavbar = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={toggleMobileMenu}
-            className="lg:hidden text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
+            className="lg:hidden text-white p-3 rounded-lg hover:bg-white/10 transition-colors relative z-50"
             aria-label="Toggle mobile menu"
+            type="button"
           >
             <i className={`fa-solid ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'} text-xl`}></i>
           </button>
@@ -298,7 +299,10 @@ const TopNavbar = () => {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden absolute top-full left-0 right-0 bg-purple-700/95 backdrop-blur-md border-t border-white/10">
+          <div className="lg:hidden absolute top-full left-0 right-0 bg-purple-700/95 backdrop-blur-md border-t border-white/10 shadow-lg"
+               style={{ 
+                 zIndex: 9999
+               }}>
             <div className="px-6 py-4 space-y-2">
               {navItems.map((item) => (
                 <button

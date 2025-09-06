@@ -546,17 +546,17 @@ const Meter = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Auto-Created Notice */}
       {meters.some(m => m.isAutoCreated) && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-6 mb-8">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
               <i className="fas fa-magic text-blue-600"></i>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-blue-900">Meters Auto-Created</h3>
-              <p className="text-blue-700">Based on your checklist requirements, we've automatically created default "Main" meters for all metered data elements. You can customize these or add additional meters as needed.</p>
+              <h3 className="text-base sm:text-lg font-semibold text-blue-900">Meters Auto-Created</h3>
+              <p className="text-sm sm:text-base text-blue-700">Based on your checklist requirements, we've automatically created default "Main" meters for all metered data elements. You can customize these or add additional meters as needed.</p>
             </div>
           </div>
         </div>

@@ -1151,28 +1151,29 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header with Back Button */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
         <div className="flex items-center space-x-4">
           <button
             onClick={() => navigate('/')}
             className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
           >
             <i className="fas fa-arrow-left mr-2"></i>
-            Back to Main
+            <span className="hidden sm:inline">Back to Main</span>
+            <span className="sm:hidden">Back</span>
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">ESG Dashboard</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">ESG Dashboard</h1>
         </div>
       </div>
 
       {/* Time Range Selector */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex space-x-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-4">
+        <div className="flex flex-wrap gap-2 sm:gap-4">
           {['Last 7 Days', 'This Month', 'Last Quarter', 'Last Year'].map((range) => (
             <button
               key={range}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+              className={`px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-colors ${
                 selectedTimeRange === range
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -1183,18 +1184,22 @@ const Dashboard = () => {
             </button>
           ))}
         </div>
-        <div className="flex space-x-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           <button 
             onClick={handleExportData}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium transition-colors"
+            className="px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs sm:text-sm font-medium transition-colors"
           >
-            <i className="fas fa-download mr-2"></i>Export
+            <i className="fas fa-download mr-1 sm:mr-2"></i>
+            <span className="hidden sm:inline">Export</span>
+            <span className="sm:hidden">Export</span>
           </button>
           <button 
             onClick={handleExportData}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
+            className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs sm:text-sm font-medium transition-colors"
           >
-            <i className="fas fa-file-chart-line mr-2"></i>Generate Report
+            <i className="fas fa-file-chart-line mr-1 sm:mr-2"></i>
+            <span className="hidden sm:inline">Generate Report</span>
+            <span className="sm:hidden">Report</span>
           </button>
         </div>
       </div>
@@ -1224,17 +1229,17 @@ const Dashboard = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8 mb-8">
         {/* Framework Progress */}
-        <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-6">
+        <div className="xl:col-span-2 bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-2">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Framework Compliance</h2>
-              <p className="text-gray-600">Progress across selected ESG frameworks</p>
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">Framework Compliance</h2>
+              <p className="text-sm sm:text-base text-gray-600">Progress across selected ESG frameworks</p>
             </div>
             <button 
               onClick={() => navigate('/rame')}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
+              className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm font-medium transition-colors self-start sm:self-auto"
             >
               View Details
             </button>
@@ -1268,11 +1273,11 @@ const Dashboard = () => {
         </div>
 
         {/* Recent Activities */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Recent Activity</h2>
-              <p className="text-gray-600 text-sm">Latest system updates</p>
+              <h2 className="text-base sm:text-lg font-bold text-gray-900">Recent Activity</h2>
+              <p className="text-gray-600 text-xs sm:text-sm">Latest system updates</p>
             </div>
           </div>
           <div className="space-y-4">
@@ -1293,14 +1298,14 @@ const Dashboard = () => {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 mb-8">
         {/* Energy Consumption Chart */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-2">
             <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-bold text-gray-900">Meter Data Analytics</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900">Meter Data Analytics</h3>
               <div className="h-5"> {/* Fixed height container */}
-                <p className="text-gray-600 text-sm truncate">
+                <p className="text-gray-600 text-xs sm:text-sm truncate">
                   {chartData?.meters?.[selectedMeter] ? 
                     `${chartData.meters[selectedMeter].name} - ${chartData.meters[selectedMeter].type}` : 
                     'Loading meter data...'
@@ -1308,7 +1313,7 @@ const Dashboard = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4 self-start sm:self-auto">
               {chartData?.meters && chartData.meters.length > 1 && (
                 <span className="text-sm text-gray-500">
                   {selectedMeter + 1} of {chartData.meters.length}
@@ -1323,7 +1328,7 @@ const Dashboard = () => {
           </div>
           
           {/* Chart Area with Floating Navigation */}
-          <div className="h-64 bg-gray-50 rounded-lg p-4 relative group">
+          <div className="h-48 sm:h-64 bg-gray-50 rounded-lg p-2 sm:p-4 relative group">
             {/* Floating Left Arrow */}
             {chartData?.meters && chartData.meters.length > 1 && (
               <button 

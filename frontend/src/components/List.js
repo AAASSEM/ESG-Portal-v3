@@ -341,64 +341,6 @@ const List = () => {
     }
   };
 
-  // Fallback hardcoded questions (will be replaced by API data)
-  const fallbackQuestions = [
-    {
-      id: 'backup_generators',
-      text: 'Do you have backup generators on-site?',
-      activatesElement: 'generator_fuel',
-      category: 'Basic Operations'
-    },
-    {
-      id: 'company_vehicles',
-      text: 'Do you own or operate company vehicles?',
-      activatesElement: 'vehicle_fuel',
-      category: 'Basic Operations'
-    },
-    {
-      id: 'lpg_usage',
-      text: 'Do you use LPG (liquid petroleum gas) in your operations?',
-      activatesElement: 'lpg_consumption',
-      category: 'Basic Operations'
-    },
-    {
-      id: 'event_facilities',
-      text: 'Do you have meeting rooms or event spaces available for hire?',
-      activatesElement: 'green_events',
-      category: 'Basic Operations'
-    },
-    {
-      id: 'food_service',
-      text: 'Do you have a restaurant, kitchen, or food service?',
-      activatesElement: 'food_sourcing',
-      category: 'Basic Operations'
-    },
-    {
-      id: 'outdoor_spaces',
-      text: 'Do you have outdoor spaces like gardens or lawns?',
-      activatesElement: 'green_spaces',
-      category: 'Basic Operations'
-    },
-    {
-      id: 'renewable_energy',
-      text: 'Do you use solar panels or other renewable energy sources?',
-      activatesElement: 'renewable_energy_usage',
-      category: 'Sustainability Practices'
-    },
-    {
-      id: 'environmental_certification',
-      text: 'Do you have ISO 14001 or similar environmental certification?',
-      activatesElement: 'environmental_management_system',
-      category: 'Sustainability Practices'
-    },
-    {
-      id: 'listed_company',
-      text: 'Is your company listed on any stock exchange?',
-      activatesElement: 'board_composition',
-      category: 'Sustainability Practices'
-    }
-  ];
-
   // Must-have data elements (always required)
   const mustHaveElements = [
     { id: 'electricity', name: 'Electricity Consumption', description: 'Total electricity from local providers', unit: 'kWh', cadence: 'Monthly', frameworks: ['DST', 'ESG', 'Green Key'], category: 'Environmental', is_metered: true, meter_type: 'Electricity' },
@@ -643,35 +585,35 @@ const List = () => {
 
   if (showChecklist && allQuestionsAnswered) {
     return (
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto px-4">
         {/* Checklist Header */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-8">
+        <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200 mb-6 sm:mb-8">
           <div className="flex items-center space-x-3 mb-4">
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
               <i className="fas fa-check-circle text-green-600"></i>
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Personalized Data Checklist</h2>
-              <p className="text-gray-600">Your customized data requirements based on your responses</p>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Personalized Data Checklist</h2>
+              <p className="text-sm sm:text-base text-gray-600">Your customized data requirements based on your responses</p>
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{finalChecklist.length}</div>
-              <div className="text-sm text-gray-600">Total Elements</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            <div className="text-center p-3 sm:p-4 bg-blue-50 rounded-lg">
+              <div className="text-xl sm:text-2xl font-bold text-blue-600">{finalChecklist.length}</div>
+              <div className="text-xs sm:text-sm text-gray-600">Total Elements</div>
             </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{categoryStats.environmental}</div>
-              <div className="text-sm text-gray-600">Environmental</div>
+            <div className="text-center p-3 sm:p-4 bg-green-50 rounded-lg">
+              <div className="text-xl sm:text-2xl font-bold text-green-600">{categoryStats.environmental}</div>
+              <div className="text-xs sm:text-sm text-gray-600">Environmental</div>
             </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">{categoryStats.social}</div>
-              <div className="text-sm text-gray-600">Social</div>
+            <div className="text-center p-3 sm:p-4 bg-purple-50 rounded-lg">
+              <div className="text-xl sm:text-2xl font-bold text-purple-600">{categoryStats.social}</div>
+              <div className="text-xs sm:text-sm text-gray-600">Social</div>
             </div>
-            <div className="text-center p-4 bg-orange-50 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">{categoryStats.governance}</div>
-              <div className="text-sm text-gray-600">Governance</div>
+            <div className="text-center p-3 sm:p-4 bg-orange-50 rounded-lg">
+              <div className="text-xl sm:text-2xl font-bold text-orange-600">{categoryStats.governance}</div>
+              <div className="text-xs sm:text-sm text-gray-600">Governance</div>
             </div>
           </div>
         </div>
@@ -684,18 +626,18 @@ const List = () => {
           if (categoryItems.length === 0) return null;
           
           return (
-            <div key={category} className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
-              <div className={`p-6 border-b border-gray-200 ${
+            <div key={category} className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 sm:mb-8">
+              <div className={`p-4 sm:p-6 border-b border-gray-200 ${
                 category === 'Environmental' ? 'bg-green-50' :
                 category === 'Social' ? 'bg-purple-50' :
                 'bg-orange-50'
               }`}>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{category} Elements</h3>
-                    <p className="text-gray-600">{categoryItems.length} elements in this category</p>
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">{category} Elements</h3>
+                    <p className="text-sm sm:text-base text-gray-600">{categoryItems.length} elements in this category</p>
                     {categoryAssignment && (
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-xs sm:text-sm text-gray-500 mt-1">
                         <i className="fas fa-user mr-1"></i>
                         Default assignee: <span className="font-medium">{categoryAssignment.username}</span>
                       </p>
@@ -709,13 +651,13 @@ const List = () => {
                         fetchAvailableUsers();
                         setShowUserModal(true);
                       }}
-                      className={`px-4 py-2 rounded-lg text-white font-medium ${
+                      className={`px-3 sm:px-4 py-2 rounded-lg text-white font-medium text-xs sm:text-sm ${
                         category === 'Environmental' ? 'bg-green-600 hover:bg-green-700' :
                         category === 'Social' ? 'bg-purple-600 hover:bg-purple-700' :
                         'bg-orange-600 hover:bg-orange-700'
                       }`}
                     >
-                      <i className="fas fa-users mr-2"></i>
+                      <i className="fas fa-users mr-1 sm:mr-2"></i>
                       Assign Category
                     </button>
                   )}
@@ -727,81 +669,86 @@ const List = () => {
                   const assignedUser = getAssignedUser(item.id, category);
                   
                   return (
-                    <div key={item.id} className="p-6 hover:bg-blue-50 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <span className="text-sm font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">#{index + 1}</span>
-                      <h4 className="font-bold text-gray-900 text-lg">{item.name}</h4>
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        item.category === 'Environmental' ? 'bg-green-200 text-green-900' :
-                        item.category === 'Social' ? 'bg-purple-200 text-purple-900' :
-                        'bg-orange-200 text-orange-900'
-                      }`}>
-                        {item.category}
-                      </span>
-                    </div>
-                    <p className="text-gray-700 text-base mb-4 font-medium">{item.description}</p>
-                    <div className="flex items-center space-x-8 text-sm font-medium text-gray-700">
-                      <div className="flex items-center space-x-2 bg-gray-100 px-3 py-2 rounded-lg">
-                        <i className="fas fa-ruler text-gray-600"></i>
-                        <span>Unit: <span className="font-bold text-gray-900">{item.unit}</span></span>
-                      </div>
-                      <div className="flex items-center space-x-2 bg-gray-100 px-3 py-2 rounded-lg">
-                        <i className="fas fa-clock text-gray-600"></i>
-                        <span>Frequency: <span className="font-bold text-gray-900">{item.cadence}</span></span>
-                      </div>
-                      <div className="flex items-center space-x-2 bg-gray-100 px-3 py-2 rounded-lg">
-                        <i className="fas fa-tags text-gray-600"></i>
-                        <span>Frameworks:</span>
-                        <div className="flex items-center space-x-2">
-                          {item.frameworks.map((framework, idx) => (
-                            <span key={idx} className={`px-2 py-1 rounded text-xs font-bold ${
-                              framework === 'DST' ? 'bg-blue-200 text-blue-900' :
-                              framework === 'ESG' ? 'bg-green-200 text-green-900' :
-                              framework === 'Green Key' ? 'bg-teal-200 text-teal-900' :
-                              framework === 'TCFD' ? 'bg-orange-200 text-orange-900' :
-                              framework === 'SASB' ? 'bg-purple-200 text-purple-900' :
-                              'bg-gray-200 text-gray-900'
-                            }`}>
-                              {framework}
+                    <div key={item.id} className="p-4 sm:p-6 hover:bg-blue-50 transition-colors">
+                      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
+                        <div className="flex-1">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3">
+                            <span className="text-xs sm:text-sm font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                              #{index + 1}
                             </span>
-                          ))}
+                            <h4 className="font-bold text-gray-900 text-base sm:text-lg">{item.name}</h4>
+                            <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-bold ${
+                              item.category === 'Environmental' ? 'bg-green-200 text-green-900' :
+                              item.category === 'Social' ? 'bg-purple-200 text-purple-900' :
+                              'bg-orange-200 text-orange-900'
+                            }`}>
+                              {item.category}
+                            </span>
+                          </div>
+                          
+                          <p className="text-gray-700 text-sm sm:text-base mb-4 font-medium">{item.description}</p>
+                          
+                          {/* Make the info badges stack on mobile */}
+                          <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm font-medium text-gray-700">
+                            <div className="flex items-center space-x-2 bg-gray-100 px-2 sm:px-3 py-1 sm:py-2 rounded-lg">
+                              <i className="fas fa-ruler text-gray-600"></i>
+                              <span>Unit: <span className="font-bold text-gray-900">{item.unit}</span></span>
+                            </div>
+                            <div className="flex items-center space-x-2 bg-gray-100 px-2 sm:px-3 py-1 sm:py-2 rounded-lg">
+                              <i className="fas fa-clock text-gray-600"></i>
+                              <span>Frequency: <span className="font-bold text-gray-900">{item.cadence}</span></span>
+                            </div>
+                            <div className="flex items-center space-x-2 bg-gray-100 px-2 sm:px-3 py-1 sm:py-2 rounded-lg">
+                              <i className="fas fa-tags text-gray-600"></i>
+                              <span>Frameworks:</span>
+                              <div className="flex flex-wrap items-center gap-1">
+                                {item.frameworks.map((framework, idx) => (
+                                  <span key={idx} className={`px-1 sm:px-2 py-0.5 sm:py-1 rounded text-xs font-bold ${
+                                    framework === 'DST' ? 'bg-blue-200 text-blue-900' :
+                                    framework === 'ESG' ? 'bg-green-200 text-green-900' :
+                                    framework === 'Green Key' ? 'bg-teal-200 text-teal-900' :
+                                    framework === 'TCFD' ? 'bg-orange-200 text-orange-900' :
+                                    framework === 'SASB' ? 'bg-purple-200 text-purple-900' :
+                                    'bg-gray-200 text-gray-900'
+                                  }`}>
+                                    {framework}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Assignment Section - moves below on mobile */}
+                        <div className="mt-4 lg:mt-0 lg:ml-6 text-left lg:text-right">
+                          {assignedUser ? (
+                            <div className="mb-2">
+                              <p className="text-xs sm:text-sm text-gray-500">Assigned to:</p>
+                              <p className="font-medium text-sm sm:text-base text-gray-900">{assignedUser.username}</p>
+                              <p className="text-xs text-gray-500">{assignedUser.email}</p>
+                            </div>
+                          ) : (
+                            <p className="text-xs sm:text-sm text-gray-400 mb-2">Unassigned</p>
+                          )}
+                          
+                          {hasPermission('elementAssignment', 'create') && canAssign && (
+                            <button
+                              onClick={() => {
+                                console.log('Assigning item:', item);
+                                setSelectedElement(item);
+                                setSelectedCategory(null);
+                                fetchAvailableUsers();
+                                setShowUserModal(true);
+                              }}
+                              className="px-3 py-1.5 bg-blue-600 text-white rounded text-xs sm:text-sm hover:bg-blue-700 whitespace-nowrap"
+                            >
+                              <i className="fas fa-user-edit mr-1"></i>
+                              {assignedUser ? 'Reassign' : 'Assign'}
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Assignment Section */}
-                  <div className="ml-6 text-right">
-                    {assignedUser ? (
-                      <div className="mb-2">
-                        <p className="text-sm text-gray-500">Assigned to:</p>
-                        <p className="font-medium text-gray-900">{assignedUser.username}</p>
-                        <p className="text-xs text-gray-500">{assignedUser.email}</p>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-400 mb-2">Unassigned</p>
-                    )}
-                    
-                    {hasPermission('elementAssignment', 'create') && canAssign && (
-                      <button
-                        onClick={() => {
-                          console.log('Assigning item:', item); // Debug log
-                          setSelectedElement(item);
-                          setSelectedCategory(null);
-                          fetchAvailableUsers();
-                          setShowUserModal(true);
-                        }}
-                        className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-                      >
-                        <i className="fas fa-user-edit mr-1"></i>
-                        {assignedUser ? 'Reassign' : 'Assign'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
                   );
                 })}
               </div>
@@ -810,47 +757,42 @@ const List = () => {
         })}
 
         {/* Action Footer */}
-        <div className="flex items-center justify-between bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center space-x-4">
-            <button 
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
-              onClick={async () => {
-                setShowChecklist(false);
-                // Refresh checklist existence when going back to questions
-                await checkChecklistExists();
-              }}
-            >
-              <i className="fas fa-arrow-left mr-2"></i>Back to Questions
-            </button>
-          </div>
-          <div className="flex space-x-4">
-            <button 
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg font-medium"
-              onClick={handleContinue}
-            >
-              Save & Continue
-              <i className="fas fa-arrow-right ml-2"></i>
-            </button>
-          </div>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200 gap-3">
+          <button 
+            className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+            onClick={async () => {
+              setShowChecklist(false);
+              await checkChecklistExists();
+            }}
+          >
+            <i className="fas fa-arrow-left mr-2"></i>Back to Questions
+          </button>
+          <button 
+            className="w-full sm:w-auto px-6 sm:px-8 py-2 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg font-medium"
+            onClick={handleContinue}
+          >
+            Save & Continue
+            <i className="fas fa-arrow-right ml-2"></i>
+          </button>
         </div>
         
         {/* User Selection Modal */}
         {showUserModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white rounded-xl p-6 max-w-md w-full">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+            <div className="bg-white rounded-xl p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4">
                 {selectedCategory ? `Assign ${selectedCategory} Category` : `Assign ${selectedElement?.name}`}
               </h3>
               
               {loadingUsers ? (
                 <div className="text-center py-4">
                   <i className="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
-                  <p className="text-gray-500 mt-2">Loading users...</p>
+                  <p className="text-sm sm:text-base text-gray-500 mt-2">Loading users...</p>
                 </div>
               ) : (
                 <div className="max-h-64 overflow-y-auto">
                   {availableUsers.length === 0 ? (
-                    <p className="text-gray-500">No users available</p>
+                    <p className="text-sm sm:text-base text-gray-500">No users available</p>
                   ) : (
                     availableUsers.map(user => (
                       <button
@@ -862,10 +804,10 @@ const List = () => {
                             handleElementAssignment(selectedElement.id, user.id);
                           }
                         }}
-                        className="w-full text-left p-3 hover:bg-gray-50 rounded-lg mb-2 border border-gray-200"
+                        className="w-full text-left p-2 sm:p-3 hover:bg-gray-50 rounded-lg mb-2 border border-gray-200"
                       >
-                        <div className="font-medium text-gray-900">{user.full_name}</div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
+                        <div className="font-medium text-sm sm:text-base text-gray-900">{user.full_name}</div>
+                        <div className="text-xs sm:text-sm text-gray-500">{user.email}</div>
                         <div className="text-xs text-gray-400 mt-1">
                           Role: {user.role} | Active assignments: {user.assignment_count}
                         </div>
@@ -882,7 +824,7 @@ const List = () => {
                     setSelectedCategory(null);
                     setSelectedElement(null);
                   }}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base text-gray-600 hover:text-gray-800"
                 >
                   Cancel
                 </button>
@@ -896,10 +838,10 @@ const List = () => {
 
   if (!companyId) {
     return (
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">No Company Selected</h3>
-          <p className="text-gray-600 mb-4">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200 mb-6 sm:mb-8">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">No Company Selected</h3>
+          <p className="text-sm sm:text-base text-gray-600 mb-4">
             Please select a company from the navigation bar to continue with profiling.
           </p>
         </div>
@@ -909,10 +851,10 @@ const List = () => {
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="ml-3 text-gray-600">Loading profiling questions...</span>
+          <span className="ml-3 text-sm sm:text-base text-gray-600">Loading profiling questions...</span>
         </div>
       </div>
     );
@@ -920,18 +862,18 @@ const List = () => {
 
   if (profilingQuestions.length === 0) {
     return (
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">No Questions Available</h3>
-          <p className="text-gray-600 mb-4">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200 mb-6 sm:mb-8">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">No Questions Available</h3>
+          <p className="text-sm sm:text-base text-gray-600 mb-4">
             No profiling questions found. Please contact support or check your backend configuration.
           </p>
-          <div className="text-sm text-gray-500">
+          <div className="text-xs sm:text-sm text-gray-500">
             Debug info: Company ID: {companyId}, Questions loaded: {profilingQuestions.length}, Loading: {loading.toString()}
           </div>
           <div className="mt-4">
             <button 
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm sm:text-base"
               onClick={() => {
                 setLoading(true);
                 fetchProfilingQuestions();
@@ -946,41 +888,41 @@ const List = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto px-4">
       {/* Profiling Wizard Header */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-8">
+      <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200 mb-6 sm:mb-8">
         <div className="flex items-center space-x-3 mb-4">
           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
             <i className="fas fa-question-circle text-blue-600"></i>
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Profiling Wizard</h2>
-            <p className="text-gray-600">Answer these questions to personalize your data requirements</p>
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Profiling Wizard</h2>
+            <p className="text-sm sm:text-base text-gray-600">Answer these questions to personalize your data requirements</p>
           </div>
         </div>
         
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="text-xs sm:text-sm text-gray-600">
             <span className="font-medium">{Object.keys(answers).length}</span> of <span className="font-medium">{profilingQuestions.length}</span> questions answered
             {!hasPermission('frameworkSelection', 'update') && (
-              <span className="ml-4 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
+              <span className="ml-2 sm:ml-4 px-2 sm:px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
                 <i className="fas fa-eye mr-1"></i>View Only
               </span>
             )}
           </div>
           {hasPermission('frameworkSelection', 'update') && (
-            <div className="flex space-x-3">
+            <div className="flex space-x-2 sm:space-x-3">
               <button 
-                className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-xs sm:text-sm font-medium"
                 onClick={() => handleAnswerAll(false)}
               >
-                <i className="fas fa-times mr-2"></i>Answer All No
+                <i className="fas fa-times mr-1 sm:mr-2"></i>Answer All No
               </button>
               <button 
-                className="px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-sm font-medium"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-xs sm:text-sm font-medium"
                 onClick={() => handleAnswerAll(true)}
               >
-                <i className="fas fa-check mr-2"></i>Answer All Yes
+                <i className="fas fa-check mr-1 sm:mr-2"></i>Answer All Yes
               </button>
             </div>
           )}
@@ -1000,23 +942,23 @@ const List = () => {
       {/* Questions by Category */}
       {['Basic Operations'].map(category => (
         <div key={category} className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">{category}</h3>
+          <div className="p-4 sm:p-6 border-b border-gray-200">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">{category}</h3>
           </div>
           
-          <div className="p-6 space-y-6">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             {profilingQuestions.filter(q => q.category === category).map((question) => (
-              <div key={question.id} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 pr-4">
-                    <p className="font-medium text-gray-900 mb-2">{question.text}</p>
-                    <p className="text-sm text-gray-500">
+              <div key={question.id} className="border border-gray-200 rounded-lg p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                  <div className="flex-1">
+                    <p className="font-medium text-sm sm:text-base text-gray-900 mb-2">{question.text}</p>
+                    <p className="text-xs sm:text-sm text-gray-500">
                       This will activate: <span className="font-medium">{conditionalElements[question.activatesElement]?.name || question.activatesElement}</span>
                     </p>
                   </div>
-                  <div className="flex space-x-3">
+                  <div className="flex space-x-2 sm:space-x-3">
                     <button
-                      className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                      className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-xs sm:text-sm transition-colors ${
                         answers[question.id] === false
                           ? 'bg-red-100 text-red-700 border-2 border-red-300'
                           : !hasPermission('frameworkSelection', 'update')
@@ -1029,7 +971,7 @@ const List = () => {
                       No
                     </button>
                     <button
-                      className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                      className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-xs sm:text-sm transition-colors ${
                         answers[question.id] === true
                           ? 'bg-green-100 text-green-700 border-2 border-green-300'
                           : !hasPermission('frameworkSelection', 'update')
@@ -1051,18 +993,17 @@ const List = () => {
 
       {/* Generate/View Checklist Button */}
       {allQuestionsAnswered && hasPermission('frameworkSelection', 'update') && !checklistExists && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-6 mb-8">
-          <div className="flex items-center justify-between">
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h3 className="text-lg font-semibold text-green-900">All Questions Answered!</h3>
-              <p className="text-green-700">Click below to generate your personalized data checklist</p>
+              <h3 className="text-base sm:text-lg font-semibold text-green-900">All Questions Answered!</h3>
+              <p className="text-sm sm:text-base text-green-700">Click below to generate your personalized data checklist</p>
             </div>
             <button
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 sm:px-6 py-2 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               onClick={async () => {
                 const checklist = await saveAnswersAndGenerateChecklist();
                 if (checklist) {
-                  // Wizard completion is tracked by database (all questions answered)
                   console.log('Profiling wizard completed, showing checklist');
                   setChecklistExists(true);
                   setShowChecklist(true);
@@ -1084,18 +1025,17 @@ const List = () => {
         </div>
       )}
 
-
       {/* View Only Message with Checklist Access for Read-Only Users */}
       {!hasPermission('frameworkSelection', 'update') && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
-          <div className="flex items-center justify-between">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <i className="fas fa-eye text-blue-600"></i>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-blue-900">Profiling (View Only)</h3>
-                <p className="text-blue-700">
+                <h3 className="text-base sm:text-lg font-semibold text-blue-900">Profiling (View Only)</h3>
+                <p className="text-sm sm:text-base text-blue-700">
                   {checklistExists 
                     ? "You can view the generated checklist." 
                     : "Questions have been answered by an admin. Checklist will be available once generated."
@@ -1105,7 +1045,7 @@ const List = () => {
             </div>
             {checklistExists && (
               <button
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm sm:text-base"
                 onClick={() => setShowChecklist(true)}
               >
                 <i className="fas fa-eye mr-2"></i>View Checklist
@@ -1115,16 +1055,16 @@ const List = () => {
         </div>
       )}
 
-      {/* Checklist Ready Button - only shows for users with edit permissions */}
+      {/* Checklist Ready Button */}
       {allQuestionsAnswered && checklistExists && !showChecklist && hasPermission('frameworkSelection', 'update') && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-6 mb-8">
-          <div className="flex items-center justify-between">
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h3 className="text-lg font-semibold text-green-900">✅ Checklist Ready!</h3>
-              <p className="text-green-700">Your personalized data checklist has been created and is ready to view.</p>
+              <h3 className="text-base sm:text-lg font-semibold text-green-900">✅ Checklist Ready!</h3>
+              <p className="text-sm sm:text-base text-green-700">Your personalized data checklist has been created and is ready to view.</p>
             </div>
             <button
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+              className="px-4 sm:px-6 py-2 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm sm:text-base"
               onClick={() => setShowChecklist(true)}
             >
               <i className="fas fa-eye mr-2"></i>View Checklist
@@ -1134,17 +1074,15 @@ const List = () => {
       )}
 
       {/* Action Footer */}
-      <div className="flex items-center justify-between bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-        <div className="flex items-center space-x-4">
-          <button 
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
-            onClick={() => navigate('/rame')}
-          >
-            <i className="fas fa-arrow-left mr-2"></i>Back
-          </button>
-        </div>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200 gap-3">
+        <button 
+          className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium text-sm sm:text-base"
+          onClick={() => navigate('/frame')}
+        >
+          <i className="fas fa-arrow-left mr-2"></i>Back
+        </button>
         <div className="text-center">
-          <p className="text-sm text-gray-600">
+          <p className="text-xs sm:text-sm text-gray-600">
             {!allQuestionsAnswered 
               ? `Answer ${profilingQuestions.length - Object.keys(answers).length} more questions to continue`
               : checklistExists 

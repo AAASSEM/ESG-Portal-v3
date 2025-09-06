@@ -1172,16 +1172,16 @@ const Data = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
       {/* Reporting Period Selector */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Reporting Period</h3>
-        <div className="flex items-center space-x-6">
+      <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200 mb-8">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">Reporting Period</h3>
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Year</label>
             <select 
-              className="border border-gray-300 rounded-lg px-4 py-2 w-32"
+              className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-32"
               value={selectedYear}
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
             >
@@ -1193,7 +1193,7 @@ const Data = () => {
           </div>
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-2">Month</label>
-            <div className="grid grid-cols-6 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
               {months.map((month) => (
                 <button 
                   key={month.id}
@@ -2103,10 +2103,10 @@ const ViewFilterModal = ({ isOpen, currentFilter, onApply, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-[100000]">
-      <div className="bg-white rounded-md p-3 border w-80 shadow-lg mx-4">
+      <div className="bg-white rounded-lg p-4 sm:p-6 border w-full max-w-sm sm:max-w-md shadow-lg mx-4">
         <div className="mt-1">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-medium text-gray-900">View Filter</h3>
+            <h3 className="text-base sm:text-lg font-medium text-gray-900">View Filter</h3>
             <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600">
               <i className="fas fa-times"></i>
             </button>
@@ -2153,7 +2153,7 @@ const GroupByModal = ({ isOpen, currentFilter, onApply, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-[100000]">
-      <div className="bg-white rounded-md p-3 border w-80 shadow-lg mx-4">
+      <div className="bg-white rounded-lg p-4 sm:p-6 border w-full max-w-sm sm:max-w-md shadow-lg mx-4">
         <div className="mt-1">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-medium text-gray-900">Group By</h3>
@@ -2203,7 +2203,7 @@ const AssignmentFilterModal = ({ isOpen, currentFilter, onApply, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-[100000]">
-      <div className="bg-white rounded-md p-3 border w-80 shadow-lg mx-4">
+      <div className="bg-white rounded-lg p-4 sm:p-6 border w-full max-w-sm sm:max-w-md shadow-lg mx-4">
         <div className="mt-1">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-medium text-gray-900">Assignment Filter</h3>

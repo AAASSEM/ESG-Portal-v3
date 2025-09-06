@@ -306,7 +306,7 @@ const UserManagement = () => {
           }
         }}
       >
-        <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl relative z-10">
           <h3 className="text-lg font-medium text-gray-900 mb-6">Select User Role</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -556,9 +556,9 @@ const UserManagement = () => {
 
     if (!isOpen) return null;
 
-    return (
+    const modalContent = (
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000]"
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[110000]"
         style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
         onClick={(e) => {
           if (e.target === e.currentTarget) {
@@ -567,7 +567,7 @@ const UserManagement = () => {
           }
         }}
       >
-        <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto shadow-2xl relative z-10">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium text-gray-900">Add New {selectedRole?.label}</h3>
             <button
@@ -672,6 +672,8 @@ const UserManagement = () => {
         </div>
       </div>
     );
+
+    return createPortal(modalContent, document.body);
   };
 
   // Edit User Modal
@@ -1198,28 +1200,26 @@ const UserManagement = () => {
 
       {/* Users Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
                 User
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Role
               </th>
-              {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Company Code
-              </th> */}
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden md:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Sites/Access
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Last Login
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -1227,22 +1227,23 @@ const UserManagement = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredUsers.map((user) => (
               <tr key={user.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 sm:px-6 py-4">
                   <div className="flex items-center">
-                    <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
-                      <span className="text-gray-700 font-medium">
+                    <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-gray-700 font-medium text-sm">
                         {user.name?.charAt(0)?.toUpperCase() || 'U'}
                       </span>
                     </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                      <div className="text-sm text-gray-500">{user.email}</div>
+                    <div className="ml-2 sm:ml-4 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 truncate">{user.name}</div>
+                      <div className="text-xs sm:text-sm text-gray-500 truncate">{user.email}</div>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getRoleBadgeColor(user.role)}`}>
-                    {roleOptions.find(r => r.value === user.role)?.label || user.role}
+                    <span className="hidden sm:inline">{roleOptions.find(r => r.value === user.role)?.label || user.role}</span>
+                    <span className="sm:hidden">{(roleOptions.find(r => r.value === user.role)?.label || user.role).substring(0,3)}</span>
                   </span>
                 </td>
                 {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -1250,20 +1251,21 @@ const UserManagement = () => {
                     {user.company?.company_code || selectedCompany?.company_code || 'N/A'}
                   </span>
                 </td> */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="hidden md:table-cell px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {user.sites?.length || 0} sites
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="hidden lg:table-cell px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {formatLastLogin(user.last_login)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                     user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                   }`}>
-                    {user.is_active ? 'Active' : 'Inactive'}
+                    <span className="hidden sm:inline">{user.is_active ? 'Active' : 'Inactive'}</span>
+                    <span className="sm:hidden">{user.is_active ? 'A' : 'I'}</span>
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium space-x-1 sm:space-x-2">
                   {hasPermission('userManagement', 'update') && (
                     <button 
                       className="text-purple-600 hover:text-purple-900 disabled:opacity-50"
@@ -1300,6 +1302,7 @@ const UserManagement = () => {
             ))}
           </tbody>
         </table>
+        </div>
 
         {users.length === 0 && (
           <div className="text-center py-8">
@@ -1435,6 +1438,7 @@ const UserManagement = () => {
         notification={notification}
         onClose={hideNotification}
       />
+      
     </div>
   );
 };
