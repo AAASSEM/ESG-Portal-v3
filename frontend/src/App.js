@@ -21,6 +21,7 @@ import UserManagement from './components/UserManagement';
 import SiteManagement from './components/SiteManagement';
 import TaskAssignment from './components/TaskAssignment';
 import ResetPassword from './components/ResetPassword';
+import SetupAccount from './components/SetupAccount';
 import ChangePassword from './components/ChangePassword';
 import EmailVerification from './components/EmailVerification';
 // import DashboardSimple from './components/DashboardSimple'; // Unused
@@ -48,6 +49,13 @@ function App() {
               </ProtectedRoute>
             } />
             
+            {/* Setup account route (for magic link users) */}
+            <Route path="/setup-account" element={
+              <ProtectedRoute>
+                <SetupAccount />
+              </ProtectedRoute>
+            } />
+            
             {/* Public home page */}
             <Route path="/" element={<Home />} />
             
@@ -55,7 +63,7 @@ function App() {
             <Route path="/home" element={
               <ProtectedRoute>
                 <TopNavbar />
-                <div className="container mx-auto p-8">
+                <div className="w-full px-4 py-8">
                   <DashboardHome />
                 </div>
               </ProtectedRoute>
@@ -63,7 +71,7 @@ function App() {
             <Route path="/onboard" element={
               <ProtectedRoute>
                 <TopNavbar />
-                <div className="container mx-auto p-8">
+                <div className="w-full px-4 py-8">
                   <Onboard />
                 </div>
               </ProtectedRoute>
@@ -71,7 +79,7 @@ function App() {
             <Route path="/rame" element={
               <ProtectedRoute>
                 <TopNavbar />
-                <div className="container mx-auto p-8">
+                <div className="w-full px-4 py-8">
                   <Rame />
                 </div>
               </ProtectedRoute>
@@ -79,7 +87,7 @@ function App() {
             <Route path="/list" element={
               <ProtectedRoute>
                 <TopNavbar />
-                <div className="container mx-auto p-8">
+                <div className="w-full px-4 py-8">
                   <List />
                 </div>
               </ProtectedRoute>
@@ -87,7 +95,7 @@ function App() {
             <Route path="/meter" element={
               <ProtectedRoute>
                 <TopNavbar />
-                <div className="container mx-auto p-8">
+                <div className="w-full px-4 py-8">
                   <Meter />
                 </div>
               </ProtectedRoute>
@@ -95,7 +103,7 @@ function App() {
             <Route path="/data" element={
               <ProtectedRoute>
                 <TopNavbar />
-                <div className="container mx-auto p-8">
+                <div className="w-full px-4 py-8">
                   <Data />
                 </div>
               </ProtectedRoute>
@@ -103,7 +111,7 @@ function App() {
             <Route path="/element-assignments" element={
               <ProtectedRoute>
                 <TopNavbar />
-                <div className="container mx-auto p-8">
+                <div className="w-full px-4 py-8">
                   <ElementAssignments />
                 </div>
               </ProtectedRoute>
@@ -117,7 +125,7 @@ function App() {
             <Route path="/dashboard-test" element={
               <ProtectedRoute>
                 <TopNavbar />
-                <div className="container mx-auto p-8">
+                <div className="w-full px-4 py-8">
                   <DashboardTest />
                 </div>
               </ProtectedRoute>
@@ -125,7 +133,7 @@ function App() {
             <Route path="/dashboard-old" element={
               <ProtectedRoute>
                 <TopNavbar />
-                <div className="container mx-auto p-8">
+                <div className="w-full px-4 py-8">
                   <Dashboard />
                 </div>
               </ProtectedRoute>
@@ -139,7 +147,7 @@ function App() {
             <Route path="/team" element={
               <ProtectedRoute>
                 <TopNavbar />
-                <div className="container mx-auto p-8">
+                <div className="w-full px-4 py-8">
                   <UserManagement />
                 </div>
               </ProtectedRoute>
@@ -147,7 +155,7 @@ function App() {
             <Route path="/sites" element={
               <ProtectedRoute>
                 <TopNavbar />
-                <div className="container mx-auto p-8">
+                <div className="w-full px-4 py-8">
                   <SiteManagement />
                 </div>
               </ProtectedRoute>
@@ -155,7 +163,7 @@ function App() {
             <Route path="/tasks" element={
               <ProtectedRoute>
                 <TopNavbar />
-                <div className="container mx-auto p-8">
+                <div className="w-full px-4 py-8">
                   <TaskAssignment />
                 </div>
               </ProtectedRoute>
@@ -163,7 +171,7 @@ function App() {
             <Route path="/change-password" element={
               <ProtectedRoute>
                 <TopNavbar />
-                <div className="container mx-auto p-8">
+                <div className="w-full px-4 py-8">
                   <ChangePassword />
                 </div>
               </ProtectedRoute>

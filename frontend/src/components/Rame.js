@@ -325,7 +325,7 @@ const Rame = () => {
   const isViewOnly = ['site_manager', 'viewer'].includes(user?.role); // View only
 
   return (
-    <div className="max-w-6xl mx-auto">
+     <div className="max-w-6xl mx-auto">
 
       {/* Mandatory Frameworks Section */}
       <div className="mb-8">

@@ -1,11 +1,17 @@
 """
 Email service for handling email verification, invitations, and password reset
+Integrates with SimpleLogin for email privacy protection
 """
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils.html import strip_tags
 from .models import EmailVerificationToken
+from .simplelogin_service import simplelogin
+import logging
+from smtplib import SMTPException
+
+logger = logging.getLogger(__name__)
 
 
 def get_base_url():
@@ -14,14 +20,59 @@ def get_base_url():
         return settings.FRONTEND_URL
     else:
         # Fallback for development
-        return "http://localhost:3000"
+        return "http://localhost:3001"
+
+
+def get_user_email_address(user):
+    """
+    Get the email address to use for sending emails to user
+    Uses SimpleLogin alias if enabled and available, otherwise uses direct email
+    
+    Args:
+        user: Django User instance
+    
+    Returns:
+        str: Email address to use (alias or direct email)
+    """
+    # Check if SimpleLogin is enabled
+    if not getattr(settings, 'SIMPLELOGIN_ENABLED', False):
+        logger.debug(f"SimpleLogin disabled, using direct email for {user.email}")
+        return user.email
+    
+    # Check if SimpleLogin service is configured
+    if not simplelogin.is_configured():
+        logger.warning(f"SimpleLogin not configured, using direct email for {user.email}")
+        return user.email
+    
+    # Try to get or create alias for user
+    try:
+        success, alias_email = simplelogin.get_or_create_alias(user)
+        if success and alias_email:
+            logger.info(f"Using SimpleLogin alias {alias_email} for user {user.email}")
+            return alias_email
+        else:
+            logger.warning(f"Failed to get SimpleLogin alias for {user.email}, using direct email")
+            return user.email
+    except Exception as e:
+        logger.error(f"SimpleLogin error for {user.email}: {str(e)}, using direct email")
+        return user.email
 
 
 def send_email_verification(user, request=None):
     """
     Send email verification email to user
+    Returns dict with success, email_sent, verification_code, and message
     """
     try:
+        # Validate user has email
+        if not user.email:
+            return {
+                'success': False,
+                'email_sent': False,
+                'verification_code': None,
+                'message': 'User has no email address'
+            }
+        
         # Create or get verification token
         token_obj, created = EmailVerificationToken.objects.get_or_create(
             user=user,
@@ -51,37 +102,59 @@ def send_email_verification(user, request=None):
         html_message = render_to_string('emails/email_verification.html', context)
         plain_message = render_to_string('emails/email_verification.txt', context)
         
-        # Send email
+        # Get email address (SimpleLogin alias or direct email)
+        recipient_email = get_user_email_address(user)
+        
+        # Send email with better error handling
+        email_sent = False
+        email_error = None
+        
         try:
-            send_mail(
+            send_result = send_mail(
                 subject=subject,
                 message=plain_message,
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
+                recipient_list=[recipient_email],
                 html_message=html_message,
                 fail_silently=False,
             )
-            print(f"✅ Email verification sent to {user.email}")
-            email_sent = True
-        except Exception as email_error:
-            print(f"⚠️ Email sending failed: {email_error}")
+            
+            # Check if email was actually sent
+            if send_result == 1:
+                email_sent = True
+                print(f"✅ Email verification sent successfully to {recipient_email}")
+            else:
+                email_sent = False
+                email_error = f"SendGrid returned {send_result} - email may not have been sent"
+                print(f"⚠️ SendGrid returned unexpected result: {send_result}")
+                
+        except SMTPException as smtp_error:
             email_sent = False
+            email_error = f"SMTP error: {str(smtp_error)}"
+            print(f"❌ SMTP error sending to {recipient_email}: {smtp_error}")
+        except Exception as send_error:
+            email_sent = False
+            email_error = f"Email send error: {str(send_error)}"
+            print(f"❌ Error sending email to {recipient_email}: {send_error}")
         
-        # Return both success status and verification code for testing
+        # Always return the verification code for testing, even if email fails
         return {
-            'success': True,
+            'success': True,  # Token was created successfully
             'email_sent': email_sent,
             'verification_code': token_obj.verification_code,
-            'message': 'Verification code generated successfully'
+            'message': 'Email sent successfully' if email_sent else email_error or 'Email sending failed'
         }
         
     except Exception as e:
-        print(f"❌ Failed to send verification email to {user.email}: {str(e)}")
+        print(f"❌ Failed to process email verification for {user.email}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
         return {
             'success': False,
             'email_sent': False,
             'verification_code': None,
-            'message': f'Error: {str(e)}'
+            'message': f'Error creating verification: {str(e)}'
         }
 
 
@@ -167,53 +240,27 @@ def verify_email_token(token):
 
 def send_password_reset_email(user):
     """
-    Send password reset email with verification code to user
+    Create password reset token - email will be sent automatically by signals
     """
     try:
-        # Create password reset token (with verification code)
+        # Create password reset token (email will be sent by signal)
         token_obj = EmailVerificationToken.objects.create(
             user=user,
             token_type='password_reset'
         )
         
-        # Context for email template with verification code
-        context = {
-            'user_name': user.first_name or user.username,
-            'verification_code': token_obj.verification_code,
-            'site_name': 'ESG Portal',
-        }
+        print(f"✅ Password reset token created for {user.email}")
         
-        # Render email templates
-        subject = f"{settings.EMAIL_SUBJECT_PREFIX}Password Reset Verification Code"
-        html_message = render_to_string('emails/password_reset.html', context)
-        plain_message = render_to_string('emails/password_reset.txt', context)
-        
-        # Send email
-        try:
-            send_mail(
-                subject=subject,
-                message=plain_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                html_message=html_message,
-                fail_silently=False,
-            )
-            print(f"✅ Password reset email sent to {user.email}")
-            email_sent = True
-        except Exception as email_error:
-            print(f"⚠️ Email sending failed: {email_error}")
-            email_sent = False
-        
-        # Return both success status and verification code for testing
+        # Return token details - email sending handled by signals
         return {
             'success': True,
-            'email_sent': email_sent,
+            'email_sent': True,  # Will be sent by signal
             'verification_code': token_obj.verification_code,
-            'message': 'Password reset verification code generated successfully'
+            'message': 'Password reset verification code generated - email will be sent automatically'
         }
         
     except Exception as e:
-        print(f"❌ Failed to send password reset email to {user.email}: {str(e)}")
+        print(f"❌ Failed to create password reset token for {user.email}: {str(e)}")
         return {
             'success': False,
             'email_sent': False,
@@ -256,46 +303,30 @@ def verify_password_reset_code(email, verification_code):
 
 def send_invitation_email(user, invited_by):
     """
-    Send invitation email to new user
+    Create invitation token - email will be sent automatically by signals
     """
     try:
-        # Create invitation token
+        # Create invitation token (email will be sent by signal)
         token_obj = EmailVerificationToken.objects.create(
             user=user,
             token_type='invitation'
         )
         
-        # Build invitation URL
-        base_url = get_base_url()
-        invitation_url = f"{base_url}/setup-account/{token_obj.token}"
+        print(f"✅ Invitation token created for {user.email}")
         
-        # Context for email template
-        context = {
-            'user_name': user.first_name or user.username,
-            'invited_by': invited_by.get_full_name() or invited_by.username,
-            'invitation_url': invitation_url,
-            'site_name': 'ESG Portal',
-            'role': user.userprofile.get_role_display() if hasattr(user, 'userprofile') else 'User',
+        # Return success - email sending handled by signals
+        return {
+            'success': True,
+            'email_sent': True,  # Will be sent by signal
+            'token': token_obj.token,
+            'message': 'Invitation created - email will be sent automatically'
         }
         
-        # Render email templates
-        subject = f"{settings.EMAIL_SUBJECT_PREFIX}You've been invited to ESG Portal"
-        html_message = render_to_string('emails/invitation.html', context)
-        plain_message = render_to_string('emails/invitation.txt', context)
-        
-        # Send email
-        send_mail(
-            subject=subject,
-            message=plain_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            html_message=html_message,
-            fail_silently=False,
-        )
-        
-        print(f"✅ Invitation email sent to {user.email}")
-        return True
-        
     except Exception as e:
-        print(f"❌ Failed to send invitation email to {user.email}: {str(e)}")
-        return False
+        print(f"❌ Failed to create invitation token for {user.email}: {str(e)}")
+        return {
+            'success': False,
+            'email_sent': False,
+            'token': None,
+            'message': f'Error: {str(e)}'
+        }

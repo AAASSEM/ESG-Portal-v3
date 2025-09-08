@@ -129,16 +129,20 @@ class UserViewSet(viewsets.ModelViewSet):
                 counter += 1
         
         try:
-            # Create user with company code as temporary password and set as inactive
-            temp_password = user_company.company_code  # Use company code as initial password
+            # OLD LOGIC COMMENTED - Used to set company code as password
+            # temp_password = user_company.company_code  # Use company code as initial password
+            # NEW MAGIC LINK LOGIC - Create user without usable password (will be set via magic link)
             user = User.objects.create_user(
                 username=username,
                 email=email,
-                password=temp_password,
+                password=None,  # No password - will be set via magic link setup
                 first_name=name.split(' ')[0] if ' ' in name else name,
                 last_name=' '.join(name.split(' ')[1:]) if ' ' in name else '',
-                is_active=False  # Set as inactive until first login
+                is_active=False  # Set as inactive until magic link authentication
             )
+            # Set unusable password to force password setup via magic link
+            user.set_unusable_password()
+            user.save()
             
             # Set company directly on User for fast access
             user.company = user_company
@@ -155,8 +159,11 @@ class UserViewSet(viewsets.ModelViewSet):
             # TODO: Handle site assignments
             # TODO: Send welcome email if requested
             
+            # OLD MESSAGE COMMENTED - Used to show company code password
+            # 'message': f'User created successfully. Initial password is the company code: {user_company.company_code}. User must reset password on first login.',
+            # NEW MESSAGE - Magic link invitation
             return Response({
-                'message': f'User created successfully. Initial password is the company code: {user_company.company_code}. User must reset password on first login.',
+                'message': f'User created successfully. An invitation email with magic link has been sent to {email}.',
                 'user': {
                     'id': user.id,
                     'username': user.username,
@@ -166,7 +173,8 @@ class UserViewSet(viewsets.ModelViewSet):
                     'is_active': user.is_active,
                     'last_login': user.last_login,
                     'sites': [],  # TODO: Implement site relationships
-                    'temp_password': user_company.company_code  # Include for admin reference
+                    # OLD FIELD COMMENTED: 'temp_password': user_company.company_code  # Include for admin reference
+                    'invitation_sent': True  # New field indicating invitation was sent
                 }
             }, status=status.HTTP_201_CREATED)
             
@@ -367,7 +375,7 @@ class UserViewSet(viewsets.ModelViewSet):
         
         # Role hierarchy permissions for deletion
         delete_hierarchy = {
-            'super_user': ['admin', 'site_manager', 'uploader', 'viewer', 'meter_manager'],  # Super users can't delete other super users
+            'super_user': ['super_user', 'admin', 'site_manager', 'uploader', 'viewer', 'meter_manager'],  # Super users can delete other super users
             'admin': ['site_manager', 'uploader', 'viewer', 'meter_manager']  # Admins can't delete super users or other admins
         }
         

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESG Portal - You've Been Invited</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f8f9fa;
+            padding: 30px;
+            border: 1px solid #dee2e6;
+            border-top: none;
+        }
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .footer {
+            background: #e9ecef;
+            padding: 20px;
+            text-align: center;
+            border-radius: 0 0 10px 10px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌱 {{ site_name }}</h1>
+        <p>Sustainable Business Management Platform</p>
+    </div>
+
+    <div class="content">
+        <h2>Welcome to ESG Portal, {{ user_name }}!</h2>
+        
+        <p>You've been invited to join <strong>{{ site_name }}</strong> as a <strong>{{ role }}</strong>.</p>
+        
+        <p>ESG Portal is a comprehensive platform designed to help organizations:</p>
+        <ul>
+            <li>📊 Track and manage ESG (Environmental, Social, Governance) metrics</li>
+            <li>📈 Generate compliance reports for multiple frameworks</li>
+            <li>🎯 Set and monitor sustainability goals</li>
+            <li>🔍 Ensure data accuracy and transparency</li>
+        </ul>
+
+        <div class="highlight">
+            <strong>🚀 Ready to get started?</strong><br>
+            Click the magic link below - it will automatically log you in and take you to account setup.
+        </div>
+
+        <div style="text-align: center;">
+            <a href="{{ invitation_url }}" class="button">
+                🔗 Access My Account (Magic Link)
+            </a>
+        </div>
+
+        <p><strong>What happens next:</strong></p>
+        <ol>
+            <li>Click the magic link above (you'll be automatically logged in)</li>
+            <li>Create your secure password</li>
+            <li>Complete your profile setup</li>
+            <li>Start managing your ESG data</li>
+        </ol>
+
+        <p>If you have any questions or need assistance, our support team is here to help.</p>
+
+        <p><small><strong>Security Note:</strong> This invitation link is unique to you and will expire in 7 days for security purposes.</small></p>
+    </div>
+
+    <div class="footer">
+        <p><strong>{{ site_name }}</strong> - Empowering Sustainable Business Practices</p>
+        <p>🌐 <a href="https://esg-portal.onrender.com/">https://esg-portal.onrender.com/</a></p>
+        <p>If you didn't expect this invitation, you can safely ignore this email.</p>
+    </div>
+</body>
+</html>

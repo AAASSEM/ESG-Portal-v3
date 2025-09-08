@@ -168,15 +168,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Email Configuration
 # Use environment variable to control email backend
 USE_REAL_EMAIL = os.environ.get('USE_REAL_EMAIL', 'False').lower() == 'true'
+EMAIL_SERVICE = os.environ.get('EMAIL_SERVICE', 'console')  # console, smtp, sendgrid
 
 if USE_REAL_EMAIL:
-    # Real SMTP email sending
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
-    EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+    if EMAIL_SERVICE == 'sendgrid':
+        # SendGrid API email sending (recommended)
+        EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+        EMAIL_HOST = 'smtp.sendgrid.net'
+        EMAIL_PORT = 587
+        EMAIL_USE_TLS = True
+        EMAIL_HOST_USER = 'apikey'  # This is literally 'apikey' for SendGrid
+        EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_API_KEY')
+    else:
+        # SMTP email sending (Gmail, etc.)
+        EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+        EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+        EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+        EMAIL_USE_TLS = True
+        EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+        EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 else:
     # Development: Print emails to console
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -189,7 +199,16 @@ EMAIL_SUBJECT_PREFIX = '[ESG Portal] '
 EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS = 24
 
 # Frontend URL for email links
-FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://esg-portal.onrender.com' if not DEBUG else 'http://localhost:3001')
+
+# Backend URL for magic links  
+BACKEND_URL = os.environ.get('BACKEND_URL', 'https://esg-portal.onrender.com' if not DEBUG else 'http://localhost:8080')
+
+# SimpleLogin settings for email privacy
+SIMPLELOGIN_API_KEY = os.environ.get('SIMPLELOGIN_API_KEY', 'kgijojjqlgkqxfulqakbaenrheratgmrwpiviivigetoqabomfhaxtkvmndv')
+SIMPLELOGIN_BASE_URL = os.environ.get('SIMPLELOGIN_BASE_URL', 'https://app.simplelogin.io')
+SIMPLELOGIN_ALIAS_SUFFIX = os.environ.get('SIMPLELOGIN_ALIAS_SUFFIX', '@simplelogin.io')
+SIMPLELOGIN_ENABLED = os.environ.get('SIMPLELOGIN_ENABLED', 'False').lower() == 'true'
 
 # REST Framework settings
 REST_FRAMEWORK = {

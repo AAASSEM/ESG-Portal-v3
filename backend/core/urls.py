@@ -6,7 +6,7 @@ from .views import (
     MeterViewSet, DataCollectionViewSet, DashboardView
 )
 from .user_views import UserViewSet
-from .auth_views import SignupView, LoginView, LogoutView, UserProfileView, CsrfTokenView, UserSitesView, RoleSwitchView, ResetPasswordView, CompanyUpdateView, EmailVerificationView, EmailCodeVerificationView, ResendVerificationView, SendResetCodeView, VerifyResetCodeView
+from .auth_views import SignupView, LoginView, LogoutView, UserProfileView, CsrfTokenView, UserSitesView, RoleSwitchView, ResetPasswordView, CompanyUpdateView, EmailVerificationView, EmailCodeVerificationView, ResendVerificationView, SendResetCodeView, VerifyResetCodeView, MagicLinkAuthView
 from .assignment_views import ElementAssignmentViewSet
 
 # Create router and register viewsets
@@ -39,6 +39,8 @@ urlpatterns = [
     # Password reset verification endpoints
     path('auth/send-reset-code/', SendResetCodeView.as_view(), name='send-reset-code'),
     path('auth/verify-reset-code/', VerifyResetCodeView.as_view(), name='verify-reset-code'),
+    # Magic link authentication (invitation auto-login)
+    path('auth/magic-link/<str:token>/', MagicLinkAuthView.as_view(), name='magic-link-auth'),
     # User endpoints
     path('user/sites/', UserSitesView.as_view(), name='user-sites'),
     # Direct company update (bypasses DRF router)

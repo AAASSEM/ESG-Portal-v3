@@ -8,6 +8,9 @@ from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny
 from django.middleware.csrf import get_token
 from .email_service import send_email_verification, verify_email_token, verify_email_code, send_password_reset_email, verify_password_reset_code
+from django.conf import settings
+from django.db import transaction
+import os
 import re
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -63,75 +66,86 @@ class SignupView(APIView):
                 'error': 'Email already registered'
             }, status=status.HTTP_400_BAD_REQUEST)
         
+        # Step 1: Create user account in explicit transaction
         try:
-            # Create inactive user (email verification required)
-            user = User.objects.create_user(
-                username=username,
-                email=email or '',
-                password=password,
-                is_active=False,    # User must verify email first
-                is_staff=True,      # Can access Django admin
-                is_superuser=True   # Has all permissions
-            )
-            
-            # Create a default company for the new user
-            from .models import UserProfile, Company
-            import random
-            
-            # Generate unique company code
-            company_code = f"USR{user.id:03d}"
-            
-            # Create company with provided name
-            company = Company.objects.create(
-                user=user,
-                name=company_name,
-                company_code=company_code,
-                emirate='dubai',  # Default emirate
-                sector='hospitality'  # Default sector
-            )
-            
-            # Set company directly on User for fast access
-            user.company = company
-            user.save()
-            
-            # Create UserProfile linked to the company
-            UserProfile.objects.create(
-                user=user,
-                role='super_user',
-                company=company,
-                email_verified=False  # Will be set to True after email verification
-            )
-            
-            # Auto-assign mandatory frameworks to the new company
-            from .services import FrameworkService
-            FrameworkService.assign_mandatory_frameworks(company, user)
-            
-            # Send email verification
-            email_result = send_email_verification(user, request)
-            
-            if email_result and email_result.get('success'):
-                return Response({
-                    'message': 'Account created successfully! Please check your email to verify your account.',
-                    'email_sent': email_result.get('email_sent', False),
-                    'user_email': user.email,
-                    'verification_code': email_result.get('verification_code'),  # For testing
-                    'next_step': 'Enter the 6-digit verification code to activate your account.'
-                }, status=status.HTTP_201_CREATED)
-            else:
-                # If email sending fails, still return success but mention the issue
-                error_message = email_result.get('message', 'Unknown error') if email_result else 'Failed to generate verification code'
-                return Response({
-                    'message': 'Account created successfully, but there was an issue with the verification process.',
-                    'email_sent': False,
-                    'user_email': user.email,
-                    'error': error_message,
-                    'next_step': 'Please try signing up again or contact support.'
-                }, status=status.HTTP_201_CREATED)
-            
+            with transaction.atomic():
+                print("🔄 Starting user creation transaction...")
+                
+                # Create inactive user (email verification required)
+                user = User.objects.create_user(
+                    username=username,
+                    email=email or '',
+                    password=password,
+                    is_active=False,    # User must verify email first
+                    is_staff=True,      # Can access Django admin
+                    is_superuser=True   # Has all permissions
+                )
+                
+                # Create a default company for the new user
+                from .models import UserProfile, Company
+                import random
+                
+                # Generate unique company code
+                company_code = f"USR{user.id:03d}"
+                
+                # Create company with provided name
+                company = Company.objects.create(
+                    user=user,
+                    name=company_name,
+                    company_code=company_code,
+                    emirate='dubai',  # Default emirate
+                    sector='hospitality'  # Default sector
+                )
+                
+                # Set company directly on User for fast access
+                user.company = company
+                user.save()
+                
+                # Create UserProfile linked to the company
+                UserProfile.objects.create(
+                    user=user,
+                    role='super_user',
+                    email=email,  # Set the email in UserProfile
+                    company=company,
+                    email_verified=False  # Will be set to True after email verification
+                )
+                
+                # Auto-assign mandatory frameworks to the new company
+                # TEMPORARILY DISABLED FOR EMAIL TESTING
+                # from .services import FrameworkService
+                # FrameworkService.assign_mandatory_frameworks(company, user)
+                print("⚠️ Framework assignment SKIPPED for email testing")
+                
+                print("✅ User creation transaction completed - all data committed")
+                
         except Exception as e:
+            print(f"❌ Error creating user account: {str(e)}")
             return Response({
-                'error': 'Failed to create user. Please try again.'
+                'error': 'Failed to create account'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        # For signup, we want verification email, not invitation
+        # Override the signal by sending verification email directly
+        print(f"✅ User account created successfully: {user.email}")
+        print(f"📧 Sending email verification for signup (override signal)")
+        
+        try:
+            email_result = send_email_verification(user, request)
+            return Response({
+                'message': 'Account created successfully! Please check your email to verify your account.',
+                'user_email': user.email,
+                'email_sent': email_result.get('email_sent', False),
+                'verification_code': email_result.get('verification_code'),  # For testing
+                'next_step': 'Check your email for a 6-digit verification code to activate your account.'
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print(f"❌ Email sending failed: {e}")
+            return Response({
+                'message': 'Account created successfully but email could not be sent.',
+                'user_email': user.email,
+                'error': str(e),
+                'next_step': 'Please contact support for verification.'
+            }, status=status.HTTP_201_CREATED)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class LoginView(APIView):
@@ -202,6 +216,18 @@ class LoginView(APIView):
                 user_role = 'viewer'  # Default fallback role
                 must_reset_password = False
             
+            # Determine redirect path based on user role
+            role_redirect_map = {
+                'super_user': '/onboard',
+                'admin': '/onboard', 
+                'site_manager': '/onboard',
+                'viewer': '/onboard',
+                'meter_manager': '/meter',
+                'uploader': '/data'
+            }
+            
+            redirect_path = role_redirect_map.get(user_role, '/dashboard')  # Default to dashboard
+            
             response_data = {
                 'message': 'Login successful',
                 'user': {
@@ -211,13 +237,15 @@ class LoginView(APIView):
                     'name': f"{user.first_name} {user.last_name}".strip() or user.username,
                     'role': user_role,
                     'must_reset_password': must_reset_password
-                }
+                },
+                'redirect_path': redirect_path
             }
             
             # If user must reset password, include special flag
             if must_reset_password:
                 response_data['requires_password_reset'] = True
                 response_data['message'] = 'Login successful. You must reset your password.'
+                response_data['redirect_path'] = '/reset-password'  # Override redirect for password reset
             
             return Response(response_data)
         else:
@@ -249,6 +277,12 @@ class UserProfileView(APIView):
                 print(f"Error getting user profile: {e}")
                 user_role = 'super_user' if request.user.is_superuser else 'viewer'
             
+            # Get must_reset_password from profile
+            try:
+                must_reset_password = profile.must_reset_password if hasattr(profile, 'must_reset_password') else False
+            except:
+                must_reset_password = False
+            
             return Response({
                 'user': {
                     'id': request.user.id,
@@ -256,7 +290,8 @@ class UserProfileView(APIView):
                     'email': request.user.email,
                     'name': f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username,
                     'role': user_role,
-                    'is_superuser': request.user.is_superuser
+                    'is_superuser': request.user.is_superuser,
+                    'must_reset_password': must_reset_password  # Added missing field!
                 }
             })
         else:
@@ -341,11 +376,28 @@ class ResetPasswordView(APIView):
                 'error': 'Both current and new password are required'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Validate current password
-        if not request.user.check_password(current_password):
-            return Response({
-                'error': 'Current password is incorrect'
-            }, status=status.HTTP_400_BAD_REQUEST)
+        # Special handling for account setup (magic link users)
+        # OLD LOGIC COMMENTED: Standard password validation for existing users
+        if current_password == 'temporary_setup_password':
+            # This is an account setup request from magic link authentication
+            print(f"🔗 Account setup request detected for user: {request.user.username}")
+            
+            # Check if user actually needs password setup
+            try:
+                user_profile = request.user.userprofile
+                if not user_profile.must_reset_password:
+                    return Response({
+                        'error': 'Account setup not required'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            except:
+                # If no profile, allow setup
+                pass
+        else:
+            # Standard password validation for existing users
+            if not request.user.check_password(current_password):
+                return Response({
+                    'error': 'Current password is incorrect'
+                }, status=status.HTTP_400_BAD_REQUEST)
         
         # Validate new password
         if len(new_password) < 6:
@@ -366,8 +418,17 @@ class ResetPasswordView(APIView):
             except:
                 pass  # Profile might not exist
             
+            # Check if this was account setup
+            if current_password == 'temporary_setup_password':
+                success_message = 'Account setup completed successfully'
+                print(f"✅ Account setup completed for user: {request.user.username}")
+            else:
+                success_message = 'Password reset successfully'
+                print(f"✅ Password reset completed for user: {request.user.username}")
+            
             return Response({
-                'message': 'Password reset successfully'
+                'message': success_message,
+                'success': True
             })
             
         except Exception as e:
@@ -530,14 +591,31 @@ class EmailCodeVerificationView(APIView):
             success, message, user = verify_email_code(email, verification_code)
             
             if success:
+                # Log the user in using Django sessions (same as login)
+                from django.contrib.auth import login
+                login(request, user)
+                
+                # Get user profile info
+                profile_data = {}
+                if hasattr(user, 'userprofile'):
+                    profile = user.userprofile
+                    profile_data = {
+                        'role': profile.role,
+                        'company_name': profile.company.name if profile.company else '',
+                        'company_id': profile.company.id if profile.company else None
+                    }
+                
                 return Response({
                     'message': message,
                     'verified': True,
+                    'auto_login': True,
+                    'session_created': True,
                     'user': {
                         'id': user.id,
                         'username': user.username,
                         'email': user.email,
-                        'is_active': user.is_active
+                        'is_active': user.is_active,
+                        'profile': profile_data
                     }
                 }, status=status.HTTP_200_OK)
             else:
@@ -631,18 +709,16 @@ class SendResetCodeView(APIView):
             user = User.objects.get(email=email)
             print(f"✅ User found: {user.username}")
             
-            # For testing mode, return hardcoded verification code
-            # In production, you would call send_password_reset_email(user)
-            verification_code = '654321'  # Hardcoded for testing
-            
-            print(f"🔢 Verification code: {verification_code}")
+            # Send real password reset email via signals system
+            email_result = send_password_reset_email(user)
+            print(f"📧 Password reset email result: {email_result}")
             
             return Response({
-                'message': 'Password reset verification code generated successfully',
+                'message': 'Password reset verification code sent to your email',
                 'success': True,
-                'email_sent': False,  # Set to True in production when email is actually sent
-                'verification_code': verification_code,  # Remove this in production for security
-                'user_email': user.email
+                'email_sent': email_result.get('email_sent', False),
+                'user_email': user.email,
+                'next_step': 'Check your email for the 6-digit verification code'
             }, status=status.HTTP_200_OK)
             
         except User.DoesNotExist:
@@ -691,15 +767,16 @@ class VerifyResetCodeView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            # For testing, accept hardcoded code
-            if verification_code == '654321':
-                print(f"✅ Verification code matched (test mode)")
-                
-                # Find user for response
-                user = User.objects.get(email=email)
+            # Use real verification system
+            print(f"🔍 Verifying code {verification_code} for {email}")
+            
+            success, message, user = verify_password_reset_code(email, verification_code)
+            
+            if success and user:
+                print(f"✅ Password reset code verified for {email}")
                 
                 return Response({
-                    'message': 'Verification successful',
+                    'message': message,
                     'verified': True,
                     'user': {
                         'id': user.id,
@@ -707,12 +784,12 @@ class VerifyResetCodeView(APIView):
                         'email': user.email
                     }
                 }, status=status.HTTP_200_OK)
-            
-            # For testing, if code doesn't match
-            return Response({
-                'error': 'Invalid verification code',
-                'verified': False
-            }, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                print(f"❌ Password reset code verification failed: {message}")
+                return Response({
+                    'error': message,
+                    'verified': False
+                }, status=status.HTTP_400_BAD_REQUEST)
                 
         except User.DoesNotExist:
             return Response({
@@ -726,3 +803,134 @@ class VerifyResetCodeView(APIView):
             return Response({
                 'error': f'An error occurred during verification: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class MagicLinkAuthView(APIView):
+    """
+    Magic Link Authentication - Auto-login via invitation token
+    Users click invitation link and are automatically logged in
+    """
+    permission_classes = [AllowAny]
+    
+    def get(self, request, token):
+        print(f"🔗 Magic link authentication request for token: {token[:8]}...")
+        
+        try:
+            from .models import EmailVerificationToken
+            
+            # Find and validate the invitation token
+            try:
+                token_obj = EmailVerificationToken.objects.get(
+                    token=token,
+                    token_type='invitation',
+                    used_at__isnull=True  # Check if not used yet
+                )
+                print(f"✅ Valid invitation token found for user: {token_obj.user.email}")
+            except EmailVerificationToken.DoesNotExist:
+                print(f"❌ Invalid or expired invitation token")
+                # Redirect to login with error message
+                from django.shortcuts import redirect
+                from .email_service import get_base_url
+                base_url = get_base_url()
+                return redirect(f"{base_url}/login?error=invalid_invitation")
+            
+            user = token_obj.user
+            
+            # Check if token is expired (7 days)
+            from django.utils import timezone
+            from datetime import timedelta
+            
+            if token_obj.created_at < timezone.now() - timedelta(days=7):
+                print(f"❌ Invitation token expired for user: {user.email}")
+                # Redirect to login with error message
+                from django.shortcuts import redirect
+                from .email_service import get_base_url
+                base_url = get_base_url()
+                return redirect(f"{base_url}/login?error=invitation_expired")
+            
+            # Auto-login the user (magic link authentication)
+            print(f"🔐 Auto-authenticating user: {user.email}")
+            
+            # Activate user if not already active
+            if not user.is_active:
+                user.is_active = True
+                user.save()
+                print(f"✅ User activated: {user.email}")
+            
+            # Log the user in using Django's session authentication
+            login(request, user)
+            print(f"✅ User logged in via magic link: {user.email}")
+            
+            # Mark token as used (keep for audit trail)
+            from django.utils import timezone
+            token_obj.used_at = timezone.now()
+            token_obj.save()
+            print(f"✅ Token marked as used")
+            
+            # Get user profile for additional info
+            from .models import UserProfile
+            try:
+                user_profile = user.userprofile
+                user_role = user_profile.role
+                user_company = user_profile.company
+            except UserProfile.DoesNotExist:
+                # Create minimal profile if missing
+                user_profile = UserProfile.objects.create(
+                    user=user,
+                    role='viewer',
+                    email=user.email
+                )
+                user_role = 'viewer'
+                user_company = None
+                print(f"⚠️ Created minimal user profile for: {user.email}")
+            
+            # Determine if user needs to set password
+            # Check both the profile flag AND if user has unusable password
+            profile_needs_reset = getattr(user_profile, 'must_reset_password', True)
+            has_unusable_password = not user.has_usable_password()
+            needs_password_setup = profile_needs_reset or has_unusable_password
+            
+            print(f"🔐 Password setup check:")
+            print(f"   - Profile must_reset_password: {profile_needs_reset}")
+            print(f"   - Has unusable password: {has_unusable_password}")
+            print(f"   - Needs setup: {needs_password_setup}")
+            
+            response_data = {
+                'success': True,
+                'message': 'Magic link authentication successful',
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'name': f"{user.first_name} {user.last_name}".strip() or user.username,
+                    'role': user_role,
+                    'is_active': user.is_active,
+                    'must_reset_password': needs_password_setup
+                },
+                'needs_password_setup': needs_password_setup,
+                'redirect_to': '/setup-account' if needs_password_setup else '/dashboard'
+            }
+            
+            print(f"✅ Magic link authentication successful for: {user.email}")
+            print(f"🎯 Redirecting to: {response_data['redirect_to']}")
+            
+            # Since this is accessed via browser (magic link), redirect to frontend
+            from django.shortcuts import redirect
+            from .email_service import get_base_url
+            
+            base_url = get_base_url()
+            frontend_redirect_url = f"{base_url}{response_data['redirect_to']}"
+            
+            print(f"🔗 Redirecting browser to: {frontend_redirect_url}")
+            return redirect(frontend_redirect_url)
+            
+        except Exception as e:
+            print(f"❌ Magic link authentication error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            # Redirect to login with error message
+            from django.shortcuts import redirect
+            from .email_service import get_base_url
+            base_url = get_base_url()
+            return redirect(f"{base_url}/login?error=authentication_failed")

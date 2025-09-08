@@ -634,7 +634,7 @@ const Onboard = () => {
   const isViewOnly = ['site_manager', 'viewer'].includes(user?.role); // View only
 
   return (
-    <div className="max-w-6xl mx-auto">
+     <div className="max-w-6xl mx-auto">
 
       {/* Company Information Form */}
       <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 mb-8">

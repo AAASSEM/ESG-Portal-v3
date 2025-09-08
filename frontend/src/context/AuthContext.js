@@ -272,9 +272,11 @@ export const AuthProvider = ({ children }) => {
           navigate('/reset-password');
           return { success: true, requiresPasswordReset: true, message: data.message };
         } else {
-          // Check if company onboarding is complete
-          await checkOnboardingStatus();
-          return { success: true };
+          // Use role-based redirect from backend
+          const redirectPath = data.redirect_path || '/dashboard';
+          console.log(`🎯 Redirecting user to: ${redirectPath} (role: ${data.user.role})`);
+          navigate(redirectPath);
+          return { success: true, redirectPath };
         }
       } else {
         console.error('❌ Login failed:', data.error);

@@ -19,8 +19,10 @@ const Signup = () => {
   const [verificationStep, setVerificationStep] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [showNotification, setShowNotification] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [autoLoginData, setAutoLoginData] = useState(null);
   
-  const { signup } = useAuth();
+  const { signup, login } = useAuth();
 
   const handleChange = (e) => {
     setFormData({
@@ -111,9 +113,21 @@ const Signup = () => {
         // Verification successful
         setVerificationStep(false);
         setEmailSent(false);
-        // Show success message or redirect to login
-        alert('Email verified successfully! You can now log in to your account.');
-        window.location.href = '/login';
+        setError('');
+        
+        // Store auto-login data and show success modal
+        if (data.auto_login && data.session_created) {
+          setAutoLoginData({
+            user: data.user,
+            message: data.message,
+            session_created: true
+          });
+          setShowSuccessModal(true);
+        } else {
+          // Fallback to showing success alert and redirect
+          alert('Email verified successfully! You can now log in to your account.');
+          window.location.href = '/login';
+        }
       } else {
         setError(data.error || 'Invalid verification code');
       }
@@ -122,6 +136,67 @@ const Signup = () => {
     }
 
     setLoading(false);
+  };
+
+  const handleAutoLogin = async () => {
+    if (!autoLoginData) return;
+    
+    try {
+      // With session-based authentication, no token storage needed
+      // The user is already logged in via the session from the backend
+      
+      // Close modal immediately
+      setShowSuccessModal(false);
+      
+      // Redirect to onboarding - session is already established
+      window.location.href = '/onboard';
+      
+    } catch (error) {
+      console.error('Auto-login error:', error);
+      // Fallback to manual login
+      window.location.href = '/login';
+    }
+  };
+
+  const SuccessModal = () => {
+    if (!showSuccessModal || !autoLoginData) return null;
+    
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
+          <div className="mb-6">
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+              <i className="fas fa-check text-green-600 text-2xl"></i>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Email Verified Successfully!
+            </h3>
+            <p className="text-gray-600">
+              Welcome to ESG Portal! Let's get your account set up.
+            </p>
+          </div>
+          
+          <div className="space-y-4">
+            <button
+              onClick={handleAutoLogin}
+              className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 focus:ring-4 focus:ring-purple-300 font-medium"
+            >
+              Continue to Setup
+            </button>
+            
+            <button
+              onClick={() => {
+                setShowSuccessModal(false);
+                window.location.href = '/login';
+              }}
+              className="w-full text-gray-600 hover:text-gray-800 py-2"
+            >
+              Go to Login Instead
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -466,6 +541,9 @@ const Signup = () => {
           )}
         </div>
       </div>
+      
+      {/* Success Modal */}
+      <SuccessModal />
     </>
   );
 };

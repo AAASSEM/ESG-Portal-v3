@@ -14,6 +14,11 @@ const EmailVerification = () => {
   }, [token]);
 
   const verifyEmail = async () => {
+    // OLD VERIFICATION LOGIC COMMENTED OUT - NOW USING MAGIC LINKS
+    // Magic link authentication happens directly via /api/auth/magic-link/<token>/
+    // This component is kept for backwards compatibility
+    
+    /* OLD LOGIC:
     if (!token) {
       setVerificationState('error');
       setMessage('Invalid verification link - no token provided.');
@@ -52,6 +57,18 @@ const EmailVerification = () => {
     } finally {
       setLoading(false);
     }
+    */
+    
+    // NEW MAGIC LINK FLOW: Redirect to magic link endpoint
+    if (!token) {
+      setVerificationState('error');
+      setMessage('Invalid verification link - no token provided.');
+      setLoading(false);
+      return;
+    }
+    
+    // Redirect to magic link authentication endpoint
+    window.location.href = `${API_BASE_URL}/api/auth/magic-link/${token}/`;
   };
 
   const handleResendEmail = async () => {

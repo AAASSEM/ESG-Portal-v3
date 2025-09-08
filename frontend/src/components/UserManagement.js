@@ -26,6 +26,7 @@ const UserManagement = () => {
   const [showStatusFilterModal, setShowStatusFilterModal] = useState(false);
 
   const roleOptions = [
+    { value: 'super_user', label: 'Super User', description: 'System-wide administrator with full access' },
     { value: 'admin', label: 'Admin', description: 'Company-level administrator' },
     { value: 'site_manager', label: 'Site Manager', description: 'Site/location manager' },
     { value: 'uploader', label: 'Uploader', description: 'Data entry specialist' },
@@ -298,15 +299,25 @@ const UserManagement = () => {
 
     const modalContent = (
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000]"
-        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh' }}
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999999]"
+        style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          width: '100vw', 
+          height: '100vh',
+          margin: 0,
+          padding: 0
+        }}
         onClick={(e) => {
           if (e.target === e.currentTarget) {
             onClose();
           }
         }}
       >
-        <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl relative z-10">
+        <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl relative z-[9999999]">
           <h3 className="text-lg font-medium text-gray-900 mb-6">Select User Role</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -351,6 +362,7 @@ const UserManagement = () => {
   // Helper function to get role icons
   const getRoleIcon = (role) => {
     switch(role) {
+      case 'super_user': return 'fa-crown';
       case 'admin': return 'fa-user-shield';
       case 'site_manager': return 'fa-building';
       case 'uploader': return 'fa-upload';
@@ -371,7 +383,18 @@ const UserManagement = () => {
 
     const modalContent = (
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000]"
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999999]"
+        style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          width: '100vw', 
+          height: '100vh',
+          margin: 0,
+          padding: 0
+        }}
         onClick={(e) => {
           if (e.target === e.currentTarget) {
             onClose();
@@ -444,7 +467,18 @@ const UserManagement = () => {
 
     const modalContent = (
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000]"
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999999]"
+        style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          width: '100vw', 
+          height: '100vh',
+          margin: 0,
+          padding: 0
+        }}
         onClick={(e) => {
           if (e.target === e.currentTarget) {
             onClose();
@@ -558,8 +592,18 @@ const UserManagement = () => {
 
     const modalContent = (
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[110000]"
-        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000000]"
+        style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          width: '100vw', 
+          height: '100vh',
+          margin: 0,
+          padding: 0
+        }}
         onClick={(e) => {
           if (e.target === e.currentTarget) {
             onClose();
@@ -567,7 +611,7 @@ const UserManagement = () => {
           }
         }}
       >
-        <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto shadow-2xl relative z-10">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto shadow-2xl relative z-[10000001]">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium text-gray-900">Add New {selectedRole?.label}</h3>
             <button
@@ -758,7 +802,20 @@ const UserManagement = () => {
     const availableRoles = getAvailableRoles();
 
     return (
-      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-[100000]">
+      <div 
+        className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-[9999999]"
+        style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          width: '100vw', 
+          height: '100vh',
+          margin: 0,
+          padding: 0
+        }}
+      >
         <div className="bg-white rounded-md p-5 border w-full max-w-md shadow-lg mx-4">
           <div className="mt-3">
             <div className="flex items-center justify-between mb-6">
@@ -960,7 +1017,20 @@ const UserManagement = () => {
     if (!isOpen || !user) return null;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000]">
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000]"
+        style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          width: '100vw', 
+          height: '100vh',
+          margin: 0,
+          padding: 0
+        }}
+      >
         <div className="bg-white rounded-lg p-6 w-full max-w-md">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium text-red-900">Delete User</h3>
@@ -1039,7 +1109,20 @@ const UserManagement = () => {
     };
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000]">
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000]"
+        style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          width: '100vw', 
+          height: '100vh',
+          margin: 0,
+          padding: 0
+        }}
+      >
         <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium text-gray-900">{notification.title}</h3>

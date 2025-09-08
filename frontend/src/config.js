@@ -7,6 +7,7 @@ const getApiUrl = () => {
       window.location.hostname.includes('.ngrok-free.app') ||
       window.location.hostname.includes('.ngrok.io') ||
       window.location.hostname.includes('.ngrok.app')) {
+    // In production, backend and frontend are on same domain
     return window.location.origin;
   }
   

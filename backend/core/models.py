@@ -27,6 +27,8 @@ class UserProfile(models.Model):
     site = models.ForeignKey('Site', on_delete=models.CASCADE, null=True, blank=True)
     must_reset_password = models.BooleanField(default=False, help_text="User must reset password on next login")
     email_verified = models.BooleanField(default=False, help_text="Email address has been verified")
+    simplelogin_alias = models.EmailField(null=True, blank=True, help_text="SimpleLogin alias for privacy protection")
+    simplelogin_alias_id = models.CharField(max_length=100, null=True, blank=True, help_text="SimpleLogin alias ID from API")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

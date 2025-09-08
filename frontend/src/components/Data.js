@@ -1172,7 +1172,7 @@ const Data = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
       {/* Reporting Period Selector */}
       <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200 mb-8">

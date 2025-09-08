@@ -1,0 +1,30 @@
+ESG Portal - You've Been Invited!
+
+Welcome, {{ user_name }}!
+
+You've been invited to join ESG Portal as a {{ role }}.
+
+ESG Portal is a comprehensive platform designed to help organizations:
+• Track and manage ESG (Environmental, Social, Governance) metrics  
+• Generate compliance reports for multiple frameworks
+• Set and monitor sustainability goals
+• Ensure data accuracy and transparency
+
+READY TO GET STARTED?
+Click this magic link to automatically access your account: {{ invitation_url }}
+
+What happens next:
+1. Click the magic link above (you'll be automatically logged in)
+2. Create your secure password  
+3. Complete your profile setup
+4. Start managing your ESG data
+
+If you have any questions or need assistance, our support team is here to help.
+
+Security Note: This invitation link is unique to you and will expire in 7 days for security purposes.
+
+---
+ESG Portal - Empowering Sustainable Business Practices
+🌐 https://esg-portal.onrender.com/
+
+If you didn't expect this invitation, you can safely ignore this email.
