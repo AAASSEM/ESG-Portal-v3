@@ -25,18 +25,27 @@ def send_verification_after_signup(sender, instance, created, **kwargs):
         def send_user_email():
             print(f"🚀 Transaction committed - determining email type for {instance.email}")
             try:
-                # Send invitation email when any new user is created
-                print(f"👨‍💼 New user created - sending invitation email to {instance.email}")
-                
-                # Create invitation token (this will trigger the EmailVerificationToken signal)
-                from .models import EmailVerificationToken
-                token_obj = EmailVerificationToken.objects.create(
-                    user=instance,
-                    token_type='invitation'
-                )
-                print(f"📨 Invitation token created - invitation email will be sent")
-                
-                result = {'type': 'invitation', 'success': True, 'token': token_obj.token}
+                # Check if this is a self-signup (has password) or admin-created (no password)
+                if instance.has_usable_password():
+                    # Self-signup - send verification email
+                    print(f"✉️ Self-signup detected - sending verification email to {instance.email}")
+                    from .models import EmailVerificationToken
+                    token_obj = EmailVerificationToken.objects.create(
+                        user=instance,
+                        token_type='email_verification'  # Correct type for signup
+                    )
+                    print(f"📧 Email verification token created - verification email will be sent")
+                    result = {'type': 'email_verification', 'success': True, 'token': token_obj.token}
+                else:
+                    # Admin-created - send invitation email  
+                    print(f"👨‍💼 Admin-created user detected - sending invitation email to {instance.email}")
+                    from .models import EmailVerificationToken
+                    token_obj = EmailVerificationToken.objects.create(
+                        user=instance,
+                        token_type='invitation'
+                    )
+                    print(f"📨 Invitation token created - invitation email will be sent")
+                    result = {'type': 'invitation', 'success': True, 'token': token_obj.token}
                 
                 return result
             except Exception as e:
@@ -94,6 +103,39 @@ def send_email_after_token_creation(sender, instance, created, **kwargs):
                     }
                     print(f"🔐 Password reset email result: {result}")
                     
+                elif instance.token_type == 'email_verification':
+                    # Send email verification for self-signup
+                    from django.template.loader import render_to_string
+                    from django.core.mail import send_mail
+                    from django.conf import settings
+                    
+                    context = {
+                        'user_name': instance.user.first_name or instance.user.username,
+                        'verification_code': instance.verification_code,
+                        'site_name': 'ESG Portal',
+                    }
+                    
+                    subject = f"{settings.EMAIL_SUBJECT_PREFIX}Verify Your Email Address"
+                    html_message = render_to_string('emails/email_verification.html', context)
+                    plain_message = render_to_string('emails/email_verification.txt', context)
+                    
+                    send_result = send_mail(
+                        subject=subject,
+                        message=plain_message,
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[instance.user.email],
+                        html_message=html_message,
+                        fail_silently=False,
+                    )
+                    
+                    result = {
+                        'success': True,
+                        'email_sent': send_result == 1,
+                        'verification_code': instance.verification_code,
+                        'message': 'Email verification sent successfully' if send_result == 1 else 'Email sending failed'
+                    }
+                    print(f"✉️ Email verification result: {result}")
+                    
                 elif instance.token_type == 'invitation':
                     # Send invitation email directly using token data
                     from django.template.loader import render_to_string
@@ -137,8 +179,8 @@ def send_email_after_token_creation(sender, instance, created, **kwargs):
                     print(f"📨 Invitation email result: {result}")
                     
                 else:
-                    # email_verification is handled by the User post_save signal above
-                    print(f"⚠️ Email verification handled by User signal, skipping token signal")
+                    # Unknown token type
+                    print(f"⚠️ Unknown token type: {instance.token_type}, skipping")
                     return None
                 
                 return result
@@ -147,8 +189,7 @@ def send_email_after_token_creation(sender, instance, created, **kwargs):
                 logger.error(f"Failed to send {instance.token_type} email via signal: {str(e)}")
                 return None
         
-        # Only send emails for password_reset and invitation tokens
-        # email_verification is handled by User creation signal
-        if instance.token_type in ['password_reset', 'invitation']:
+        # Send emails for all token types: email_verification, password_reset, invitation
+        if instance.token_type in ['email_verification', 'password_reset', 'invitation']:
             transaction.on_commit(send_token_email)
             print(f"⏳ {instance.token_type} email scheduled for after transaction commit")

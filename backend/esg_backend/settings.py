@@ -201,7 +201,8 @@ EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS = 24
 # Frontend URL for email links
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://esg-portal.onrender.com' if not DEBUG else 'http://localhost:3001')
 
-# Backend URL for magic links  
+# Backend URL for magic links (API endpoint, not frontend)
+# On Render, both frontend and backend are served from same domain but backend handles /api/ routes
 BACKEND_URL = os.environ.get('BACKEND_URL', 'https://esg-portal.onrender.com' if not DEBUG else 'http://localhost:8080')
 
 # SimpleLogin settings for email privacy

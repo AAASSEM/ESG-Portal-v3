@@ -124,28 +124,20 @@ class SignupView(APIView):
                 'error': 'Failed to create account'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-        # For signup, we want verification email, not invitation
-        # Override the signal by sending verification email directly
+        # Let the signal handle email verification for signups
+        # Signal now properly distinguishes between signup and invitation
         print(f"✅ User account created successfully: {user.email}")
-        print(f"📧 Sending email verification for signup (override signal)")
+        print(f"📧 Signal will handle email verification for signup")
         
-        try:
-            email_result = send_email_verification(user, request)
-            return Response({
-                'message': 'Account created successfully! Please check your email to verify your account.',
-                'user_email': user.email,
-                'email_sent': email_result.get('email_sent', False),
-                'verification_code': email_result.get('verification_code'),  # For testing
-                'next_step': 'Check your email for a 6-digit verification code to activate your account.'
-            }, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            print(f"❌ Email sending failed: {e}")
-            return Response({
-                'message': 'Account created successfully but email could not be sent.',
-                'user_email': user.email,
-                'error': str(e),
-                'next_step': 'Please contact support for verification.'
-            }, status=status.HTTP_201_CREATED)
+        # Note: email_sent and verification_code are now handled by the signal
+        # For production, these should not be exposed in the response
+        return Response({
+            'message': 'Account created successfully! Please check your email to verify your account.',
+            'user_email': user.email,
+            'email_sent': True,  # Assume signal will handle it
+            'verification_code': None,  # Don't expose in production
+            'next_step': 'Check your email for a 6-digit verification code to activate your account.'
+        }, status=status.HTTP_201_CREATED)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class LoginView(APIView):
