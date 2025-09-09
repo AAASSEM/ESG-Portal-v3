@@ -15,12 +15,19 @@ logger = logging.getLogger(__name__)
 def send_verification_after_signup(sender, instance, created, **kwargs):
     """
     Send appropriate email after user is created and transaction commits
-    - Self-signup: Email verification
+    - Self-signup: Email verification (SKIPPED - handled by SignupView directly)
     - Admin-added: Invitation (if they have staff/superuser permissions)
     """
+    # Skip for signups to prevent double email triggering
+    import os
+    if os.environ.get('SKIP_SIGNUP_SIGNAL') == 'true':
+        print(f"📧 ⏭️ Skipping signal for signup user: {instance.email} (prevented double email)")
+        return
+        
     if created and not instance.is_active and instance.email:
         print(f"📧 *** USER CREATION SIGNAL TRIGGERED *** for: {instance.email}")
         print(f"🔍 User details: ID={instance.id}, has_password={instance.has_usable_password()}, is_active={instance.is_active}")
+        print(f"📝 This is likely an ADMIN-CREATED user (invitation flow)")
         
         # Send email after transaction commits to ensure all data is available
         def send_user_email():
@@ -32,8 +39,9 @@ def send_verification_after_signup(sender, instance, created, **kwargs):
                 print(f"🔑 Password check: has_usable_password()={has_password}")
                 
                 if has_password:
-                    # Self-signup - send verification email
-                    print(f"✉️ Self-signup detected - sending verification email to {instance.email}")
+                    # This should rarely happen now since signups skip the signal
+                    print(f"✉️ Self-signup detected in signal - sending verification email to {instance.email}")
+                    print(f"⚠️ WARNING: This might be a double email trigger!")
                     from .models import EmailVerificationToken
                     token_obj = EmailVerificationToken.objects.create(
                         user=instance,
@@ -42,8 +50,9 @@ def send_verification_after_signup(sender, instance, created, **kwargs):
                     print(f"📧 Email verification token created - verification email will be sent")
                     result = {'type': 'email_verification', 'success': True, 'token': token_obj.token}
                 else:
-                    # Admin-created - send invitation email  
+                    # Admin-created user without password - send invitation email  
                     print(f"👨‍💼 Admin-created user detected - sending invitation email to {instance.email}")
+                    print(f"✅ This is the correct invitation flow")
                     from .models import EmailVerificationToken
                     token_obj = EmailVerificationToken.objects.create(
                         user=instance,
