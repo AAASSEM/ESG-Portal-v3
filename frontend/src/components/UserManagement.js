@@ -1110,7 +1110,7 @@ const UserManagement = () => {
 
     return (
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000]"
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000010]"
         style={{ 
           position: 'fixed', 
           top: 0, 
@@ -1123,7 +1123,7 @@ const UserManagement = () => {
           padding: 0
         }}
       >
-        <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 relative z-[10000011]">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium text-gray-900">{notification.title}</h3>
             <button

@@ -15,19 +15,13 @@ logger = logging.getLogger(__name__)
 def send_verification_after_signup(sender, instance, created, **kwargs):
     """
     Send appropriate email after user is created and transaction commits
-    - Self-signup: Email verification (SKIPPED - handled by SignupView directly)
-    - Admin-added: Invitation (if they have staff/superuser permissions)
+    - Self-signup: Email verification (has password)
+    - Admin-added: Invitation (no password, needs setup)
     """
-    # Skip for signups to prevent double email triggering
-    import os
-    if os.environ.get('SKIP_SIGNUP_SIGNAL') == 'true':
-        print(f"📧 ⏭️ Skipping signal for signup user: {instance.email} (prevented double email)")
-        return
-        
     if created and not instance.is_active and instance.email:
         print(f"📧 *** USER CREATION SIGNAL TRIGGERED *** for: {instance.email}")
         print(f"🔍 User details: ID={instance.id}, has_password={instance.has_usable_password()}, is_active={instance.is_active}")
-        print(f"📝 This is likely an ADMIN-CREATED user (invitation flow)")
+        print(f"📝 Determining email type: signup (has password) or invitation (no password)")
         
         # Send email after transaction commits to ensure all data is available
         def send_user_email():
@@ -121,20 +115,24 @@ def send_email_after_token_creation(sender, instance, created, **kwargs):
                     print(f"🔐 Password reset email result: {result}")
                     
                 elif instance.token_type == 'email_verification':
-                    # Send email verification for self-signup
+                    # Send email verification magic link for self-signup
                     from django.template.loader import render_to_string
                     from django.core.mail import send_mail
                     from django.conf import settings
                     
+                    # Build magic link verification URL (same as invitation flow)
+                    backend_url = getattr(settings, 'BACKEND_URL', 'http://localhost:8080')
+                    magic_link_url = f"{backend_url}/api/auth/magic-link/{instance.token}/"
+                    
                     context = {
                         'user_name': instance.user.first_name or instance.user.username,
-                        'verification_code': instance.verification_code,
+                        'verification_url': magic_link_url,
                         'site_name': 'ESG Portal',
                     }
                     
                     subject = f"{settings.EMAIL_SUBJECT_PREFIX}Verify Your Email Address"
-                    html_message = render_to_string('emails/email_verification.html', context)
-                    plain_message = render_to_string('emails/email_verification.txt', context)
+                    html_message = render_to_string('emails/email_verification_magic.html', context)
+                    plain_message = render_to_string('emails/email_verification_magic.txt', context)
                     
                     send_result = send_mail(
                         subject=subject,
@@ -148,7 +146,8 @@ def send_email_after_token_creation(sender, instance, created, **kwargs):
                     result = {
                         'success': True,
                         'email_sent': send_result == 1,
-                        'verification_code': instance.verification_code,
+                        'verification_token': instance.token,
+                        'magic_link_url': magic_link_url,
                         'message': 'Email verification sent successfully' if send_result == 1 else 'Email sending failed'
                     }
                     print(f"✉️ Email verification result: {result}")

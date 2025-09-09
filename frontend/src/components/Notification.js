@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const Notification = ({ message, type = 'info', code = null, duration = 10000, onClose }) => {
+const Notification = ({ message, type = 'info', code = null, link = null, duration = 10000, onClose }) => {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
@@ -30,6 +30,8 @@ const Notification = ({ message, type = 'info', code = null, duration = 10000, o
         return 'bg-yellow-50 border-yellow-200 text-yellow-800';
       case 'code':
         return 'bg-purple-50 border-purple-200 text-purple-800';
+      case 'link':
+        return 'bg-green-50 border-green-200 text-green-800';
       default:
         return 'bg-blue-50 border-blue-200 text-blue-800';
     }
@@ -45,6 +47,8 @@ const Notification = ({ message, type = 'info', code = null, duration = 10000, o
         return 'fas fa-exclamation-triangle text-yellow-600';
       case 'code':
         return 'fas fa-code text-purple-600';
+      case 'link':
+        return 'fas fa-link text-green-600';
       default:
         return 'fas fa-info-circle text-blue-600';
     }
@@ -64,6 +68,19 @@ const Notification = ({ message, type = 'info', code = null, duration = 10000, o
                   <p className="font-bold text-lg font-mono bg-white bg-opacity-50 px-2 py-1 rounded inline-block">
                     {code}
                   </p>
+                </div>
+              )}
+              {link && (
+                <div className="mt-2">
+                  <p className="text-xs opacity-75 mb-1">Magic Link:</p>
+                  <a 
+                    href={link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-green-700 hover:text-green-900 underline break-all bg-white bg-opacity-50 px-2 py-1 rounded block"
+                  >
+                    Click to verify →
+                  </a>
                 </div>
               )}
             </div>

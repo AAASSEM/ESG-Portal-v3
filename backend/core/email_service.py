@@ -106,17 +106,21 @@ def send_email_verification(user, request=None):
                 token_type='email_verification'
             )
         
-        # Context for email template with verification code
+        # Context for email template with magic link
+        # Build magic link verification URL (same as invitation flow)
+        backend_url = getattr(settings, 'BACKEND_URL', 'http://localhost:8080')
+        magic_link_url = f"{backend_url}/api/auth/magic-link/{token_obj.token}/"
+        
         context = {
             'user_name': user.first_name or user.username,
-            'verification_code': token_obj.verification_code,
+            'verification_url': magic_link_url,
             'site_name': 'ESG Portal',
         }
         
-        # Render email templates
+        # Render email templates (magic link versions)
         subject = f"{settings.EMAIL_SUBJECT_PREFIX}Verify Your Email Address"
-        html_message = render_to_string('emails/email_verification.html', context)
-        plain_message = render_to_string('emails/email_verification.txt', context)
+        html_message = render_to_string('emails/email_verification_magic.html', context)
+        plain_message = render_to_string('emails/email_verification_magic.txt', context)
         
         # Get email address (SimpleLogin alias or direct email)
         recipient_email = get_user_email_address(user)
@@ -159,11 +163,12 @@ def send_email_verification(user, request=None):
             import traceback
             traceback.print_exc()
         
-        # Always return the verification code for testing, even if email fails
+        # Return magic link token instead of verification code for testing
         return {
             'success': True,  # Token was created successfully
             'email_sent': email_sent,
-            'verification_code': token_obj.verification_code,
+            'verification_token': token_obj.token,  # Magic link token for testing
+            'magic_link_url': magic_link_url,  # Full magic link URL for testing
             'message': 'Email sent successfully' if email_sent else email_error or 'Email sending failed'
         }
         
@@ -175,7 +180,8 @@ def send_email_verification(user, request=None):
         return {
             'success': False,
             'email_sent': False,
-            'verification_code': None,
+            'verification_token': None,
+            'magic_link_url': None,
             'message': f'Error creating verification: {str(e)}'
         }
 

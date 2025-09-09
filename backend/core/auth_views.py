@@ -124,45 +124,17 @@ class SignupView(APIView):
                 'error': 'Failed to create account'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-        # IMPORTANT: Skip signal for signup - we handle email directly
-        # This prevents double email triggering
-        import os
-        os.environ['SKIP_SIGNUP_SIGNAL'] = 'true'
-        
         print(f"✅ User account created successfully: {user.email}")
-        print(f"📧 SignupView will handle email verification directly (skipping signal)")
-        
-        # Send verification email directly using the email service
-        try:
-            email_result = send_email_verification(user, request)
-            email_actually_sent = email_result.get('email_sent', False)
-            verification_code_for_testing = email_result.get('verification_code')
-            
-            print(f"📧 Direct email result: {email_result}")
-            
-        except Exception as e:
-            print(f"❌ Direct email sending failed: {e}")
-            email_actually_sent = False
-            verification_code_for_testing = None
-        finally:
-            # Clean up environment variable
-            if 'SKIP_SIGNUP_SIGNAL' in os.environ:
-                del os.environ['SKIP_SIGNUP_SIGNAL']
-                print(f"🧹 Cleaned up SKIP_SIGNUP_SIGNAL flag")
+        print(f"📧 Email verification will be handled automatically by signals")
         
         
         response_message = 'Account created successfully! Please check your email to verify your account.'
-        next_step = 'Check your email for a 6-digit verification code to activate your account.'
-        
-        if not email_actually_sent:
-            response_message = 'Account created but email verification could not be sent.'
-            next_step = 'Email sending failed - please use the verification code below or contact support.'
+        next_step = 'Click the verification link in your email to activate your account.'
         
         return Response({
             'message': response_message,
             'user_email': user.email,
-            'email_sent': email_actually_sent,  # Actual status from signal
-            'verification_code': verification_code_for_testing,  # For testing/debugging when email fails
+            'email_sent': True,  # Signal will handle email sending
             'next_step': next_step
         }, status=status.HTTP_201_CREATED)
 
@@ -218,9 +190,26 @@ class LoginView(APIView):
                     user = None
         
         if user is not None:
-            # Check if user is inactive (first time login)
+            # Check if user is inactive - they must verify email first
             if not user.is_active:
-                # Activate user on first successful login
+                # Check if email is verified before allowing login
+                try:
+                    user_profile = user.userprofile
+                    if not user_profile.email_verified:
+                        return Response({
+                            'error': 'Account not verified. Please check your email and click the verification link before logging in.',
+                            'requires_verification': True,
+                            'email': user.email
+                        }, status=status.HTTP_403_FORBIDDEN)
+                except:
+                    # If no profile exists, still require verification
+                    return Response({
+                        'error': 'Account not verified. Please check your email and click the verification link before logging in.',
+                        'requires_verification': True,
+                        'email': user.email
+                    }, status=status.HTTP_403_FORBIDDEN)
+                
+                # If email is verified but user is still inactive, activate them
                 user.is_active = True
                 user.save()
             
@@ -838,21 +827,21 @@ class MagicLinkAuthView(APIView):
         try:
             from .models import EmailVerificationToken
             
-            # Find and validate the invitation token
+            # Find and validate the token (invitation OR email_verification)
             try:
                 token_obj = EmailVerificationToken.objects.get(
                     token=token,
-                    token_type='invitation',
+                    token_type__in=['invitation', 'email_verification'],
                     used_at__isnull=True  # Check if not used yet
                 )
-                print(f"✅ Valid invitation token found for user: {token_obj.user.email}")
+                print(f"✅ Valid {token_obj.token_type} token found for user: {token_obj.user.email}")
             except EmailVerificationToken.DoesNotExist:
-                print(f"❌ Invalid or expired invitation token")
+                print(f"❌ Invalid or expired magic link token")
                 # Redirect to login with error message
                 from django.shortcuts import redirect
                 from .email_service import get_base_url
                 base_url = get_base_url()
-                return redirect(f"{base_url}/login?error=invalid_invitation")
+                return redirect(f"{base_url}/login?error=invalid_token")
             
             user = token_obj.user
             
@@ -881,6 +870,15 @@ class MagicLinkAuthView(APIView):
             login(request, user)
             print(f"✅ User logged in via magic link: {user.email}")
             
+            # Mark email as verified (for both signup and invitation)
+            try:
+                if hasattr(user, 'userprofile'):
+                    user.userprofile.email_verified = True
+                    user.userprofile.save()
+                    print(f"✅ Email marked as verified for user: {user.email}")
+            except Exception as e:
+                print(f"⚠️ Could not mark email as verified: {e}")
+            
             # Mark token as used (keep for audit trail)
             from django.utils import timezone
             token_obj.used_at = timezone.now()
@@ -904,16 +902,24 @@ class MagicLinkAuthView(APIView):
                 user_company = None
                 print(f"⚠️ Created minimal user profile for: {user.email}")
             
-            # Determine if user needs to set password
-            # Check both the profile flag AND if user has unusable password
-            profile_needs_reset = getattr(user_profile, 'must_reset_password', True)
-            has_unusable_password = not user.has_usable_password()
-            needs_password_setup = profile_needs_reset or has_unusable_password
-            
-            print(f"🔐 Password setup check:")
-            print(f"   - Profile must_reset_password: {profile_needs_reset}")
-            print(f"   - Has unusable password: {has_unusable_password}")
-            print(f"   - Needs setup: {needs_password_setup}")
+            # Determine redirect destination based on token type and user role
+            if token_obj.token_type == 'email_verification':
+                # This is a signup verification - redirect super users to onboarding
+                print(f"📧 Email verification magic link for signup user")
+                redirect_to = '/onboard'  # Super users go to onboarding after signup verification
+                needs_password_setup = False  # Signup users already have passwords
+            else:
+                # This is an invitation - check if user needs password setup
+                profile_needs_reset = getattr(user_profile, 'must_reset_password', True)
+                has_unusable_password = not user.has_usable_password()
+                needs_password_setup = profile_needs_reset or has_unusable_password
+                
+                print(f"👨‍💼 Invitation magic link - password setup check:")
+                print(f"   - Profile must_reset_password: {profile_needs_reset}")
+                print(f"   - Has unusable password: {has_unusable_password}")
+                print(f"   - Needs setup: {needs_password_setup}")
+                
+                redirect_to = '/setup-account' if needs_password_setup else '/dashboard'
             
             response_data = {
                 'success': True,
@@ -925,10 +931,10 @@ class MagicLinkAuthView(APIView):
                     'name': f"{user.first_name} {user.last_name}".strip() or user.username,
                     'role': user_role,
                     'is_active': user.is_active,
-                    'must_reset_password': needs_password_setup
+                    'must_reset_password': False if token_obj.token_type == 'email_verification' else needs_password_setup
                 },
-                'needs_password_setup': needs_password_setup,
-                'redirect_to': '/setup-account' if needs_password_setup else '/dashboard'
+                'needs_password_setup': False if token_obj.token_type == 'email_verification' else needs_password_setup,
+                'redirect_to': redirect_to
             }
             
             print(f"✅ Magic link authentication successful for: {user.email}")

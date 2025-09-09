@@ -202,11 +202,11 @@ const Signup = () => {
   return (
     <>
       {/* Top-right notification for testing */}
-      {showNotification && signupResult?.verificationCode && (
+      {showNotification && signupResult?.magic_link_url && (
         <Notification
-          type="code"
-          message="🧪 Testing Mode - Verification Code Generated!"
-          code={signupResult.verificationCode}
+          type="link"
+          message="🧪 Testing Mode - Magic Link Generated!"
+          link={signupResult.magic_link_url}
           duration={15000} // Show for 15 seconds
           onClose={() => setShowNotification(false)}
         />
@@ -219,11 +219,11 @@ const Signup = () => {
               <i className="fas fa-leaf text-white text-2xl"></i>
             </div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              {emailSent ? (verificationStep ? 'Enter Verification Code' : 'Account Created!') : 'Create your account'}
+              {emailSent ? (verificationStep ? 'Check Your Email' : 'Account Created!') : 'Create your account'}
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
               {emailSent ? (
-                verificationStep ? 'Check your email for the 6-digit code' : ''
+                verificationStep ? 'Click the verification link in your email to activate your account' : ''
               ) : (
                 <>
                   Already have an account?{' '}
@@ -240,39 +240,52 @@ const Signup = () => {
           
           {emailSent ? (
             verificationStep ? (
-              // Verification code input form
-              <form className="mt-8 space-y-6 bg-white p-8 rounded-xl shadow-lg" onSubmit={handleVerificationSubmit}>
-                {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-                    <div className="flex">
-                      <i className="fas fa-exclamation-circle mt-1 mr-3 text-red-500"></i>
-                      <div>
-                        <strong className="font-medium">Verification Error</strong>
-                        <p className="text-sm">{error}</p>
-                      </div>
-                    </div>
+              // Magic link verification message
+              <div className="mt-8 space-y-6 bg-white p-8 rounded-xl shadow-lg">
+                <div className="text-center">
+                  <div className="mx-auto h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                    <i className="fas fa-envelope text-blue-600 text-2xl"></i>
                   </div>
-                )}
+                  
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Verification Link Sent!
+                  </h3>
+                  
+                  <p className="text-gray-600 mb-4">
+                    We've sent a verification link to:
+                  </p>
+                  <p className="font-semibold text-gray-900 mb-4">{signupResult?.userEmail}</p>
+                </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div className="flex items-start">
-                    <i className="fas fa-envelope text-blue-600 mt-1 mr-3"></i>
+                    <i className="fas fa-mouse-pointer text-blue-600 mt-1 mr-3"></i>
                     <div className="text-left text-sm text-blue-800">
-                      <p className="font-medium mb-1">We sent a verification code to:</p>
-                      <p className="font-semibold">{signupResult?.userEmail}</p>
-                      <p className="text-xs mt-1">Check your email and enter the 6-digit code below</p>
+                      <p className="font-medium mb-2">What to do next:</p>
+                      <ol className="list-decimal list-inside space-y-1 text-sm">
+                        <li>Check your email inbox (and spam folder)</li>
+                        <li>Click the verification link in the email</li>
+                        <li>You'll be automatically logged in and redirected</li>
+                      </ol>
                     </div>
                   </div>
                 </div>
 
-                {/* Testing notification - show verification code */}
-                {signupResult?.verificationCode && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                {/* Testing notification - show magic link */}
+                {signupResult?.magic_link_url && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                     <div className="flex items-start">
-                      <i className="fas fa-code text-yellow-600 mt-1 mr-3"></i>
+                      <i className="fas fa-link text-yellow-600 mt-1 mr-3"></i>
                       <div className="text-left text-sm text-yellow-800">
-                        <p className="font-medium mb-1">🧪 Testing Mode - Your verification code is:</p>
-                        <p className="font-bold text-xl font-mono bg-yellow-100 px-3 py-1 rounded inline-block">{signupResult.verificationCode}</p>
+                        <p className="font-medium mb-1">🧪 Testing Mode - Magic Link:</p>
+                        <a 
+                          href={signupResult.magic_link_url} 
+                          className="text-blue-600 hover:text-blue-800 underline break-all text-xs"
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                        >
+                          {signupResult.magic_link_url}
+                        </a>
                         <p className="text-xs mt-1">
                           {signupResult?.emailSent ? 'Also sent to your email' : 'Email sending failed - using test mode'}
                         </p>
@@ -280,43 +293,6 @@ const Signup = () => {
                     </div>
                   </div>
                 )}
-
-                <div>
-                  <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700 mb-2">
-                    Verification Code
-                  </label>
-                  <input
-                    id="verificationCode"
-                    name="verificationCode"
-                    type="text"
-                    required
-                    maxLength="6"
-                    className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-center text-2xl font-mono letter-spacing-wide"
-                    placeholder="000000"
-                    value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  />
-                </div>
-
-                <div>
-                  <button
-                    type="submit"
-                    disabled={loading || verificationCode.length !== 6}
-                    className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {loading ? (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                        Verifying...
-                      </div>
-                    ) : (
-                      <div className="flex items-center">
-                        <i className="fas fa-check-circle mr-2"></i>
-                        Verify Email
-                      </div>
-                    )}
-                  </button>
-                </div>
 
                 <div className="text-center">
                   <button
@@ -332,7 +308,7 @@ const Signup = () => {
                     ← Back to signup
                   </button>
                 </div>
-              </form>
+              </div>
             ) : (
               // Email verification success message
               <div className="mt-8 bg-white p-8 rounded-xl shadow-lg">
