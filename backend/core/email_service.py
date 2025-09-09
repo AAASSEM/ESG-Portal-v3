@@ -63,6 +63,22 @@ def send_email_verification(user, request=None):
     Send email verification email to user
     Returns dict with success, email_sent, verification_code, and message
     """
+    # Add debugging for Render deployment
+    import os
+    from django.conf import settings
+    
+    print(f"🔧 EMAIL CONFIG CHECK for {user.email}:")
+    print(f"  USE_REAL_EMAIL: {os.environ.get('USE_REAL_EMAIL', 'Not set')}")
+    print(f"  EMAIL_SERVICE: {os.environ.get('EMAIL_SERVICE', 'Not set')}")
+    print(f"  SENDGRID_API_KEY exists: {bool(os.environ.get('SENDGRID_API_KEY'))}")
+    print(f"  EMAIL_BACKEND: {settings.EMAIL_BACKEND}")
+    print(f"  EMAIL_HOST: {getattr(settings, 'EMAIL_HOST', 'Not set')}")
+    print(f"  EMAIL_HOST_USER: {getattr(settings, 'EMAIL_HOST_USER', 'Not set')}")
+    print(f"  EMAIL_HOST_PASSWORD exists: {bool(getattr(settings, 'EMAIL_HOST_PASSWORD', None))}")
+    print(f"  DEFAULT_FROM_EMAIL: {settings.DEFAULT_FROM_EMAIL}")
+    print(f"  EMAIL_USE_TLS: {getattr(settings, 'EMAIL_USE_TLS', 'Not set')}")
+    print(f"  EMAIL_PORT: {getattr(settings, 'EMAIL_PORT', 'Not set')}")
+    
     try:
         # Validate user has email
         if not user.email:
@@ -131,11 +147,17 @@ def send_email_verification(user, request=None):
         except SMTPException as smtp_error:
             email_sent = False
             email_error = f"SMTP error: {str(smtp_error)}"
-            print(f"❌ SMTP error sending to {recipient_email}: {smtp_error}")
+            print(f"❌ 📬 SMTP ERROR sending to {recipient_email}: {smtp_error}")
+            print(f"📟 SMTP Error type: {type(smtp_error).__name__}")
+            import traceback
+            traceback.print_exc()
         except Exception as send_error:
             email_sent = False
             email_error = f"Email send error: {str(send_error)}"
-            print(f"❌ Error sending email to {recipient_email}: {send_error}")
+            print(f"❌ 📧 GENERAL ERROR sending email to {recipient_email}: {send_error}")
+            print(f"📟 Error type: {type(send_error).__name__}")
+            import traceback
+            traceback.print_exc()
         
         # Always return the verification code for testing, even if email fails
         return {
