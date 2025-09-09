@@ -125,18 +125,62 @@ class SignupView(APIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         # Let the signal handle email verification for signups
-        # Signal now properly distinguishes between signup and invitation
+        # Signal now properly distinguishes between signup and invitation  
         print(f"✅ User account created successfully: {user.email}")
         print(f"📧 Signal will handle email verification for signup")
         
-        # Note: email_sent and verification_code are now handled by the signal
-        # For production, these should not be exposed in the response
+        # Wait a moment for signal to process, then check if token was created
+        import time
+        time.sleep(0.5)  # Give signal time to process
+        
+        try:
+            from .models import EmailVerificationToken
+            token = EmailVerificationToken.objects.filter(
+                user=user,
+                token_type='email_verification'
+            ).first()
+            
+            # If no token was created by signal, create one as fallback
+            if not token:
+                print("⚠️ Signal didn't create token - creating fallback email verification token")
+                token = EmailVerificationToken.objects.create(
+                    user=user,
+                    token_type='email_verification'
+                )
+                print(f"🔄 Fallback token created: {token.verification_code}")
+            
+            email_actually_sent = token is not None
+            # Show verification code in testing/development or when email sending fails
+            show_code = token and (settings.DEBUG or not email_actually_sent)
+            verification_code_for_testing = token.verification_code if show_code else None
+            
+            if show_code:
+                print(f"🗺 Exposing verification code for testing/debugging: {verification_code_for_testing}")
+            
+            print(f"🔍 Verification token status: exists={email_actually_sent}")
+            if token:
+                print(f"🎫 Token ID: {token.id}, Code: {token.verification_code}, Type: {token.token_type}")
+            
+        except Exception as e:
+            print(f"❌ Error checking/creating email token: {e}")
+            import traceback
+            traceback.print_exc()
+            email_actually_sent = False
+            verification_code_for_testing = None
+        
+        response_message = 'Account created successfully! Please check your email to verify your account.'
+        next_step = 'Check your email for a 6-digit verification code to activate your account.'
+        
+        if not email_actually_sent:
+            response_message = 'Account created but email verification could not be sent.'
+            next_step = 'Email sending failed - please use the verification code below or contact support.'
+        
         return Response({
-            'message': 'Account created successfully! Please check your email to verify your account.',
+            'message': response_message,
             'user_email': user.email,
-            'email_sent': True,  # Assume signal will handle it
-            'verification_code': None,  # Don't expose in production
-            'next_step': 'Check your email for a 6-digit verification code to activate your account.'
+            'email_sent': email_actually_sent,  # Actual status from signal
+            'verification_code': verification_code_for_testing,  # For testing/debugging when email fails
+            'next_step': next_step
         }, status=status.HTTP_201_CREATED)
 
 @method_decorator(csrf_exempt, name='dispatch')

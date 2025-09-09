@@ -19,14 +19,19 @@ def send_verification_after_signup(sender, instance, created, **kwargs):
     - Admin-added: Invitation (if they have staff/superuser permissions)
     """
     if created and not instance.is_active and instance.email:
-        print(f"📧 Signal triggered for new user: {instance.email}")
+        print(f"📧 *** USER CREATION SIGNAL TRIGGERED *** for: {instance.email}")
+        print(f"🔍 User details: ID={instance.id}, has_password={instance.has_usable_password()}, is_active={instance.is_active}")
         
         # Send email after transaction commits to ensure all data is available
         def send_user_email():
             print(f"🚀 Transaction committed - determining email type for {instance.email}")
             try:
+                print(f"🚀 *** TRANSACTION COMMITTED - PROCESSING EMAIL FOR {instance.email} ***")
                 # Check if this is a self-signup (has password) or admin-created (no password)
-                if instance.has_usable_password():
+                has_password = instance.has_usable_password()
+                print(f"🔑 Password check: has_usable_password()={has_password}")
+                
+                if has_password:
                     # Self-signup - send verification email
                     print(f"✉️ Self-signup detected - sending verification email to {instance.email}")
                     from .models import EmailVerificationToken
@@ -50,6 +55,9 @@ def send_verification_after_signup(sender, instance, created, **kwargs):
                 return result
             except Exception as e:
                 print(f"❌ Email signal error: {str(e)}")
+                print(f"📟 Full traceback for debugging:")
+                import traceback
+                traceback.print_exc()
                 logger.error(f"Failed to send email via signal: {str(e)}")
                 return None
         
@@ -136,6 +144,14 @@ def send_email_after_token_creation(sender, instance, created, **kwargs):
                     }
                     print(f"✉️ Email verification result: {result}")
                     
+                    # Additional debug info for production
+                    if not result.get('email_sent'):
+                        print(f"❌ EMAIL VERIFICATION FAILED: {result.get('message')}")
+                        print(f"🔧 Email backend: {settings.EMAIL_BACKEND}")
+                        print(f"🔧 SMTP settings: {getattr(settings, 'EMAIL_HOST', 'Not configured')}")
+                    else:
+                        print(f"✅ EMAIL VERIFICATION SENT SUCCESSFULLY to {instance.user.email}")
+                    
                 elif instance.token_type == 'invitation':
                     # Send invitation email directly using token data
                     from django.template.loader import render_to_string
@@ -186,6 +202,9 @@ def send_email_after_token_creation(sender, instance, created, **kwargs):
                 return result
             except Exception as e:
                 print(f"❌ Token email signal error: {str(e)}")
+                print(f"📟 Full traceback for debugging:")
+                import traceback
+                traceback.print_exc()
                 logger.error(f"Failed to send {instance.token_type} email via signal: {str(e)}")
                 return None
         
