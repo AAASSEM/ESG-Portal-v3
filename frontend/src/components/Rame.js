@@ -183,56 +183,100 @@ const Rame = () => {
     fetchMandatoryFrameworks();
   }, [companyId]);
 
-  const voluntaryFrameworks = [
-    {
-      id: 'GREEN_KEY',
-      name: 'Green Key Certification',
-      description: 'Eco-label for tourism establishments with comprehensive sustainability criteria',
-      icon: 'fas fa-key',
-      color: 'green',
-      features: ['13 criteria areas', 'Water & energy efficiency', 'Guest engagement programs'],
-      bestFor: 'Hotels seeking eco-certification'
-    },
-    {
-      id: 'GRI',
-      name: 'GRI Standards',
-      description: 'Global Reporting Initiative - Comprehensive sustainability reporting standards',
-      icon: 'fas fa-globe',
-      color: 'blue',
-      features: ['Universal standards', 'Stakeholder engagement', 'Detailed disclosures'],
-      bestFor: 'Comprehensive sustainability reporting'
-    },
-    {
-      id: 'SASB',
-      name: 'SASB Standards',
-      description: 'Sustainability Accounting Standards Board - Industry-specific sustainability metrics',
-      icon: 'fas fa-chart-bar',
-      color: 'purple',
-      features: ['Industry-specific metrics', 'Investor-focused reporting', 'Materiality assessment'],
-      bestFor: 'Public companies, Investor relations'
-    },
-    {
-      id: 'TCFD',
-      name: 'TCFD',
-      description: 'Task Force on Climate-related Financial Disclosures - Climate risk reporting',
-      icon: 'fas fa-thermometer-half',
-      color: 'orange',
-      features: ['Climate risk assessment', 'Scenario planning', 'Financial impact disclosure'],
-      bestFor: 'Climate-focused reporting'
-    },
-    {
-      id: 'CDP',
-      name: 'CDP',
-      description: 'Carbon Disclosure Project - Environmental disclosure system for companies',
-      icon: 'fas fa-cloud',
-      color: 'teal',
-      features: ['Environmental disclosure', 'Climate scoring', 'Water & forest reporting'],
-      bestFor: 'Environmental transparency'
-    }
-  ];
+  const [voluntaryFrameworks, setVoluntaryFrameworks] = useState([]);
+
+  // Fetch available voluntary frameworks from backend
+  useEffect(() => {
+    const fetchVoluntaryFrameworks = async () => {
+      try {
+        console.log('🔍 Fetching voluntary frameworks from backend...');
+        const response = await fetch(`${API_BASE_URL}/api/frameworks/voluntary/`, {
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          const frameworks = await response.json();
+          console.log('📋 Backend voluntary frameworks:', frameworks);
+
+          // Map backend data to frontend format with icons and styling
+          const mappedFrameworks = frameworks.map(fw => ({
+            id: fw.framework_id,
+            name: fw.name,
+            description: fw.description || 'Comprehensive sustainability framework',
+            icon: getFrameworkIcon(fw.framework_id),
+            color: getFrameworkColor(fw.framework_id),
+            features: getFrameworkFeatures(fw.framework_id),
+            bestFor: getFrameworkBestFor(fw.framework_id)
+          }));
+
+          console.log('✅ Mapped voluntary frameworks:', mappedFrameworks);
+          setVoluntaryFrameworks(mappedFrameworks);
+        } else {
+          console.error('❌ Failed to fetch voluntary frameworks:', response.status);
+        }
+      } catch (error) {
+        console.error('❌ Error fetching voluntary frameworks:', error);
+      }
+    };
+
+    fetchVoluntaryFrameworks();
+  }, []);
+
+  // Helper functions for framework styling
+  const getFrameworkIcon = (frameworkId) => {
+    const iconMap = {
+      'GREEN-KEY-HOSPITALITY': 'fas fa-key',
+      'HOSPITALITY-MASTER': 'fas fa-database',
+      'GRI': 'fas fa-globe',
+      'SASB': 'fas fa-chart-bar',
+      'TCFD': 'fas fa-thermometer-half',
+      'CDP': 'fas fa-cloud'
+    };
+    return iconMap[frameworkId] || 'fas fa-certificate';
+  };
+
+  const getFrameworkColor = (frameworkId) => {
+    const colorMap = {
+      'GREEN-KEY-HOSPITALITY': 'green',
+      'HOSPITALITY-MASTER': 'blue',
+      'GRI': 'blue',
+      'SASB': 'purple',
+      'TCFD': 'orange',
+      'CDP': 'teal'
+    };
+    return colorMap[frameworkId] || 'gray';
+  };
+
+  const getFrameworkFeatures = (frameworkId) => {
+    const featureMap = {
+      'GREEN-KEY-HOSPITALITY': ['13 criteria areas', 'Water & energy efficiency', 'Guest engagement programs'],
+      'HOSPITALITY-MASTER': ['87 framework elements', 'Consolidated ESG data', 'Comprehensive coverage'],
+      'GRI': ['Universal standards', 'Stakeholder engagement', 'Detailed disclosures'],
+      'SASB': ['Industry-specific metrics', 'Investor-focused reporting', 'Materiality assessment'],
+      'TCFD': ['Climate risk assessment', 'Scenario planning', 'Financial impact disclosure'],
+      'CDP': ['Environmental disclosure', 'Climate scoring', 'Water & forest reporting']
+    };
+    return featureMap[frameworkId] || ['Comprehensive sustainability criteria', 'Industry best practices', 'Stakeholder engagement'];
+  };
+
+  const getFrameworkBestFor = (frameworkId) => {
+    const bestForMap = {
+      'GREEN-KEY-HOSPITALITY': 'Hotels seeking eco-certification',
+      'HOSPITALITY-MASTER': 'Comprehensive master reporting',
+      'GRI': 'Comprehensive sustainability reporting',
+      'SASB': 'Public companies, Investor relations',
+      'TCFD': 'Climate-focused reporting',
+      'CDP': 'Environmental transparency'
+    };
+    return bestForMap[frameworkId] || 'Sustainability reporting';
+  };
 
   const toggleVoluntaryFramework = async (frameworkId) => {
+    console.log('🔄 toggleVoluntaryFramework called with frameworkId:', frameworkId);
+    console.log('🔄 selectedVoluntaryFrameworks:', selectedVoluntaryFrameworks);
+
     const isCurrentlySelected = selectedVoluntaryFrameworks.includes(frameworkId);
+    console.log('🔄 isCurrentlySelected:', isCurrentlySelected);
     setSavingFramework(true);
     
     try {
@@ -285,7 +329,7 @@ const Rame = () => {
   };
 
   const handleContinue = () => {
-    navigate('/list');
+    navigate('/location');
   };
 
   // Check if user has permission to access framework selection (moved after hooks)
@@ -321,8 +365,15 @@ const Rame = () => {
   }
 
   // Role-based functionality controls for Framework Selection
-  const canEditFrameworks = ['super_user', 'admin'].includes(user?.role); // Full edit access
+  console.log('🔍 Rame.js Debug - User object:', user);
+  console.log('🔍 Rame.js Debug - User role:', user?.role);
+  console.log('🔍 Rame.js Debug - User is_superuser:', user?.is_superuser);
+
+  const canEditFrameworks = ['super_user', 'admin'].includes(user?.role) || user?.is_superuser === true; // Full edit access
   const isViewOnly = ['site_manager', 'viewer'].includes(user?.role); // View only
+
+  console.log('🔍 Rame.js Debug - canEditFrameworks:', canEditFrameworks);
+  console.log('🔍 Rame.js Debug - isViewOnly:', isViewOnly);
 
   return (
      <div className="max-w-6xl mx-auto">
@@ -395,7 +446,10 @@ const Rame = () => {
                 className={`bg-white rounded-xl p-6 shadow-sm border transition-all relative ${
                   isSelected ? 'border-blue-300 shadow-md' : 'border-gray-200'
                 } ${canEditFrameworks ? 'cursor-pointer hover:border-blue-300 hover:shadow-md' : 'cursor-default'}`}
-                onClick={canEditFrameworks ? () => toggleVoluntaryFramework(framework.id) : undefined}
+                onClick={canEditFrameworks ? () => {
+                  console.log('🖱️ Framework card clicked:', framework.id, 'canEditFrameworks:', canEditFrameworks);
+                  toggleVoluntaryFramework(framework.id);
+                } : () => console.log('🚫 Framework card clicked but editing disabled')}
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className={`w-16 h-16 bg-${framework.color}-100 rounded-xl flex items-center justify-center ${!canEditFrameworks ? 'opacity-60' : ''}`}>

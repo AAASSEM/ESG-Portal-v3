@@ -1,16 +1,16 @@
-list:11   GET https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js net::ERR_NAME_NOT_RESOLVED
-[NEW] Explain Console errors by using Copilot in Edge: click
-         
-         to explain an error. 
-        Learn more
-        Don't show again
 react refresh:37 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
-App.js:27 App.js loaded
+App.js:32 App.js loaded
 index.js:7 index.js loaded
 index.js:10 Root element: div#root
 index.js:16 Rendering App...
 index.js:20 App render called
-App.js:30 App component rendering
+App.js:35 App component rendering
+LocationContext.js:26 🔄 LocationContext State Update:
+LocationContext.js:27    - selectedLocation: null
+LocationContext.js:28    - locations: []
+LocationContext.js:29    - loading: true
+LocationContext.js:30    - updateVersion: 0
+LocationContext.js:39 🔍 Fetching active location from backend...
 deprecations.ts:9  ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
 warnOnce @ deprecations.ts:9
 logDeprecation @ deprecations.ts:13
@@ -43,189 +43,217 @@ flushPassiveEffects @ react-dom.development.js:27023
 workLoop @ scheduler.development.js:266
 flushWork @ scheduler.development.js:239
 performWorkUntilDeadline @ scheduler.development.js:533
-about:client:1   GET https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap net::ERR_INTERNET_DISCONNECTED
-contentScript.bundle.js:34   GET https://ab.reasonlabsapi.com/api/features/sdk-QtSYWOMLlkHBbNMB net::ERR_INTERNET_DISCONNECTED
-fetchFeaturesCall @ contentScript.bundle.js:34
-Ji @ contentScript.bundle.js:34
-instance @ contentScript.bundle.js:34
-await in instance
-qi @ contentScript.bundle.js:34
-_refresh @ contentScript.bundle.js:34
-init @ contentScript.bundle.js:34
-(anonymous) @ contentScript.bundle.js:36
-await in (anonymous)
-registerEventsListeners @ contentScript.bundle.js:36
-(anonymous) @ contentScript.bundle.js:36
-(anonymous) @ contentScript.bundle.js:36
-(anonymous) @ contentScript.bundle.js:36
-AuthContext.js:123 ✅ User authenticated: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
+[NEW] Explain Console errors by using Copilot in Edge: click
+         
+         to explain an error. 
+        Learn more
+        Don't show again
+LocationContext.js:44 📡 Backend response: {id: 1, name: 'ddd', location: 'dddd', address: 'ddd', is_active: true, …}
+LocationContext.js:60 📍 Restored location: ddd
+LocationContext.js:76 ✅ Location loading complete
+LocationContext.js:26 🔄 LocationContext State Update:
+LocationContext.js:27    - selectedLocation: {id: 1, name: 'ddd', location: 'dddd', address: 'ddd', is_active: true, …}
+LocationContext.js:28    - locations: []
+LocationContext.js:29    - loading: false
+LocationContext.js:30    - updateVersion: 1
+AuthContext.js:123 ✅ User authenticated: {id: 106, username: 'aydain.blackwood', email: 'aydain.blackwood@inboxorigin.com', name: 'aydain.blackwood', role: 'super_user', …}
 AuthContext.js:150 🏢 User companies fetched: [{…}]
 AuthContext.js:153 🔍 Available companies for user: [{…}]
-AuthContext.js:157 🏢 Using user assigned company: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-TopNavbar.js:146 TopNavbar rendering
-TopNavbar.js:150 Current location: /list
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 0, questionsCount: 0, allQuestionsAnswered: false, showChecklist: false, …}
-List.js:65 Fetching profiling questions for company: 6
-AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/profiling-questions/for_company/?company_id=6
+AuthContext.js:157 🏢 Using user assigned company: {id: 58, name: 'aydain.blackwood', emirate: 'dubai', sector: 'hospitality', created_at: '2025-09-10T05:02:44.146140+04:00'}
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/user/permissions/
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/available_months/?year=2025
 AuthContext.js:52 🔑 CSRF token: obtained
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 0, questionsCount: 0, allQuestionsAnswered: false, showChecklist: false, …}
-AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/profiling-questions/for_company/?company_id=6 Status: 200
-List.js:67 Response status: 200 Response ok: true
-List.js:71 Fetched questions from backend: (4) [{…}, {…}, {…}, {…}]
-List.js:72 Questions type: object Length: 4
-List.js:81 Transformed questions: (4) [{…}, {…}, {…}, {…}]
-List.js:122 Fetching existing profile answers for company: 6
-AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/companies/6/profile_answers/
 AuthContext.js:52 🔑 CSRF token: obtained
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 0, questionsCount: 4, allQuestionsAnswered: false, showChecklist: false, …}
-AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/companies/6/profile_answers/ Status: 200
-List.js:127 Loaded profile answers from API: (4) [{…}, {…}, {…}, {…}]
-List.js:135 Setting answers state to: {has_company_vehicles: true, has_backup_generators: true, has_renewable_energy: true, uses_lpg: true}
-List.js:140 Answers found, checking if should show checklist
-List.js:155 🔍 Checking if checklist exists for company: 6
-AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/checklist/?company_id=6
+LocationContext.js:26 🔄 LocationContext State Update:
+LocationContext.js:27    - selectedLocation: {id: 1, name: 'ddd', location: 'dddd', address: 'ddd', is_active: true, …}
+LocationContext.js:28    - locations: (2) [{…}, {…}]
+LocationContext.js:29    - loading: false
+LocationContext.js:30    - updateVersion: 1
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/available_months/?year=2025 Status: 200
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/user/permissions/ Status: 200
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=1&site_id=1
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=2&site_id=1
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=3&site_id=1
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=4&site_id=1
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=5&site_id=1
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=6&site_id=1
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=7&site_id=1
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=8&site_id=1
 AuthContext.js:52 🔑 CSRF token: obtained
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: false, …}
-AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/checklist/?company_id=6 Status: 200
-List.js:160 ✅ Checklist exists check result: true
-AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/companies/6/profile_answers/
 AuthContext.js:52 🔑 CSRF token: obtained
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: false, …}
-AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/companies/6/profile_answers/ Status: 200
-AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/profiling-questions/for_company/?company_id=6
 AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/profiling-questions/for_company/?company_id=6 Status: 200
-List.js:189 Profiling wizard completed
-List.js:155 🔍 Checking if checklist exists for company: 6
-AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/checklist/?company_id=6
 AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/checklist/?company_id=6 Status: 200
-List.js:160 ✅ Checklist exists check result: true
-List.js:192 Checklist exists, showing checklist view
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
-AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/users/
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
 AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/users/ Status: 200
-List.js:509 Available users for assignment: (5) [{…}, {…}, {…}, {…}, {…}]
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
-AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/users/
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
 AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/users/ Status: 200
-List.js:509 Available users for assignment: (5) [{…}, {…}, {…}, {…}, {…}]
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
-AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/users/
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
 AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/users/ Status: 200
-List.js:509 Available users for assignment: (5) [{…}, {…}, {…}, {…}, {…}]
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
-AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/users/
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
 AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/users/ Status: 200
-List.js:509 Available users for assignment: (5) [{…}, {…}, {…}, {…}, {…}]
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
-AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/users/
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
+AuthContext.js:71   GET http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=1&site_id=1 400 (Bad Request)
+makeAuthenticatedRequest @ AuthContext.js:71
+await in makeAuthenticatedRequest
+fetchProgress @ Data.js:201
+(anonymous) @ Data.js:243
+generateMonthsData @ Data.js:232
+loadInitialData @ Data.js:317
+await in loadInitialData
+(anonymous) @ Data.js:416
+commitHookEffectListMount @ react-dom.development.js:23189
+commitPassiveMountOnFiber @ react-dom.development.js:24965
+commitPassiveMountEffects_complete @ react-dom.development.js:24930
+commitPassiveMountEffects_begin @ react-dom.development.js:24917
+commitPassiveMountEffects @ react-dom.development.js:24905
+flushPassiveEffectsImpl @ react-dom.development.js:27078
+flushPassiveEffects @ react-dom.development.js:27023
+(anonymous) @ react-dom.development.js:26808
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=1&site_id=1 Status: 400
+AuthContext.js:71   GET http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=2&site_id=1 400 (Bad Request)
+makeAuthenticatedRequest @ AuthContext.js:71
+await in makeAuthenticatedRequest
+fetchProgress @ Data.js:201
+(anonymous) @ Data.js:243
+generateMonthsData @ Data.js:232
+loadInitialData @ Data.js:317
+await in loadInitialData
+(anonymous) @ Data.js:416
+commitHookEffectListMount @ react-dom.development.js:23189
+commitPassiveMountOnFiber @ react-dom.development.js:24965
+commitPassiveMountEffects_complete @ react-dom.development.js:24930
+commitPassiveMountEffects_begin @ react-dom.development.js:24917
+commitPassiveMountEffects @ react-dom.development.js:24905
+flushPassiveEffectsImpl @ react-dom.development.js:27078
+flushPassiveEffects @ react-dom.development.js:27023
+(anonymous) @ react-dom.development.js:26808
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=2&site_id=1 Status: 400
+AuthContext.js:71   GET http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=3&site_id=1 400 (Bad Request)
+makeAuthenticatedRequest @ AuthContext.js:71
+await in makeAuthenticatedRequest
+fetchProgress @ Data.js:201
+(anonymous) @ Data.js:243
+generateMonthsData @ Data.js:232
+loadInitialData @ Data.js:317
+await in loadInitialData
+(anonymous) @ Data.js:416
+commitHookEffectListMount @ react-dom.development.js:23189
+commitPassiveMountOnFiber @ react-dom.development.js:24965
+commitPassiveMountEffects_complete @ react-dom.development.js:24930
+commitPassiveMountEffects_begin @ react-dom.development.js:24917
+commitPassiveMountEffects @ react-dom.development.js:24905
+flushPassiveEffectsImpl @ react-dom.development.js:27078
+flushPassiveEffects @ react-dom.development.js:27023
+(anonymous) @ react-dom.development.js:26808
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=3&site_id=1 Status: 400
+AuthContext.js:71   GET http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=6&site_id=1 400 (Bad Request)
+makeAuthenticatedRequest @ AuthContext.js:71
+await in makeAuthenticatedRequest
+fetchProgress @ Data.js:201
+(anonymous) @ Data.js:243
+generateMonthsData @ Data.js:232
+loadInitialData @ Data.js:317
+await in loadInitialData
+(anonymous) @ Data.js:416
+commitHookEffectListMount @ react-dom.development.js:23189
+commitPassiveMountOnFiber @ react-dom.development.js:24965
+commitPassiveMountEffects_complete @ react-dom.development.js:24930
+commitPassiveMountEffects_begin @ react-dom.development.js:24917
+commitPassiveMountEffects @ react-dom.development.js:24905
+flushPassiveEffectsImpl @ react-dom.development.js:27078
+flushPassiveEffects @ react-dom.development.js:27023
+(anonymous) @ react-dom.development.js:26808
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=6&site_id=1 Status: 400
+AuthContext.js:71   GET http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=8&site_id=1 400 (Bad Request)
+makeAuthenticatedRequest @ AuthContext.js:71
+await in makeAuthenticatedRequest
+fetchProgress @ Data.js:201
+(anonymous) @ Data.js:243
+generateMonthsData @ Data.js:232
+loadInitialData @ Data.js:317
+await in loadInitialData
+(anonymous) @ Data.js:416
+commitHookEffectListMount @ react-dom.development.js:23189
+commitPassiveMountOnFiber @ react-dom.development.js:24965
+commitPassiveMountEffects_complete @ react-dom.development.js:24930
+commitPassiveMountEffects_begin @ react-dom.development.js:24917
+commitPassiveMountEffects @ react-dom.development.js:24905
+flushPassiveEffectsImpl @ react-dom.development.js:27078
+flushPassiveEffects @ react-dom.development.js:27023
+(anonymous) @ react-dom.development.js:26808
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=8&site_id=1 Status: 400
+AuthContext.js:71   GET http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=4&site_id=1 400 (Bad Request)
+makeAuthenticatedRequest @ AuthContext.js:71
+await in makeAuthenticatedRequest
+fetchProgress @ Data.js:201
+(anonymous) @ Data.js:243
+generateMonthsData @ Data.js:232
+loadInitialData @ Data.js:317
+await in loadInitialData
+(anonymous) @ Data.js:416
+commitHookEffectListMount @ react-dom.development.js:23189
+commitPassiveMountOnFiber @ react-dom.development.js:24965
+commitPassiveMountEffects_complete @ react-dom.development.js:24930
+commitPassiveMountEffects_begin @ react-dom.development.js:24917
+commitPassiveMountEffects @ react-dom.development.js:24905
+flushPassiveEffectsImpl @ react-dom.development.js:27078
+flushPassiveEffects @ react-dom.development.js:27023
+(anonymous) @ react-dom.development.js:26808
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=4&site_id=1 Status: 400
+AuthContext.js:71   GET http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=5&site_id=1 400 (Bad Request)
+makeAuthenticatedRequest @ AuthContext.js:71
+await in makeAuthenticatedRequest
+fetchProgress @ Data.js:201
+(anonymous) @ Data.js:243
+generateMonthsData @ Data.js:232
+loadInitialData @ Data.js:317
+await in loadInitialData
+(anonymous) @ Data.js:416
+commitHookEffectListMount @ react-dom.development.js:23189
+commitPassiveMountOnFiber @ react-dom.development.js:24965
+commitPassiveMountEffects_complete @ react-dom.development.js:24930
+commitPassiveMountEffects_begin @ react-dom.development.js:24917
+commitPassiveMountEffects @ react-dom.development.js:24905
+flushPassiveEffectsImpl @ react-dom.development.js:27078
+flushPassiveEffects @ react-dom.development.js:27023
+(anonymous) @ react-dom.development.js:26808
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=5&site_id=1 Status: 400
+AuthContext.js:71   GET http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=7&site_id=1 400 (Bad Request)
+makeAuthenticatedRequest @ AuthContext.js:71
+await in makeAuthenticatedRequest
+fetchProgress @ Data.js:201
+(anonymous) @ Data.js:243
+generateMonthsData @ Data.js:232
+loadInitialData @ Data.js:317
+await in loadInitialData
+(anonymous) @ Data.js:416
+commitHookEffectListMount @ react-dom.development.js:23189
+commitPassiveMountOnFiber @ react-dom.development.js:24965
+commitPassiveMountEffects_complete @ react-dom.development.js:24930
+commitPassiveMountEffects_begin @ react-dom.development.js:24917
+commitPassiveMountEffects @ react-dom.development.js:24905
+flushPassiveEffectsImpl @ react-dom.development.js:27078
+flushPassiveEffects @ react-dom.development.js:27023
+(anonymous) @ react-dom.development.js:26808
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
+AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&month=7&site_id=1 Status: 400
+AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/data-collection/progress/?company_id=58&year=2025&site_id=1
 AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/users/ Status: 200
-List.js:509 Available users for assignment: (5) [{…}, {…}, {…}, {…}, {…}]
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
-AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/users/
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
-AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/users/ Status: 200
-List.js:509 Available users for assignment: (5) [{…}, {…}, {…}, {…}, {…}]
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
-AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/users/
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
-AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/users/ Status: 200
-List.js:509 Available users for assignment: (5) [{…}, {…}, {…}, {…}, {…}]
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
-AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/users/
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
-AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/users/ Status: 200
-List.js:509 Available users for assignment: (5) [{…}, {…}, {…}, {…}, {…}]
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
-AuthContext.js:46 🔄 Making request to: http://localhost:8080/api/users/
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}
-AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:76 ✅ Request completed: http://localhost:8080/api/users/ Status: 200
-List.js:509 Available users for assignment: (5) [{…}, {…}, {…}, {…}, {…}]
-List.js:34 List component - selectedCompany: {id: 6, name: 'Dubai Luxury Hotel', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-26T10:07:36.142826+04:00'}
-List.js:35 List component - companyId: 6
-List.js:36 List component - user: {id: 10, username: 'super1', email: 'super1@dubai.com', name: 'super1', role: 'super_user', …}
-List.js:382 🔍 Component render state: {companyId: 6, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: true, …}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
+import { useLocationContext } from '../context/LocationContext';
 import { API_BASE_URL } from '../config';
 import Modal from './Modal';
 import Layout from './Layout';
@@ -8,6 +9,7 @@ import Layout from './Layout';
 const List = () => {
   const navigate = useNavigate();
   const { user, selectedCompany, hasPermission } = useAuth();
+  const { selectedLocation, loading: locationLoading } = useLocationContext();
   const [answers, setAnswers] = useState({});
   const [showChecklist, setShowChecklist] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -57,42 +59,79 @@ const List = () => {
     });
   };
 
-  // Fetch profiling questions from backend
+  // Fetch framework elements as questions based on onboarding profile and framework selection
   const fetchProfilingQuestions = async () => {
       if (!companyId) {
-        console.log('No company selected, skipping profiling questions fetch');
+        console.log('No company selected, skipping framework questions fetch');
         return;
       }
-      
+
       try {
-        console.log('Fetching profiling questions for company:', companyId);
-        const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/profiling-questions/for_company/?company_id=${companyId}`);
-        console.log('Response status:', response.status, 'Response ok:', response.ok);
-        
+        console.log('🔍 Fetching framework questions for company:', companyId);
+
+        // Get framework elements that have wizard questions (for conditional logic)
+        const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/framework-elements/wizard_questions/?company_id=${companyId}`);
+        console.log('Framework wizard questions response status:', response.status);
+
         if (response.ok) {
-          const questions = await response.json();
-          console.log('Fetched questions from backend:', questions);
-          console.log('Questions type:', typeof questions, 'Length:', questions.length);
-          
+          const data = await response.json();
+          const questions = data.questions || [];
+          console.log('🎯 Fetched framework wizard questions:', questions);
+
           if (Array.isArray(questions) && questions.length > 0) {
             const transformedQuestions = questions.map(q => ({
-              id: q.question_id,
-              text: q.text,
-              activatesElement: q.activates_element,
-              category: 'Basic Operations'
+              id: q.element_id || q.id,
+              text: q.question,
+              activatesElement: q.element_id,
+              category: 'Framework Assessment',
+              framework_id: q.framework_id,
+              condition_logic: q.condition_logic
             }));
-            console.log('Transformed questions:', transformedQuestions);
+            console.log('🔄 Transformed framework questions:', transformedQuestions);
             setProfilingQuestions(transformedQuestions);
           } else {
-            console.error('Questions array is empty or not an array:', questions);
+            console.log('⚠️ No framework wizard questions found, using default approach');
+            // Fallback: Get framework elements directly and create questions from conditional ones
+            await fetchFrameworkElementsAsQuestions();
           }
         } else {
-          const errorText = await response.text();
-          console.error('Failed to fetch profiling questions. Status:', response.status, 'Error:', errorText);
+          console.error('Failed to fetch framework wizard questions. Status:', response.status);
+          await fetchFrameworkElementsAsQuestions();
         }
       } catch (error) {
-        console.error('Error fetching profiling questions:', error);
+        console.error('Error fetching framework questions:', error);
+        await fetchFrameworkElementsAsQuestions();
       }
+  };
+
+  // Fallback: Convert conditional framework elements to questions
+  const fetchFrameworkElementsAsQuestions = async () => {
+    try {
+      console.log('🔄 Fetching framework elements for conversion to questions');
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/framework-elements/?type=conditional`);
+
+      if (response.ok) {
+        const elements = await response.json();
+        console.log('📋 Fetched conditional elements:', elements);
+
+        const questions = elements
+          .filter(el => el.wizard_question || el.condition_logic)
+          .map(el => ({
+            id: el.element_id,
+            text: el.wizard_question || `Do you need to report: ${el.name_plain}?`,
+            activatesElement: el.element_id,
+            category: 'Framework Assessment',
+            framework_id: el.framework_id,
+            condition_logic: el.condition_logic
+          }));
+
+        console.log('🔄 Generated questions from elements:', questions);
+        setProfilingQuestions(questions);
+      }
+    } catch (error) {
+      console.error('Error fetching framework elements as questions:', error);
+      setProfilingQuestions([]);
+    }
   };
 
   // Fetch available users for assignment
@@ -209,25 +248,55 @@ const List = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      // Wait for LocationContext to finish loading
+      if (locationLoading) {
+        console.log('⏳ Waiting for LocationContext to load...');
+        return;
+      }
+      
+      console.log('🔄 Starting data fetch for location:', selectedLocation?.name, 'ID:', selectedLocation?.id);
       setLoading(true);
-      // Reset state to ensure clean load (but keep checklistExists to prevent flickering)
+      
+      // Reset ALL state to ensure clean load for each location
       setAnswers({});
       setShowChecklist(false);
       setProfilingQuestions([]);
-      // Don't reset checklistExists here to prevent flickering
+      setChecklistExists(false);
+      setBackendChecklist([]);
+      setAssignments({ category_assignments: {}, element_assignments: {} });
       
-      // Fetch profiling questions and existing answers
+      // Fetch data in sequence for the new location
       await fetchProfilingQuestions();
+      await fetchFrameworkElements();
       await fetchExistingAnswers();
-      await checkChecklistExists();
+      const checklistLoaded = await checkChecklistExists();
       await checkWizardCompletion();
+      
+      console.log('✅ Data fetch complete for location:', selectedLocation?.name);
+      console.log('   - Checklist exists:', checklistLoaded);
+      console.log('   - Backend checklist items:', backendChecklist.length);
+      
       setLoading(false);
     };
     
-    if (companyId) {
-      fetchData();
+    // Include locationLoading in dependencies
+    if (companyId && !locationLoading) {
+      if (selectedLocation) {
+        console.log(`📍 Location set: ${selectedLocation.name} (ID: ${selectedLocation.id})`);
+        fetchData();
+      } else {
+        console.log('⚠️ No location selected after loading complete');
+        setLoading(false);
+        // Clear all data
+        setAnswers({});
+        setShowChecklist(false);
+        setProfilingQuestions([]);
+        setChecklistExists(false);
+        setBackendChecklist([]);
+        setAssignments({ category_assignments: {}, element_assignments: {} });
+      }
     }
-  }, [companyId]); // Re-run when companyId changes
+  }, [companyId, selectedLocation?.id, locationLoading]); // Add locationLoading to dependencies
 
   // Fetch assignments when checklist is shown
   useEffect(() => {
@@ -242,7 +311,15 @@ const List = () => {
     
     try {
       console.log('Fetching existing profile answers for company:', companyId);
-      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/profile_answers/`);
+      let url = `${API_BASE_URL}/api/companies/${companyId}/profile_answers/`;
+      if (selectedLocation?.id && selectedLocation.id !== 'all') {
+        url += `?site_id=${selectedLocation.id}`;
+        console.log(`📍 Fetching answers for location: ${selectedLocation.name}`);
+      } else if (selectedLocation?.id === 'all') {
+        console.log(`🌐 Fetching aggregated answers for all locations`);
+        // For "All Locations", don't add site_id to get aggregated data
+      }
+      const response = await makeAuthenticatedRequest(url);
       
       if (response.ok) {
         const answersData = await response.json();
@@ -270,55 +347,100 @@ const List = () => {
   };
 
   // Check if checklist exists and fetch it
-  const checkChecklistExists = async () => {
-    if (!companyId) return false;
+// Replace the checkChecklistExists function around line 190 with this:
+
+const checkChecklistExists = async () => {
+  if (!companyId) return false;
+  
+  try {
+    console.log('🔍 Checking if checklist exists for company:', companyId);
+    const timestamp = new Date().getTime();
+    let checklistUrl = `${API_BASE_URL}/api/checklist/?company_id=${companyId}&t=${timestamp}`;
     
-    try {
-      console.log('🔍 Checking if checklist exists for company:', companyId);
-      // Add timestamp to force cache bypass
-      const timestamp = new Date().getTime();
-      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/checklist/?company_id=${companyId}&t=${timestamp}`);
-      if (response.ok) {
-        const checklistData = await response.json();
-        const exists = checklistData.results && checklistData.results.length > 0;
-        console.log('✅ Checklist exists check result:', exists);
-        setChecklistExists(exists);
+    if (selectedLocation?.id && selectedLocation.id !== 'all') {
+      checklistUrl += `&site_id=${selectedLocation.id}`;
+      console.log(`🏢 Checking checklist for location: ${selectedLocation.name}`);
+    } else if (selectedLocation?.id === 'all') {
+      console.log(`🌍 Checking aggregated checklist for all locations`);
+      // Don't add site_id for All Locations view
+    }
+    
+    const response = await makeAuthenticatedRequest(checklistUrl);
+    if (response.ok) {
+      const checklistData = await response.json();
+      console.log('📋 Raw checklist response:', checklistData);
+      
+      const exists = checklistData.results && checklistData.results.length > 0;
+      console.log('✅ Checklist exists check result:', exists);
+      setChecklistExists(exists);
+      
+      if (exists) {
+        // Transform the checklist data properly
+        const transformedChecklist = checklistData.results.map(item => ({
+          id: item.id,
+          name: item.element_name,
+          description: item.element_description,
+          unit: item.element_unit,
+          cadence: item.cadence,
+          frameworks: item.frameworks_list,
+          category: item.category === 'E' ? 'Environmental' :
+                   item.category === 'S' ? 'Social' :
+                   item.category === 'G' ? 'Governance' :
+                   (item.is_metered ? 'Environmental' : 'Social'),
+          isMetered: item.is_metered,
+          // IMPORTANT: Include location data from aggregation
+          locations: item.locations || [],
+          location_count: item.location_count || 0,
+          location_type: item.location_type || 'unknown'
+        }));
         
-        // Store the backend checklist with proper IDs
-        if (exists) {
-          const transformedChecklist = checklistData.results.map(item => ({
-            id: item.id,  // This is the actual database ID we need for assignments
-            name: item.element_name,
-            description: item.element_description,
-            unit: item.element_unit,
-            cadence: item.cadence,
-            frameworks: item.frameworks_list,
-            category: item.category || (item.is_metered ? 'Environmental' : 'Social'),
-            isMetered: item.is_metered
-          }));
-          setBackendChecklist(transformedChecklist);
-          console.log('✅ Loaded backend checklist with', transformedChecklist.length, 'items:', transformedChecklist);
+        setBackendChecklist(transformedChecklist);
+        
+        // Debug output for All Locations
+        if (selectedLocation?.id === 'all') {
+          console.log('🌍 All Locations Aggregation:', {
+            totalElements: transformedChecklist.length,
+            aggregationStats: checklistData.aggregation_stats,
+            elements: transformedChecklist.map(item => ({
+              name: item.name,
+              type: item.location_type,
+              count: item.location_count,
+              sites: item.locations?.map(l => l.name).join(', ')
+            }))
+          });
         }
         
-        return exists;
-      } else {
-        console.log('❌ Failed to check checklist:', response.status);
-        setChecklistExists(false);
+        console.log('✅ Loaded backend checklist with', transformedChecklist.length, 'items');
       }
-    } catch (error) {
-      console.error('❌ Error checking checklist existence:', error);
+      
+      return exists;
+    } else {
+      console.log('❌ Failed to check checklist:', response.status);
       setChecklistExists(false);
     }
-    return false;
-  };
+  } catch (error) {
+    console.error('❌ Error checking checklist existence:', error);
+    setChecklistExists(false);
+  }
+  return false;
+};
 
   // Check if wizard has been completed
   const checkWizardCompletion = async () => {
-    if (!companyId) return;
+    if (!companyId || !selectedLocation) return;
     
     try {
+      console.log(`🔍 Checking wizard completion for location: ${selectedLocation.name}`);
+      
       // Check if company has answered all questions (wizard completed)
-      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/profile_answers/`);
+      let answersUrl = `${API_BASE_URL}/api/companies/${companyId}/profile_answers/`;
+      if (selectedLocation?.id && selectedLocation.id !== 'all') {
+        answersUrl += `?site_id=${selectedLocation.id}`;
+      } else if (selectedLocation?.id === 'all') {
+        console.log(`🌐 Checking wizard completion for all locations`);
+        // For "All Locations", don't add site_id to get aggregated data
+      }
+      const response = await makeAuthenticatedRequest(answersUrl);
       if (response.ok) {
         const answersData = await response.json();
         const questionsResponse = await makeAuthenticatedRequest(`${API_BASE_URL}/api/profiling-questions/for_company/?company_id=${companyId}`);
@@ -327,12 +449,15 @@ const List = () => {
           
           // If all questions are answered, check if checklist exists
           if (answersData.length > 0 && answersData.length >= questionsData.length) {
-            console.log('Profiling wizard completed');
-            const checklistExists = await checkChecklistExists();
+            console.log(`✅ Profiling wizard completed for ${selectedLocation.name}`);
+            // Don't re-check checklist exists here, we already did it in the main flow
             if (checklistExists) {
-              console.log('Checklist exists, showing checklist view');
+              console.log(`📋 Showing checklist view for ${selectedLocation.name}`);
               setShowChecklist(true);
             }
+          } else {
+            console.log(`⏳ Wizard not completed for ${selectedLocation.name}: ${answersData.length}/${questionsData.length} questions answered`);
+            setShowChecklist(false);
           }
         }
       }
@@ -341,41 +466,40 @@ const List = () => {
     }
   };
 
-  // Must-have data elements (always required)
-  const mustHaveElements = [
-    { id: 'electricity', name: 'Electricity Consumption', description: 'Total electricity from local providers', unit: 'kWh', cadence: 'Monthly', frameworks: ['DST', 'ESG', 'Green Key'], category: 'Environmental', is_metered: true, meter_type: 'Electricity' },
-    { id: 'water', name: 'Water Consumption', description: 'Total water usage', unit: 'm³', cadence: 'Monthly', frameworks: ['DST', 'ESG', 'Green Key'], category: 'Environmental', is_metered: true, meter_type: 'Water' },
-    { id: 'waste_landfill', name: 'Waste to Landfill', description: 'Non-recycled waste disposal', unit: 'kg', cadence: 'Monthly', frameworks: ['DST', 'ESG', 'Green Key'], category: 'Environmental', is_metered: true, meter_type: 'Waste' },
-    { id: 'sustainability_policy', name: 'Sustainability Policy', description: 'Written sustainability policy', unit: 'Document', cadence: 'Annually', frameworks: ['DST', 'Green Key', 'ESG'], category: 'Social', is_metered: false },
-    { id: 'sustainability_personnel', name: 'Sustainability Personnel', description: 'Certified sustainability staff', unit: 'Count', cadence: 'Annually', frameworks: ['DST', 'Green Key'], category: 'Social', is_metered: false },
-    { id: 'employee_training', name: 'Employee Training Hours', description: 'Sustainability training per employee', unit: 'Hours', cadence: 'Annually', frameworks: ['DST', 'Green Key', 'ESG'], category: 'Social', is_metered: false },
-    { id: 'guest_education', name: 'Guest Education', description: 'Guest sustainability initiatives', unit: 'Count', cadence: 'Quarterly', frameworks: ['DST', 'Green Key'], category: 'Social', is_metered: false },
-    { id: 'community_initiatives', name: 'Community Initiatives', description: 'Local community programs', unit: 'Count, AED', cadence: 'Annually', frameworks: ['DST', 'Green Key', 'ESG'], category: 'Social', is_metered: false },
-    { id: 'government_compliance', name: 'Government Compliance', description: 'Energy regulation compliance', unit: 'Status', cadence: 'Annually', frameworks: ['DST', 'ESG'], category: 'Governance', is_metered: false },
-    { id: 'action_plan', name: 'Action Plan', description: 'Annual sustainability objectives', unit: 'Document', cadence: 'Annually', frameworks: ['DST', 'Green Key', 'ESG'], category: 'Governance', is_metered: false },
-    { id: 'carbon_footprint', name: 'Carbon Footprint', description: 'Total GHG emissions', unit: 'tonnes CO2e', cadence: 'Annually', frameworks: ['ESG', 'DST'], category: 'Environmental', is_metered: false },
-    { id: 'health_safety', name: 'Health & Safety Incidents', description: 'Workplace incidents', unit: 'Count', cadence: 'Monthly', frameworks: ['ESG'], category: 'Social', is_metered: false },
-    { id: 'anti_corruption', name: 'Anti-corruption Policies', description: 'Anti-corruption measures', unit: 'Status', cadence: 'Annually', frameworks: ['ESG'], category: 'Governance', is_metered: false },
-    { id: 'risk_management', name: 'Risk Management', description: 'ESG risk framework', unit: 'Status', cadence: 'Annually', frameworks: ['ESG'], category: 'Governance', is_metered: false }
-  ];
+  // State for framework elements
+  const [frameworkElements, setFrameworkElements] = useState([]);
+  const [frameworkQuestionAnswers, setFrameworkQuestionAnswers] = useState({});
 
-  // Conditional data elements (activated by "Yes" answers)
-  const conditionalElements = {
-    'generator_fuel': { id: 'generator_fuel', name: 'Generator Fuel', description: 'Fuel for backup generators', unit: 'liters', cadence: 'Monthly', frameworks: ['DST', 'ESG'], category: 'Environmental', is_metered: true, meter_type: 'Generator' },
-    'vehicle_fuel': { id: 'vehicle_fuel', name: 'Vehicle Fuel', description: 'Company vehicle fuel', unit: 'liters', cadence: 'Monthly', frameworks: ['DST', 'ESG'], category: 'Environmental', is_metered: true, meter_type: 'Vehicle' },
-    'lpg_consumption': { id: 'lpg_consumption', name: 'LPG Usage', description: 'Liquid petroleum gas consumption', unit: 'kg', cadence: 'Monthly', frameworks: ['DST', 'ESG'], category: 'Environmental', is_metered: true, meter_type: 'LPG' },
-    'green_events': { id: 'green_events', name: 'Green Events', description: 'Sustainable event services', unit: 'Count', cadence: 'Quarterly', frameworks: ['DST', 'Green Key'], category: 'Social', is_metered: false },
-    'food_sourcing': { id: 'food_sourcing', name: 'Food Sourcing', description: 'Local/organic food purchases', unit: '%', cadence: 'Quarterly', frameworks: ['Green Key', 'ESG'], category: 'Environmental', is_metered: false },
-    'green_spaces': { id: 'green_spaces', name: 'Green Spaces', description: 'Sustainable landscaping', unit: 'm²', cadence: 'Annually', frameworks: ['Green Key'], category: 'Environmental', is_metered: false },
-    'renewable_energy_usage': { id: 'renewable_energy_usage', name: 'Renewable Energy', description: 'Energy from renewable sources', unit: '%', cadence: 'Quarterly', frameworks: ['Green Key', 'ESG'], category: 'Environmental', is_metered: true, meter_type: 'Renewable Energy' },
-    'environmental_management_system': { id: 'environmental_management_system', name: 'Environmental Management System', description: 'EMS certification', unit: 'Status', cadence: 'Annually', frameworks: ['Green Key', 'ESG'], category: 'Governance', is_metered: false },
-    'board_composition': { id: 'board_composition', name: 'Board Composition', description: 'Board diversity metrics', unit: '%', cadence: 'Annually', frameworks: ['ESG'], category: 'Governance', is_metered: false }
+  // Fetch framework elements for checklist generation
+  const fetchFrameworkElements = async () => {
+    if (!companyId) return;
+
+    try {
+      console.log('🔍 Fetching framework elements for company:', companyId);
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/framework-elements/for_company/?company_id=${companyId}`);
+
+      if (response.ok) {
+        const elements = await response.json();
+        console.log('📋 Fetched framework elements:', elements);
+        setFrameworkElements(elements || []);
+      } else {
+        console.error('Failed to fetch framework elements:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching framework elements:', error);
+    }
   };
 
   const handleAnswerChange = async (questionId, answer) => {
     // Check if user has edit permission
     if (!hasPermission('frameworkSelection', 'update')) {
       showModal('warning', 'Permission Denied', 'You do not have permission to edit profiling answers. This is view-only mode.');
+      return;
+    }
+
+    // Check if "All Locations" is selected
+    if (selectedLocation?.id === 'all') {
+      showModal('warning', 'Location Required', 'Please select a specific location to edit profile answers. The "All Locations" view is for viewing aggregated data only.');
       return;
     }
 
@@ -388,12 +512,16 @@ const List = () => {
     // Save to database
     try {
       console.log('Saving profiling answer to database:', questionId, answer);
+      const requestBody = {
+        question: questionId,
+        answer: answer
+      };
+      if (selectedLocation?.id && selectedLocation.id !== 'all') {
+        requestBody.site_id = selectedLocation.id;
+      }
       const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/save_profile_answer/`, {
         method: 'POST',
-        body: JSON.stringify({
-          question: questionId,
-          answer: answer
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (response.ok) {
@@ -420,40 +548,64 @@ const List = () => {
       return;
     }
 
+    // Check if "All Locations" is selected
+    if (selectedLocation?.id === 'all') {
+      showModal('warning', 'Location Required', 'Please select a specific location to edit profile answers. The "All Locations" view is for viewing aggregated data only.');
+      return;
+    }
+
     const allAnswers = {};
     profilingQuestions.forEach(question => {
       allAnswers[question.id] = answer;
     });
     setAnswers(allAnswers);
-    
-    // Save all answers to database
+
+    // Use the bulk save endpoint that also generates checklist
     try {
-      console.log('Saving all profiling answers to database:', answer);
-      const promises = profilingQuestions.map(question => 
-        makeAuthenticatedRequest(`${API_BASE_URL}/api/companies/${companyId}/save_profile_answer/`, {
-          method: 'POST',
-          body: JSON.stringify({
-            question: question.id,
-            answer: answer
-          })
-        })
-      );
-      
-      const responses = await Promise.all(promises);
-      const allSuccessful = responses.every(response => response.ok);
-      
-      if (allSuccessful) {
-        console.log('All answers saved successfully');
+      console.log('Saving all profiling answers using bulk endpoint:', answer);
+
+      // Transform answers to backend format (same as saveAnswersAndGenerateChecklist)
+      const backendAnswers = profilingQuestions.map(question => ({
+        question_id: question.id,
+        answer: answer === true
+      }));
+
+      const requestBody = {
+        company_id: companyId,
+        answers: backendAnswers
+      };
+
+      if (selectedLocation?.id && selectedLocation.id !== 'all') {
+        requestBody.site_id = selectedLocation.id;
+      }
+
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/profiling-questions/save_answers/`, {
+        method: 'POST',
+        body: JSON.stringify(requestBody)
+      });
+
+      if (response.ok) {
+        console.log('All answers saved successfully via bulk endpoint');
+
+        // Check if checklist was generated and update state
+        const checklistExists = await checkChecklistExists();
+        if (checklistExists) {
+          setChecklistExists(true);
+          setShowChecklist(true);
+        }
       } else {
-        console.error('Some answers failed to save');
-        // Check for 403 errors
-        const hasForbidden = responses.some(r => r.status === 403);
-        if (hasForbidden) {
+        console.error('Failed to save answers via bulk endpoint. Status:', response.status);
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        if (response.status === 403) {
           showModal('error', 'Permission Denied', 'You can only view profiling answers.');
+        } else {
+          showModal('error', 'Save Failed', 'Failed to save answers. Please try again.');
         }
       }
     } catch (error) {
-      console.error('Error saving all answers to database:', error);
+      console.error('Error saving all answers via bulk endpoint:', error);
+      showModal('error', 'Save Failed', 'Failed to save answers. Please try again.');
     }
   };
 
@@ -490,19 +642,36 @@ const List = () => {
       console.log('Sending answers to backend:', backendAnswers);
 
       // Save answers to backend
+      const requestBody = {
+        company_id: companyId,
+        answers: backendAnswers
+      };
+      
+      if (selectedLocation?.id && selectedLocation.id !== 'all') {
+        requestBody.site_id = selectedLocation.id;
+        console.log(`🏢 Saving profile answers for location: ${selectedLocation.name}`);
+      } else if (selectedLocation?.id === 'all') {
+        console.log(`🌐 Cannot save answers for All Locations view - please select a specific location`);
+        showModal('warning', 'Location Required', 'Please select a specific location to save profile answers. The "All Locations" view is for viewing aggregated data only.');
+        return false;
+      }
+      
       const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/profiling-questions/save_answers/`, {
         method: 'POST',
-        body: JSON.stringify({
-          company_id: companyId,
-          answers: backendAnswers
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (response.ok) {
         // Fetch the generated checklist
-        const checklistResponse = await makeAuthenticatedRequest(`${API_BASE_URL}/api/checklist/?company_id=${companyId}`);
+        let checklistUrl = `${API_BASE_URL}/api/checklist/?company_id=${companyId}`;
+        if (selectedLocation?.id && selectedLocation.id !== 'all') {
+          checklistUrl += `&site_id=${selectedLocation.id}`;
+        }
+        const checklistResponse = await makeAuthenticatedRequest(checklistUrl);
         if (checklistResponse.ok) {
           const checklistData = await checklistResponse.json();
+          console.log('🔍 Raw checklist response for All Locations debug:', checklistData);
+          console.log('🔍 Sample checklist item:', checklistData.results?.[0]);
           
           // Transform backend checklist to frontend format for display
           const transformedChecklist = checklistData.results.map(item => ({
@@ -512,9 +681,18 @@ const List = () => {
             unit: item.element_unit,
             cadence: item.cadence,
             frameworks: item.frameworks_list,
-            category: item.category || (item.is_metered ? 'Environmental' : 'Social'),
-            isMetered: item.is_metered
+            category: item.category === 'E' ? 'Environmental' :
+                     item.category === 'S' ? 'Social' :
+                     item.category === 'G' ? 'Governance' :
+                     (item.is_metered ? 'Environmental' : 'Social'),
+            isMetered: item.is_metered,
+            // Add location data for All Locations view
+            locations: item.locations || [],
+            location_count: item.location_count || 0,
+            location_type: item.location_type || 'unknown'
           }));
+          
+          console.log('🔍 Transformed checklist with location data:', transformedChecklist[0]);
           
           // Store in state for use in assignments
           setBackendChecklist(transformedChecklist);
@@ -535,25 +713,31 @@ const List = () => {
   };
 
   const generateChecklist = () => {
-    if (!allQuestionsAnswered) return [];
-    
-    // Start with must-have elements
-    const checklist = [...mustHaveElements];
-    
-    // Add conditional elements based on "Yes" answers
-    profilingQuestions.forEach(question => {
-      if (answers[question.id] === true && conditionalElements[question.activatesElement]) {
-        checklist.push(conditionalElements[question.activatesElement]);
-      }
-    });
-    
+    if (!allQuestionsAnswered || frameworkElements.length === 0) return [];
+
+    // Start with all framework elements
+    const checklist = frameworkElements.map(element => ({
+      id: element.element_id || element.id,
+      name: element.name_plain || element.name,
+      description: element.description,
+      unit: element.unit,
+      cadence: element.cadence,
+      frameworks: [element.framework_id],
+      category: element.category === 'E' ? 'Environmental' :
+                element.category === 'S' ? 'Social' :
+                element.category === 'G' ? 'Governance' : 'Environmental',
+      isMetered: element.metered,
+      meter_type: element.meter_type
+    }));
+
     // Sort by category
     return checklist.sort((a, b) => a.category.localeCompare(b.category));
   };
 
   // IMPORTANT: Use backend checklist if available for proper IDs
   // Only use generateChecklist() for display when backend data isn't loaded yet
-  const localChecklist = generateChecklist() || [];
+  // Exception: For "All Locations" view, always wait for backend data (no local fallback)
+  const localChecklist = selectedLocation?.id === 'all' ? [] : (generateChecklist() || []);
   const finalChecklist = backendChecklist.length > 0 ? backendChecklist : localChecklist;
   const canAssign = backendChecklist.length > 0; // Only allow assignment when backend data is loaded
   
@@ -583,7 +767,8 @@ const List = () => {
     navigate('/meter');
   };
 
-  if (showChecklist && allQuestionsAnswered) {
+  // Only show checklist if we have data and a selected location, OR if All Locations is selected
+  if ((showChecklist && allQuestionsAnswered && selectedLocation) || (selectedLocation?.id === 'all')) {
     return (
       <div className="max-w-6xl mx-auto px-4">
         {/* Checklist Header */}
@@ -593,8 +778,22 @@ const List = () => {
               <i className="fas fa-check-circle text-green-600"></i>
             </div>
             <div>
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Personalized Data Checklist</h2>
-              <p className="text-sm sm:text-base text-gray-600">Your customized data requirements based on your responses</p>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+                Personalized Data Checklist
+              </h2>
+              <p className="text-sm sm:text-base text-gray-600">
+                {selectedLocation?.id === 'all' ? (
+                  <span>
+                    View: <strong className="text-purple-600">All Locations Combined</strong> | 
+                    Showing aggregated data from all sites
+                  </span>
+                ) : (
+                  <span>
+                    Location: <strong className="text-purple-600">{selectedLocation?.name}</strong> | 
+                    Site ID: <strong>{selectedLocation?.id}</strong>
+                  </span>
+                )}
+              </p>
             </div>
           </div>
           
@@ -643,7 +842,7 @@ const List = () => {
                       </p>
                     )}
                   </div>
-                  {hasPermission('elementAssignment', 'create') && canAssign && (
+                  {hasPermission('elementAssignment', 'create') && canAssign && selectedLocation?.id !== 'all' && (
                     <button
                       onClick={() => {
                         setSelectedCategory(category);
@@ -716,6 +915,41 @@ const List = () => {
                                 ))}
                               </div>
                             </div>
+                            
+                            {/* Location indicators for All Locations view */}
+                            {selectedLocation?.id === 'all' && item.locations && (
+                              <div className="flex items-center space-x-2 bg-gray-100 px-2 sm:px-3 py-1 sm:py-2 rounded-lg">
+                                <i className="fas fa-map-marker-alt text-gray-600"></i>
+                                <span>Locations:</span>
+                                <div className="flex flex-wrap items-center gap-1">
+                                  {item.location_type === 'shared' && (
+                                    <>
+                                      <span className="px-1 sm:px-2 py-0.5 sm:py-1 rounded text-xs font-bold bg-blue-200 text-blue-900">
+                                        <i className="fas fa-users mr-1"></i>
+                                        Shared ({item.location_count} sites)
+                                      </span>
+                                      {/* Show site names */}
+                                      {item.locations.map((location, idx) => (
+                                        <span key={idx} className="px-1 sm:px-2 py-0.5 sm:py-1 rounded text-xs bg-gray-200 text-gray-700">
+                                          {location.name}
+                                        </span>
+                                      ))}
+                                    </>
+                                  )}
+                                  {item.location_type === 'unique' && item.locations[0] && (
+                                    <span className="px-1 sm:px-2 py-0.5 sm:py-1 rounded text-xs font-bold bg-amber-200 text-amber-900">
+                                      <i className="fas fa-star mr-1"></i>
+                                      Unique to {item.locations[0].name}
+                                    </span>
+                                  )}
+                                  {item.location_type === 'none' && (
+                                    <span className="px-1 sm:px-2 py-0.5 sm:py-1 rounded text-xs bg-gray-200 text-gray-500">
+                                      No site assigned
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                         
@@ -731,7 +965,7 @@ const List = () => {
                             <p className="text-xs sm:text-sm text-gray-400 mb-2">Unassigned</p>
                           )}
                           
-                          {hasPermission('elementAssignment', 'create') && canAssign && (
+                          {hasPermission('elementAssignment', 'create') && canAssign && selectedLocation?.id !== 'all' && (
                             <button
                               onClick={() => {
                                 console.log('Assigning item:', item);
@@ -758,16 +992,20 @@ const List = () => {
 
         {/* Action Footer */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200 gap-3">
-          <button 
-            className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
-            onClick={async () => {
-              setShowChecklist(false);
-              await checkChecklistExists();
-            }}
-          >
-            <i className="fas fa-arrow-left mr-2"></i>Back to Questions
-          </button>
-          <button 
+          {selectedLocation?.id !== 'all' ? (
+            <button
+              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+              onClick={async () => {
+                setShowChecklist(false);
+                await checkChecklistExists();
+              }}
+            >
+              <i className="fas fa-arrow-left mr-2"></i>Back to Questions
+            </button>
+          ) : (
+            <div></div>
+          )}
+          <button
             className="w-full sm:w-auto px-6 sm:px-8 py-2 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg font-medium"
             onClick={handleContinue}
           >
@@ -849,12 +1087,45 @@ const List = () => {
     );
   }
 
+  // Show loading while LocationContext is initializing
+  if (locationLoading) {
+    return (
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-3 text-sm sm:text-base text-gray-600">Loading location data...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while component is fetching data
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           <span className="ml-3 text-sm sm:text-base text-gray-600">Loading profiling questions...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if location is selected ONLY AFTER LocationContext has loaded
+  if (!locationLoading && !selectedLocation) {
+    return (
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
+          <i className="fas fa-map-marker-alt text-4xl text-yellow-600 mb-4"></i>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">No Location Selected</h2>
+          <p className="text-gray-600 mb-4">Please select a location to view profiling questions.</p>
+          <button 
+            onClick={() => navigate('/location')}
+            className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium"
+          >
+            <i className="fas fa-arrow-left mr-2"></i>
+            Go to Location Selection
+          </button>
         </div>
       </div>
     );
@@ -910,7 +1181,7 @@ const List = () => {
               </span>
             )}
           </div>
-          {hasPermission('frameworkSelection', 'update') && (
+          {hasPermission('frameworkSelection', 'update') && selectedLocation?.id !== 'all' && (
             <div className="flex space-x-2 sm:space-x-3">
               <button 
                 className="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-xs sm:text-sm font-medium"
@@ -939,8 +1210,8 @@ const List = () => {
         </div>
       </div>
 
-      {/* Questions by Category */}
-      {['Basic Operations'].map(category => (
+      {/* Questions by Category - Hide for All Locations */}
+      {selectedLocation?.id !== 'all' && ['Framework Assessment'].map(category => (
         <div key={category} className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
           <div className="p-4 sm:p-6 border-b border-gray-200">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900">{category}</h3>
@@ -952,21 +1223,33 @@ const List = () => {
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div className="flex-1">
                     <p className="font-medium text-sm sm:text-base text-gray-900 mb-2">{question.text}</p>
-                    <p className="text-xs sm:text-sm text-gray-500">
-                      This will activate: <span className="font-medium">{conditionalElements[question.activatesElement]?.name || question.activatesElement}</span>
-                    </p>
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      {question.framework_id && (
+                        <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">
+                          {question.framework_id}
+                        </span>
+                      )}
+                      <span className="text-xs text-gray-500">
+                        Element ID: {question.activatesElement}
+                      </span>
+                    </div>
+                    {question.condition_logic && (
+                      <p className="text-xs text-gray-400 italic">
+                        Logic: {question.condition_logic}
+                      </p>
+                    )}
                   </div>
                   <div className="flex space-x-2 sm:space-x-3">
                     <button
                       className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-xs sm:text-sm transition-colors ${
                         answers[question.id] === false
                           ? 'bg-red-100 text-red-700 border-2 border-red-300'
-                          : !hasPermission('frameworkSelection', 'update')
+                          : (!hasPermission('frameworkSelection', 'update') || selectedLocation?.id === 'all')
                           ? 'bg-gray-200 text-gray-500 border border-gray-300 cursor-not-allowed'
                           : 'bg-gray-100 text-gray-600 border border-gray-300 hover:bg-red-50'
                       }`}
                       onClick={() => handleAnswerChange(question.id, false)}
-                      disabled={!hasPermission('frameworkSelection', 'update')}
+                      disabled={!hasPermission('frameworkSelection', 'update') || selectedLocation?.id === 'all'}
                     >
                       No
                     </button>
@@ -974,12 +1257,12 @@ const List = () => {
                       className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-xs sm:text-sm transition-colors ${
                         answers[question.id] === true
                           ? 'bg-green-100 text-green-700 border-2 border-green-300'
-                          : !hasPermission('frameworkSelection', 'update')
+                          : (!hasPermission('frameworkSelection', 'update') || selectedLocation?.id === 'all')
                           ? 'bg-gray-200 text-gray-500 border border-gray-300 cursor-not-allowed'
                           : 'bg-gray-100 text-gray-600 border border-gray-300 hover:bg-green-50'
                       }`}
                       onClick={() => handleAnswerChange(question.id, true)}
-                      disabled={!hasPermission('frameworkSelection', 'update')}
+                      disabled={!hasPermission('frameworkSelection', 'update') || selectedLocation?.id === 'all'}
                     >
                       Yes
                     </button>
@@ -992,7 +1275,7 @@ const List = () => {
       ))}
 
       {/* Generate/View Checklist Button */}
-      {allQuestionsAnswered && hasPermission('frameworkSelection', 'update') && !checklistExists && (
+      {allQuestionsAnswered && hasPermission('frameworkSelection', 'update') && !checklistExists && selectedLocation?.id !== 'all' && (
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
@@ -1021,6 +1304,23 @@ const List = () => {
                 </>
               )}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* All Locations Notice */}
+      {selectedLocation?.id === 'all' && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <i className="fas fa-globe text-blue-600"></i>
+            </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-semibold text-blue-900">All Locations View</h3>
+              <p className="text-sm sm:text-base text-blue-700">
+                You're viewing aggregated data from all locations. To edit profile answers or generate checklists, please select a specific location.
+              </p>
+            </div>
           </div>
         </div>
       )}
@@ -1055,13 +1355,18 @@ const List = () => {
         </div>
       )}
 
-      {/* Checklist Ready Button */}
+      {/* Checklist Ready Button - Only show if user has update permissions (blue section handles read-only case) */}
       {allQuestionsAnswered && checklistExists && !showChecklist && hasPermission('frameworkSelection', 'update') && (
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h3 className="text-base sm:text-lg font-semibold text-green-900">✅ Checklist Ready!</h3>
-              <p className="text-sm sm:text-base text-green-700">Your personalized data checklist has been created and is ready to view.</p>
+              <p className="text-sm sm:text-base text-green-700">
+                {selectedLocation?.id === 'all' 
+                  ? 'Viewing aggregated checklists from all locations.'
+                  : 'Your personalized data checklist has been created and is ready to view.'
+                }
+              </p>
             </div>
             <button
               className="px-4 sm:px-6 py-2 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm sm:text-base"

@@ -1,0 +1,2266 @@
+[
+  {
+    "master_id": "HOSP-E-001",
+    "category": "E",
+    "name_plain": "Electricity Consumption",
+    "description": "Total purchased electricity from the local grid (utility)",
+    "unit": "kWh",
+    "cadence": "monthly",
+    "type": "must-have",
+    "prompt": "Enter the total electricity consumed (in kWh) each month from your utility provider.",
+    "applicability": [
+      "Mandatory - All UAE Hospitality",
+      "Mandatory - Dubai Hotels",
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Merged",
+      "conflict_log": [
+        "Type: No conflict. All sources must-have.",
+        "Cadence: No conflict. All sources monthly.",
+        "Unit: No conflict. All sources kWh."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-E-002"
+        },
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-E-Carbon-Calculator-001"
+        },
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-E-007"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-002",
+    "category": "E",
+    "name_plain": "Water Consumption",
+    "description": "Total water usage from municipal supply (or other sources) in operations",
+    "unit": "m³",
+    "cadence": "monthly",
+    "type": "must-have",
+    "prompt": "Enter the total water consumed (in cubic meters) each month.",
+    "applicability": [
+      "Mandatory - All UAE Hospitality",
+      "Mandatory - Dubai Hotels",
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Merged",
+      "conflict_log": [
+        "Type: No conflict. All sources must-have.",
+        "Cadence: No conflict. All sources monthly.",
+        "Unit: No conflict. All sources m³."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-E-003"
+        },
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-E-Carbon-Calculator-002"
+        },
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-E-002"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-003",
+    "category": "E",
+    "name_plain": "District Cooling Consumption",
+    "description": "Total chilled water energy consumed from a district cooling utility provider.",
+    "unit": "RT-h",
+    "cadence": "monthly",
+    "type": "conditional",
+    "prompt": "Enter the total district cooling energy consumed (in RT-h) each month from your utility provider.",
+    "applicability": [
+      "Mandatory - All UAE Hospitality",
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Merged",
+      "conflict_log": [
+        "Type: No conflict. Both sources conditional.",
+        "Cadence: No conflict. Both sources monthly.",
+        "Unit: No conflict. Both sources RT-h."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-E-013"
+        },
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-E-Carbon-Calculator-003"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-004",
+    "category": "E",
+    "name_plain": "LPG Fuel Consumption",
+    "description": "Amount of liquefied petroleum gas (propane/LPG) consumed, e.g., for cooking or heating",
+    "unit": "kg",
+    "cadence": "monthly",
+    "type": "conditional",
+    "prompt": "Enter the total LPG (propane) consumed (in kg) in the period.",
+    "applicability": [
+      "Mandatory - All UAE Hospitality",
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Merged",
+      "conflict_log": [
+        "Type: No conflict. Both sources conditional.",
+        "Cadence: No conflict. Both sources monthly.",
+        "Unit: No conflict. Both sources kg."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-E-009"
+        },
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-E-Carbon-Calculator-004"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-005",
+    "category": "E",
+    "name_plain": "Non-hazardous Waste Generated",
+    "description": "Total amount of non-hazardous solid waste generated (municipal/general waste)",
+    "unit": "kg",
+    "cadence": "monthly",
+    "type": "must-have",
+    "prompt": "Enter the total quantity of general (non-hazardous) waste generated (kg) for the period.",
+    "applicability": [
+      "Mandatory - All UAE Hospitality",
+      "Mandatory - Dubai Hotels",
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Merged",
+      "conflict_log": [
+        "Type: No conflict. All sources must-have.",
+        "Cadence: No conflict. All sources monthly.",
+        "Unit: No conflict. All sources kg."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-E-004"
+        },
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-E-Carbon-Calculator-005"
+        },
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-E-011"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-006",
+    "category": "E",
+    "name_plain": "Waste Recycled",
+    "description": "Amount of non-hazardous waste diverted from landfill to recycling (subset of total waste)",
+    "unit": "kg",
+    "cadence": "monthly",
+    "type": "conditional",
+    "prompt": "Enter the quantity of waste recycled (kg) in the period (if any).",
+    "applicability": [
+      "Mandatory - All UAE Hospitality",
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Merged",
+      "conflict_log": [
+        "Type: No conflict. Both sources conditional.",
+        "Cadence: No conflict. Both sources monthly.",
+        "Unit: No conflict. Both sources kg."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-E-005"
+        },
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-E-Carbon-Calculator-006"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-007",
+    "category": "E",
+    "name_plain": "Vehicle Fuel Consumption – Petrol",
+    "description": "Liters of gasoline (petrol) fuel consumed by company-owned vehicles (cars, vans, etc.)",
+    "unit": "liters",
+    "cadence": "monthly",
+    "type": "conditional",
+    "prompt": "Enter the total petrol (gasoline) fuel consumed by company vehicles (liters per month).",
+    "applicability": [
+      "Mandatory - All UAE Hospitality",
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Merged",
+      "conflict_log": [
+        "Type: No conflict. Both sources conditional.",
+        "Cadence: No conflict. Both sources monthly.",
+        "Unit: No conflict. Both sources liters."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-E-007"
+        },
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-E-Carbon-Calculator-007"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-008",
+    "category": "E",
+    "name_plain": "Vehicle Fuel Consumption - Diesel",
+    "description": "Liters of diesel fuel consumed by company-owned vehicles (trucks, heavy vehicles, or diesel cars)",
+    "unit": "liters",
+    "cadence": "monthly",
+    "type": "conditional",
+    "prompt": "Enter the total diesel fuel consumed by company vehicles (liters per month).",
+    "applicability": [
+      "Mandatory - All UAE Hospitality",
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Merged",
+      "conflict_log": [
+        "Type: No conflict. Both sources conditional.",
+        "Cadence: No conflict. Both sources monthly.",
+        "Unit: No conflict. Both sources liters."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-E-008"
+        },
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-E-Carbon-Calculator-008"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-009",
+    "category": "E",
+    "name_plain": "Refrigerant Leakage",
+    "description": "Quantity of refrigerant gases (e.g. HFCs) that are refilled or leaked from HVAC/Refrigeration systems",
+    "unit": "kg",
+    "cadence": "monthly",
+    "type": "conditional",
+    "prompt": "Enter the total amount of refrigerant (kg) added or leaked in the reporting period (by type, if possible).",
+    "applicability": [
+      "Mandatory - All UAE Hospitality",
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Merged",
+      "conflict_log": [
+        "Type: No conflict. Both sources conditional.",
+        "Cadence: Conflict Detected. UAE-ESG-GENERIC was 'annual', DUBAI-SUSTAINABLE-TOURISM was 'monthly'. Resolution: Set to 'monthly' (most frequent).",
+        "Unit: No conflict. Both sources kg."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-E-011"
+        },
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-E-Carbon-Calculator-009"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-010",
+    "category": "E",
+    "name_plain": "Total GHG Emissions",
+    "description": "Total greenhouse gas emissions (tCO2e) calculated from all reported activity data (Scope 1 and 2, baseline)",
+    "unit": "tCO2e",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Enter your organization's total greenhouse gas emissions for the reporting period",
+    "applicability": [
+      "Mandatory - All UAE Hospitality",
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Merged",
+      "conflict_log": [
+        "Type: No conflict. All sources must-have.",
+        "Cadence: No conflict. All sources annual.",
+        "Unit: No conflict. All sources tCO2e."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-E-001"
+        },
+        {
+          "framework_id": "UAE-CLIMATE-LAW-2024",
+          "official_code": "UAE-CLIMATE-E-001"
+        },
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-E-001"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-011",
+    "category": "E",
+    "name_plain": "Hazardous Waste Generated",
+    "description": "Total amount of hazardous waste produced (chemicals, medical, e-waste, etc.) that requires special disposal",
+    "unit": "kg",
+    "cadence": "annual",
+    "type": "conditional",
+    "prompt": "Enter the total quantity of hazardous waste generated (kg) for the reporting period.",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-E-006"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-012",
+    "category": "E",
+    "name_plain": "Diesel Generator Fuel Consumption",
+    "description": "Liters of diesel fuel consumed in on-site backup generators (stationary combustion)",
+    "unit": "liters",
+    "cadence": "monthly",
+    "type": "conditional",
+    "prompt": "Enter the total diesel fuel consumed by generators (liters per month).",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-E-010"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-013",
+    "category": "E",
+    "name_plain": "On-site Renewable Energy Generation",
+    "description": "Electricity generated from on-site renewable sources (e.g. solar panels) and used on-site",
+    "unit": "kWh",
+    "cadence": "monthly",
+    "type": "conditional",
+    "prompt": "Enter the electricity generated by your renewable energy system (kWh per month).",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-E-012"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-014",
+    "category": "E",
+    "name_plain": "Scope 1 Emissions",
+    "description": "Direct greenhouse gas emissions from owned or controlled sources",
+    "unit": "tCO2e",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Enter your organization's direct (Scope 1) greenhouse gas emissions",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-CLIMATE-LAW-2024",
+          "official_code": "UAE-CLIMATE-E-002"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-015",
+    "category": "E",
+    "name_plain": "Scope 2 Emissions",
+    "description": "Indirect greenhouse gas emissions from purchased electricity, steam, heat, and cooling",
+    "unit": "tCO2e",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Enter your organization's indirect (Scope 2) greenhouse gas emissions from purchased energy",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-CLIMATE-LAW-2024",
+          "official_code": "UAE-CLIMATE-E-003"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-016",
+    "category": "E",
+    "name_plain": "Scope 3 Emissions",
+    "description": "Indirect greenhouse gas emissions from the value chain (not included in Scope 2)",
+    "unit": "tCO2e",
+    "cadence": "annual",
+    "type": "conditional",
+    "prompt": "Enter your organization's value chain (Scope 3) greenhouse gas emissions, if applicable",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-CLIMATE-LAW-2024",
+          "official_code": "UAE-CLIMATE-E-004"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-017",
+    "category": "E",
+    "name_plain": "Baseline Year Emissions",
+    "description": "Greenhouse gas emissions from the baseline year selected for tracking progress",
+    "unit": "tCO2e",
+    "cadence": "on_change",
+    "type": "must-have",
+    "prompt": "Enter your organization's baseline year emissions and specify the baseline year",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-CLIMATE-LAW-2024",
+          "official_code": "UAE-CLIMATE-E-005"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-018",
+    "category": "E",
+    "name_plain": "Emissions Reduction Target",
+    "description": "Organization's target for reducing greenhouse gas emissions in alignment with UAE climate neutrality goals",
+    "unit": "%",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Enter your organization's emissions reduction target (percentage reduction from baseline)",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-CLIMATE-LAW-2024",
+          "official_code": "UAE-CLIMATE-E-006"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-019",
+    "category": "E",
+    "name_plain": "Emissions Reduction Measures",
+    "description": "Description of current and planned measures to reduce greenhouse gas emissions",
+    "unit": "text",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Describe your organization's current and planned measures to reduce greenhouse gas emissions",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-CLIMATE-LAW-2024",
+          "official_code": "UAE-CLIMATE-E-007"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-020",
+    "category": "E",
+    "name_plain": "Carbon Offsets Purchased",
+    "description": "Quantity of carbon offsets purchased to compensate for emissions",
+    "unit": "tCO2e",
+    "cadence": "annual",
+    "type": "conditional",
+    "prompt": "Enter the quantity of carbon offsets purchased during the reporting period",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-CLIMATE-LAW-2024",
+          "official_code": "UAE-CLIMATE-E-008"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-021",
+    "category": "E",
+    "name_plain": "Performance Metrics (Carbon Calculator)",
+    "description": "Monthly reporting of carbon emissions through the Dubai Carbon Calculator covering 9 emission sources: electricity, water, district cooling, LPG, landfill waste, recycled waste, petrol, diesel, and refrigerants",
+    "unit": "boolean",
+    "cadence": "monthly",
+    "type": "must-have",
+    "prompt": "Do you submit monthly carbon emission data through the Dubai Carbon Calculator? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-002"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-022",
+    "category": "E",
+    "name_plain": "Energy Management Plan",
+    "description": "Implementation of an energy management plan including monitoring, targets, and conservation measures",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you have a formal energy management plan in place? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-008"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-023",
+    "category": "E",
+    "name_plain": "Energy Management - Automation",
+    "description": "Implementation of automated systems for energy management and efficiency optimization",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you have automated systems for energy management? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-009"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-024",
+    "category": "E",
+    "name_plain": "Transportation",
+    "description": "Implementation of sustainable transportation options for guests and staff including electric vehicles and public transport",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you provide sustainable transportation options for guests and staff? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-010"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-025",
+    "category": "E",
+    "name_plain": "Water Conservation",
+    "description": "Implementation of water conservation measures including efficient fixtures, monitoring, and reduction targets",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you have a formal water conservation measures in place? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-011"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-026",
+    "category": "E",
+    "name_plain": "Wastewater",
+    "description": "Implementation of wastewater management practices including treatment, reuse, and proper disposal",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you have formal wastewater management practices in place? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-012"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-027",
+    "category": "E",
+    "name_plain": "Waste Management Plan",
+    "description": "Implementation of a comprehensive waste management plan including reduction, recycling, and proper disposal",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you have a formal waste management plan in place? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-013"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-028",
+    "category": "E",
+    "name_plain": "Waste Management – Bathroom",
+    "description": "Implementation of sustainable waste management practices specifically for bathroom areas including refillable dispensers and recycling",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you have sustainable waste management practices in bathrooms? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-014"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-029",
+    "category": "E",
+    "name_plain": "Waste Management – Food",
+    "description": "Implementation of sustainable food waste management practices including reduction, donation, and composting",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you have sustainable food waste management practices? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-015"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-030",
+    "category": "E",
+    "name_plain": "Minimise Pollution",
+    "description": "Implementation of practices to minimize pollution including air, noise, light, and chemical pollution",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you have practices to minimize pollution? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-016"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-031",
+    "category": "E",
+    "name_plain": "Harmful Substances",
+    "description": "Management and reduction of harmful substances including chemicals, pesticides, and hazardous materials",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you have practices to manage and reduce harmful substances? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-017"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-032",
+    "category": "E",
+    "name_plain": "Sustainable Purchasing",
+    "description": "Implementation of sustainable purchasing practices including local, eco-friendly, and ethical sourcing",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you have sustainable purchasing practices? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-018"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-033",
+    "category": "G",
+    "name_plain": "Carbon Reduction Target",
+    "description": "Concrete target set by the establishment to reduce its carbon footprint",
+    "unit": "%",
+    "cadence": "annual",
+    "type": "conditional",
+    "prompt": "Enter the percentage reduction target for your carbon footprint.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-G-004"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-034",
+    "category": "E",
+    "name_plain": "Water Flow Rate - Showers",
+    "description": "Water flow rate in showers, which must not exceed 9 litres per minute in at least 75% of showers",
+    "unit": "L/min",
+    "cadence": "on installation",
+    "type": "must-have",
+    "prompt": "Enter the flow rate (L/min) of your showerheads.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-E-003"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-035",
+    "category": "E",
+    "name_plain": "Water Flow Rate - Taps",
+    "description": "Water flow rate in taps, which must not exceed 8 litres per minute in at least 75% of taps",
+    "unit": "L/min",
+    "cadence": "on installation",
+    "type": "must-have",
+    "prompt": "Enter the flow rate (L/min) of your taps.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-E-004"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-036",
+    "category": "E",
+    "name_plain": "Dual Flush Toilets",
+    "description": "Toilets with 3/6 litres dual flush system",
+    "unit": "boolean",
+    "cadence": "on installation",
+    "type": "must-have",
+    "prompt": "Confirm that newly purchased toilets have a 3/6 litres dual flush system.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-E-005"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-037",
+    "category": "E",
+    "name_plain": "Sub-metered Water Consumption",
+    "description": "Separate water meters installed in areas with high degree of water consumption",
+    "unit": "m³",
+    "cadence": "monthly",
+    "type": "conditional",
+    "prompt": "Enter the monthly water consumption (m³) from sub-metered areas.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-E-006"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-038",
+    "category": "E",
+    "name_plain": "Energy-efficient Lighting",
+    "description": "Percentage of energy-efficient light bulbs in the establishment",
+    "unit": "%",
+    "cadence": "on installation",
+    "type": "must-have",
+    "prompt": "Enter the percentage of energy-efficient light bulbs in your establishment.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-E-008"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-039",
+    "category": "E",
+    "name_plain": "LED Lighting Percentage",
+    "description": "Percentage of LED light bulbs in the establishment",
+    "unit": "%",
+    "cadence": "on installation",
+    "type": "must-have",
+    "prompt": "Enter the percentage of LED light bulbs in your establishment.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-E-009"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-040",
+    "category": "E",
+    "name_plain": "Renewable Energy Percentage",
+    "description": "Percentage of renewable and/or eco-labelled electricity used or purchased by the establishment",
+    "unit": "%",
+    "cadence": "monthly",
+    "type": "conditional",
+    "prompt": "Enter the percentage of renewable energy in your total energy consumption.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-E-010"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-041",
+    "category": "E",
+    "name_plain": "Recycling Rate",
+    "description": "Percentage of waste diverted from landfill to recycling",
+    "unit": "%",
+    "cadence": "monthly",
+    "type": "conditional",
+    "prompt": "Enter the percentage of waste that is recycled.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-E-012"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-042",
+    "category": "E",
+    "name_plain": "Organic Waste Composting",
+    "description": "Amount of organic waste composted or used for other purposes",
+    "unit": "kg",
+    "cadence": "monthly",
+    "type": "conditional",
+    "prompt": "Enter the quantity of organic waste composted (kg) in the period.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-E-013"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-043",
+    "category": "E",
+    "name_plain": "Sustainable Food Products",
+    "description": "Number of types of food/beverage products that are organic, eco-labelled, fair-trade labelled and/or locally produced",
+    "unit": "count",
+    "cadence": "on purchase",
+    "type": "must-have",
+    "prompt": "Enter the number of types of sustainable food/beverage products you purchase.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-E-014"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-E-044",
+    "category": "E",
+    "name_plain": "Vegetarian/Vegan Options",
+    "description": "Availability of vegetarian/vegan alternative menu options",
+    "unit": "boolean",
+    "cadence": "on menu change",
+    "type": "must-have",
+    "prompt": "Confirm the availability of vegetarian and vegan menu options.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-E-015"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-001",
+    "category": "S",
+    "name_plain": "Total Workforce Size",
+    "description": "Total number of employees in the organization (headcount or full-time equivalent)",
+    "unit": "count",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Enter the total number of employees (headcount or FTE) in your company.",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-S-001"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-002",
+    "category": "S",
+    "name_plain": "Female Employee Percentage",
+    "description": "Proportion of the workforce that is female (gender diversity metric)",
+    "unit": "%",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Enter the percentage of your employees who are female (% of total workforce).",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-S-002"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-003",
+    "category": "S",
+    "name_plain": "New Hires",
+    "description": "Number of new employees hired over the reporting period",
+    "unit": "count",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Enter the total number of new employees hired during the year.",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-S-003"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-004",
+    "category": "S",
+    "name_plain": "Employee Turnover Rate",
+    "description": "Percentage of employees who left the organization during the reporting period",
+    "unit": "%",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Enter the employee turnover rate for the year (% of employees who left).",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-S-004"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-005",
+    "category": "S",
+    "name_plain": "Training Hours per Employee",
+    "description": "Average number of training hours provided per employee during the year",
+    "unit": "hours/employee",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Enter the total training hours provided to employees this year (the system will compute hours per employee).",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-S-005"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-006",
+    "category": "S",
+    "name_plain": "Lost Time Injury Frequency Rate (LTIFR)",
+    "description": "Frequency of work-related injuries resulting in lost time, per 1,000,000 hours worked",
+    "unit": "LTIs per 1,000,000 hours",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Enter your company's Lost Time Injury Frequency Rate (LTIFR) for the year (injuries per 1,000,000 hours worked).",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-S-006"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-007",
+    "category": "S",
+    "name_plain": "Total Recordable Injuries",
+    "description": "Total number of work-related injuries and incidents (recordable cases) in the reporting period",
+    "unit": "count",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Enter the total number of recordable injuries (including any fatalities, lost time injuries, etc.) that occurred during the year.",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-S-007"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-008",
+    "category": "S",
+    "name_plain": "Grievances Reported",
+    "description": "Number of formal grievances or complaints raised by employees (or other stakeholders) during the year",
+    "unit": "count",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Enter the number of formal grievances/complaints submitted by employees or stakeholders this year.",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-S-008"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-009",
+    "category": "S",
+    "name_plain": "Grievances Resolved",
+    "description": "Number of grievances (from those reported) that were resolved/addressed during the year",
+    "unit": "count",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Enter how many of the reported grievances were resolved during the year.",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-S-009"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-010",
+    "category": "S",
+    "name_plain": "Workforce Nationalities",
+    "description": "Total number of different nationalities represented in the workforce, indicating cultural diversity.",
+    "unit": "count",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Enter the total number of distinct nationalities present in your workforce.",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-S-010"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-011",
+    "category": "S",
+    "name_plain": "Community Investment",
+    "description": "Total value of financial and in-kind contributions made to the community, such as charitable donations, sponsorships, employee volunteering hours, and pro-bono services.",
+    "unit": "AED",
+    "cadence": "annual",
+    "type": "conditional",
+    "prompt": "Enter the total value (in AED) of your community investment, including cash, in-kind donations, and volunteering hours, for the year.",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-S-011"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-012",
+    "category": "S",
+    "name_plain": "Sustainability Personnel Training",
+    "description": "Training provided to personnel on sustainability practices and procedures",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you provide formal sustainability training to your personnel? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-003"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-013",
+    "category": "S",
+    "name_plain": "Staff Engagement and Education",
+    "description": "Programs for engaging and educating staff on sustainability practices and environmental responsibility",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you have formal staff engagement and education programs for sustainability? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-005"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-014",
+    "category": "S",
+    "name_plain": "Guest Education",
+    "description": "Programs and materials to educate guests about sustainability practices and encourage their participation",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you educate guests about your sustainability practices? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-006"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-015",
+    "category": "S",
+    "name_plain": "Local Communities",
+    "description": "Engagement with and support for local communities through various initiatives and partnerships",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you have formal local community engagement initiatives? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-019"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-016",
+    "category": "S",
+    "name_plain": "Staff Training Hours",
+    "description": "Yearly training on environmental and other sustainability issues for staff members",
+    "unit": "hours",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Enter the total hours of environmental and sustainability training provided to staff annually.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-S-001"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-017",
+    "category": "S",
+    "name_plain": "Guest Environmental Information",
+    "description": "Information about Green Key and environmental initiatives available to guests",
+    "unit": "boolean",
+    "cadence": "on implementation",
+    "type": "must-have",
+    "prompt": "Confirm the availability of environmental information to guests.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-S-002"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-S-018",
+    "category": "S",
+    "name_plain": "Community Engagement",
+    "description": "Active collaboration with relevant local stakeholders and support for community development activities",
+    "unit": "count",
+    "cadence": "annual",
+    "type": "conditional",
+    "prompt": "Enter the number of community engagement activities you participate in annually.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-S-003"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-001",
+    "category": "G",
+    "name_plain": "Ownership and Legal Form",
+    "description": "Type of organization and ownership (e.g., LLC, PJSC, partnership; private vs government ownership)",
+    "unit": "n/a",
+    "cadence": "on_change",
+    "type": "must-have",
+    "prompt": "Specify your company's legal form and ownership structure (e.g., 'LLC – privately owned').",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-G-001"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-002",
+    "category": "G",
+    "name_plain": "Board Members Count",
+    "description": "Total number of board directors (board size)",
+    "unit": "count",
+    "cadence": "annual",
+    "type": "conditional",
+    "prompt": "Enter the total number of board members (directors).",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-G-002"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-003",
+    "category": "G",
+    "name_plain": "Female Board Members Percentage",
+    "description": "Percentage of board seats occupied by women",
+    "unit": "%",
+    "cadence": "annual",
+    "type": "conditional",
+    "prompt": "Enter the percentage of board members who are female.",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-G-003"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-004",
+    "category": "G",
+    "name_plain": "Ethics and Anti-Corruption Policy",
+    "description": "Whether the company has a formal ethics code or anti-bribery & corruption policy (Yes/No)",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Does your company have a written Ethics or Anti-Corruption policy? (Yes/No)",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-G-004"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-005",
+    "category": "G",
+    "name_plain": "Health & Safety Policy",
+    "description": "Whether the company has an occupational health and/or safety policy (Yes/No)",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you have a formal occupational health and safety policy? (Yes/No)",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-G-005"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-006",
+    "category": "G",
+    "name_plain": "ESG Reporting Frequency",
+    "description": "Frequency with which the company produces ESG/Sustainability reports (e.g., annually, biennially, or none)",
+    "unit": "n/a",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "How often do you publish a sustainability/ESG report? (e.g., annually, once every 2 years, not yet)",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-G-006"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-007",
+    "category": "G",
+    "name_plain": "Data Privacy and Governance Policy",
+    "description": "Whether the company has a data protection/privacy policy and data governance processes (Yes/No)",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you have a data privacy or data governance policy in place to protect personal and sensitive data? (Yes/No)",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-G-007"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-008",
+    "category": "G",
+    "name_plain": "Supplier Code of Conduct",
+    "description": "Whether the company has a formal code of conduct for its suppliers, outlining expectations on ethics, labor, and environment, and communicates it to them.",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "conditional",
+    "prompt": "Does your company have a formal Supplier Code of Conduct that is communicated to your suppliers? (Yes/No)",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-ESG-GENERIC",
+          "official_code": "UAE-ESG-G-008"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-009",
+    "category": "G",
+    "name_plain": "Emissions Inventory Verification Status",
+    "description": "Whether the greenhouse gas emissions inventory has been verified by an independent third party",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Has your organization's emissions inventory been verified by an independent third party? (Yes/No)",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-CLIMATE-LAW-2024",
+          "official_code": "UAE-CLIMATE-G-001"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-010",
+    "category": "G",
+    "name_plain": "Record Retention Period",
+    "description": "Period for which emissions records are maintained (minimum 5 years as required by law)",
+    "unit": "years",
+    "cadence": "on_change",
+    "type": "must-have",
+    "prompt": "Enter the period (in years) for which your organization retains emissions records",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-CLIMATE-LAW-2024",
+          "official_code": "UAE-CLIMATE-G-002"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-011",
+    "category": "G",
+    "name_plain": "Climate Risk Assessment",
+    "description": "Assessment of climate-related risks to the organization's operations and strategy",
+    "unit": "text",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Describe your organization's climate risk assessment process and key findings",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-CLIMATE-LAW-2024",
+          "official_code": "UAE-CLIMATE-G-003"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-012",
+    "category": "G",
+    "name_plain": "Board Oversight of Climate Issues",
+    "description": "Whether the board or governing body has oversight of climate-related issues and targets",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Does your board or governing body have oversight of climate-related issues and targets? (Yes/No)",
+    "applicability": [
+      "Mandatory - All UAE Hospitality"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "UAE-CLIMATE-LAW-2024",
+          "official_code": "UAE-CLIMATE-G-004"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-013",
+    "category": "G",
+    "name_plain": "Sustainability Management Approach",
+    "description": "Implementation of a sustainability management system addressing environmental, social, cultural, economic, quality, human rights, health, safety, risk and crisis management issues",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you have a formal sustainability management system in place? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-001"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-014",
+    "category": "S",
+    "name_plain": "Sustainability Committee",
+    "description": "Establishment of a sustainability committee or team responsible for coordinating sustainability initiatives",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you have a formal sustainability committee or team? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-004"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-015",
+    "category": "S",
+    "name_plain": "Green Events",
+    "description": "Implementation of sustainable practices for events, meetings, and conferences held at the hotel",
+    "unit": "boolean",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Do you implement sustainable practices for events and conferences? (Yes/No)",
+    "applicability": [
+      "Mandatory - Dubai Hotels"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+          "official_code": "DST-REQ-007"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-016",
+    "category": "G",
+    "name_plain": "Environmental Manager Appointment",
+    "description": "Appointment of an environmental manager from amongst the staff of the establishment responsible for sustainability initiatives",
+    "unit": "boolean",
+    "cadence": "on change",
+    "type": "must-have",
+    "prompt": "Confirm the appointment of an environmental manager responsible for sustainability initiatives.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-G-001"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-017",
+    "category": "G",
+    "name_plain": "Sustainability Policy",
+    "description": "A formal sustainability policy covering environmental, social, and economic commitments of the establishment",
+    "unit": "boolean",
+    "cadence": "every 3 years",
+    "type": "must-have",
+    "prompt": "Confirm the existence of a sustainability policy covering environmental, social, and economic commitments.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-G-002"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-018",
+    "category": "G",
+    "name_plain": "Annual Action Plan",
+    "description": "Objectives and annual action plan for continuous improvement with minimum three action points across different sustainability areas",
+    "unit": "count",
+    "cadence": "annual",
+    "type": "must-have",
+    "prompt": "Enter the number of action points in your annual sustainability action plan.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-G-003"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-019",
+    "category": "G",
+    "name_plain": "Water Leak Detection System",
+    "description": "System to regularly check for dripping taps and leaky toilets as well as leaky swimming pools",
+    "unit": "count",
+    "cadence": "daily",
+    "type": "must-have",
+    "prompt": "Enter the number of leak checks performed daily.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-G-005"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-020",
+    "category": "G",
+    "name_plain": "Automatic Energy Control Systems",
+    "description": "Automatic systems that turn off lights and electrical appliances when leaving guest/meeting rooms",
+    "unit": "boolean",
+    "cadence": "on installation",
+    "type": "conditional",
+    "prompt": "Confirm the presence of automatic energy control systems in guest and meeting rooms.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-G-006"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-021",
+    "category": "G",
+    "name_plain": "Waste Separation Categories",
+    "description": "Number of waste categories separated as per national legislation with a minimum of three categories",
+    "unit": "count",
+    "cadence": "on implementation",
+    "type": "must-have",
+    "prompt": "Enter the number of waste categories you separate for recycling.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-G-007"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-022",
+    "category": "G",
+    "name_plain": "Food Waste Reduction",
+    "description": "Initiatives to reduce the level of food waste",
+    "unit": "boolean",
+    "cadence": "on implementation",
+    "type": "must-have",
+    "prompt": "Confirm the implementation of food waste reduction initiatives.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-G-008"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-023",
+    "category": "G",
+    "name_plain": "Eco-labeled Cleaning Products",
+    "description": "Percentage of chemical cleaning products for daily use that have a recognised eco-label",
+    "unit": "%",
+    "cadence": "on purchase",
+    "type": "must-have",
+    "prompt": "Enter the percentage of eco-labeled cleaning products you use.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-G-009"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-024",
+    "category": "G",
+    "name_plain": "Non-chlorine Paper Products",
+    "description": "Use of paper towels, facial tissues and toilet paper made of non-chlorine bleached paper or awarded with an eco-label",
+    "unit": "boolean",
+    "cadence": "on purchase",
+    "type": "must-have",
+    "prompt": "Confirm the use of non-chlorine bleached or eco-labeled paper products.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-G-010"
+        }
+      ]
+    }
+  },
+  {
+    "master_id": "HOSP-G-025",
+    "category": "G",
+    "name_plain": "Eco-labeled Equipment",
+    "description": "Use of eco-labeled dishwashers, laundry machines, and other equipment",
+    "unit": "boolean",
+    "cadence": "on purchase",
+    "type": "conditional",
+    "prompt": "Confirm that newly purchased equipment is eco-labeled.",
+    "applicability": [
+      "Voluntary - Green Key Members"
+    ],
+    "consolidation_details": {
+      "status": "Unique",
+      "conflict_log": [
+        "No merge conflicts as element is unique."
+      ],
+      "source_elements": [
+        {
+          "framework_id": "GREEN-KEY-HOSPITALITY",
+          "official_code": "GK-G-011"
+        }
+      ]
+    }
+  }
+]

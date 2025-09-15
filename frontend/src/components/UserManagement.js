@@ -24,6 +24,10 @@ const UserManagement = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showRoleFilterModal, setShowRoleFilterModal] = useState(false);
   const [showStatusFilterModal, setShowStatusFilterModal] = useState(false);
+  // Site selection modal states
+  const [showSiteSelection, setShowSiteSelection] = useState(false);
+  const [selectedSites, setSelectedSites] = useState([]);
+  const [companySites, setCompanySites] = useState([]);
 
   const roleOptions = [
     { value: 'super_user', label: 'Super User', description: 'System-wide administrator with full access' },
@@ -116,11 +120,36 @@ const UserManagement = () => {
     }
   };
 
+  const fetchCompanySites = async () => {
+    try {
+      if (!selectedCompany?.id) return;
+      
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/sites/?company_id=${selectedCompany.id}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        const sites = data.results || data;
+        console.log('🏢 Fetched company sites:', sites.length);
+        setCompanySites(sites);
+      } else {
+        console.error('Failed to fetch company sites');
+      }
+    } catch (error) {
+      console.error('Error fetching company sites:', error);
+    }
+  };
+
   useEffect(() => {
     if (hasPermission('userManagement', 'read')) {
       fetchUsers();
     }
   }, [selectedCompany, hasPermission]);
+
+  useEffect(() => {
+    if (selectedCompany?.id) {
+      fetchCompanySites();
+    }
+  }, [selectedCompany]);
 
   const getRoleBadgeColor = (role) => {
     const colors = {
@@ -515,7 +544,193 @@ const UserManagement = () => {
     return createPortal(modalContent, document.body);
   };
 
-  const AddUserModal = ({ isOpen, onClose, onSuccess, selectedRole }) => {
+  // Site Selection Modal
+  const SiteSelectionModal = ({ isOpen, onClose, onSiteSelect, selectedRole }) => {
+    const [selectedSitesLocal, setSelectedSitesLocal] = useState([]);
+    
+    // Prevent body scroll when modal is open
+    useEffect(() => {
+      if (isOpen) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = 'unset';
+      }
+      
+      // Cleanup on unmount
+      return () => {
+        document.body.style.overflow = 'unset';
+      };
+    }, [isOpen]);
+
+    // Get available sites based on user role
+    const getAvailableSites = () => {
+      if (!user || !companySites) return [];
+      
+      // Super User and Admin can see all company sites
+      if (['super_user', 'admin'].includes(user.role)) {
+        return companySites;
+      }
+      
+      // Site Manager can only see their assigned sites
+      if (user.role === 'site_manager') {
+        return userSites.length > 0 ? userSites : companySites;
+      }
+      
+      return companySites;
+    };
+
+    // Auto-select if Site Manager has only one site
+    useEffect(() => {
+      if (isOpen && user.role === 'site_manager') {
+        const availableSites = getAvailableSites();
+        if (availableSites.length === 1) {
+          setSelectedSitesLocal([availableSites[0].id]);
+        }
+      }
+    }, [isOpen, user.role]);
+
+    const handleSiteToggle = (siteId) => {
+      setSelectedSitesLocal(prev => {
+        if (prev.includes(siteId)) {
+          return prev.filter(id => id !== siteId);
+        } else {
+          return [...prev, siteId];
+        }
+      });
+    };
+
+    const handleSelectAll = () => {
+      const availableSites = getAvailableSites();
+      const allSiteIds = availableSites.map(site => site.id);
+      
+      if (selectedSitesLocal.length === availableSites.length) {
+        // If all are selected, deselect all
+        setSelectedSitesLocal([]);
+      } else {
+        // Select all
+        setSelectedSitesLocal(allSiteIds);
+      }
+    };
+
+    const handleContinue = () => {
+      onSiteSelect(selectedSitesLocal);
+      setSelectedSitesLocal([]);
+    };
+
+    const handleClose = () => {
+      setSelectedSitesLocal([]);
+      onClose();
+    };
+
+    if (!isOpen) return null;
+
+    const availableSites = getAvailableSites();
+    const isAutoSelected = user.role === 'site_manager' && availableSites.length === 1;
+
+    const modalContent = (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]">
+        <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden">
+          <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold">Select Sites</h2>
+                <p className="text-purple-100 mt-1">Choose sites for {selectedRole?.label}</p>
+              </div>
+              <button 
+                onClick={handleClose}
+                className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+              >
+                <i className="fas fa-times text-sm"></i>
+              </button>
+            </div>
+          </div>
+
+          <div className="p-6">
+            {isAutoSelected ? (
+              <div className="text-center py-4">
+                <i className="fas fa-info-circle text-blue-500 text-2xl mb-3"></i>
+                <h3 className="font-semibold text-gray-800 mb-2">Auto-Selected Site</h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  As a Site Manager with access to one site, the user will be automatically assigned to:
+                </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <i className="fas fa-map-marker-alt text-blue-600 mr-2"></i>
+                  <span className="font-medium text-blue-800">{availableSites[0]?.name}</span>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-gray-600 text-sm">
+                    Select which sites this {selectedRole?.label} should have access to:
+                  </p>
+                  {availableSites.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={handleSelectAll}
+                      className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                    >
+                      {selectedSitesLocal.length === availableSites.length ? 'Deselect All' : 'Select All'}
+                    </button>
+                  )}
+                </div>
+                
+                {availableSites.length === 0 ? (
+                  <div className="text-center py-8">
+                    <i className="fas fa-exclamation-triangle text-yellow-500 text-2xl mb-3"></i>
+                    <p className="text-gray-600">No sites available</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-60 overflow-y-auto">
+                    {availableSites.map(site => (
+                      <label key={site.id} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedSitesLocal.includes(site.id)}
+                          onChange={() => handleSiteToggle(site.id)}
+                          className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                        />
+                        <div className="ml-3 flex-1">
+                          <div className="flex items-center">
+                            <i className="fas fa-map-marker-alt text-gray-400 mr-2"></i>
+                            <span className="font-medium text-gray-800">{site.name}</span>
+                          </div>
+                          {site.location && (
+                            <p className="text-xs text-gray-500 mt-1">{site.location}</p>
+                          )}
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          <div className="bg-gray-50 px-6 py-4 flex justify-between items-center">
+            <button
+              onClick={handleClose}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleContinue}
+              disabled={!isAutoSelected && selectedSitesLocal.length === 0}
+              className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              Continue
+              <i className="fas fa-arrow-right ml-2"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+
+    return createPortal(modalContent, document.body);
+  };
+
+  const AddUserModal = ({ isOpen, onClose, onSuccess, selectedRole, selectedSites = [] }) => {
     const [formData, setFormData] = useState({
       email: '',
       name: '',
@@ -545,6 +760,14 @@ const UserManagement = () => {
         setFormData(prev => ({ ...prev, role: selectedRole.value }));
       }
     }, [selectedRole]);
+
+    // Update sites when selectedSites changes
+    useEffect(() => {
+      setFormData(prev => ({ ...prev, sites: selectedSites }));
+    }, [selectedSites]);
+
+    // Create preSelectedSites array with site objects
+    const preSelectedSites = companySites.filter(site => selectedSites.includes(site.id));
 
     const handleSubmit = async (e) => {
       e.preventDefault();
@@ -662,26 +885,22 @@ const UserManagement = () => {
               />
             </div>
 
-            {['site_manager', 'uploader', 'meter_manager'].includes(formData.role) && userSites.length > 0 && (
+            {(['site_manager', 'uploader', 'meter_manager', 'super_user'].includes(formData.role)) && preSelectedSites.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-gray-700">Assign Sites</label>
-                <div className="mt-1 space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2">
-                  {userSites.map(site => (
-                    <label key={site.id} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        className="mr-2"
-                        checked={formData.sites.includes(site.id)}
-                        onChange={(e) => {
-                          const sites = e.target.checked
-                            ? [...formData.sites, site.id]
-                            : formData.sites.filter(id => id !== site.id);
-                          setFormData({...formData, sites});
-                        }}
-                      />
-                      <span className="text-sm">{site.name}</span>
-                    </label>
-                  ))}
+                <label className="block text-sm font-medium text-gray-700">Assigned Sites</label>
+                <div className="mt-1 p-3 bg-green-50 rounded-lg border border-green-200">
+                  <p className="text-sm text-green-700 mb-2">
+                    <i className="fas fa-check-circle mr-1"></i>
+                    {formData.role === 'super_user' ? 'Automatically assigned to all sites' : 'Sites selected in previous step'}
+                  </p>
+                  <div className="space-y-1">
+                    {preSelectedSites.map(site => (
+                      <div key={site.id} className="flex items-center text-sm">
+                        <i className="fas fa-check text-green-600 mr-2"></i>
+                        <span className="text-gray-700">{site.name}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -736,11 +955,16 @@ const UserManagement = () => {
     // Update form data when user changes
     useEffect(() => {
       if (user) {
+        // Extract site IDs from site objects for the form
+        const siteIds = user.sites ? user.sites.map(site => typeof site === 'object' ? site.id : site) : [];
+        console.log('🔧 EditUserModal: User sites:', user.sites);
+        console.log('🔧 EditUserModal: Extracted site IDs:', siteIds);
+        
         setFormData({
           email: user.email || '',
           name: user.name || '',
           role: user.role || '',
-          sites: user.sites || [],
+          sites: siteIds,
           is_active: user.is_active !== false
         });
       }
@@ -760,6 +984,9 @@ const UserManagement = () => {
 
       setAlert({ show: false, message: '', type: 'error' });
       setSubmitting(true);
+
+      console.log('🚀 EditUserModal: Submitting form data:', formData);
+      console.log('🚀 EditUserModal: Sites being sent:', formData.sites);
 
       try {
         const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/users/${user.id}/`, {
@@ -1335,7 +1562,17 @@ const UserManagement = () => {
                   </span>
                 </td> */}
                 <td className="hidden md:table-cell px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {user.sites?.length || 0} sites
+                  {user.role === 'super_user' ? (
+                    <span className="text-blue-600 font-medium">All Sites</span>
+                  ) : user.sites && user.sites.length > 0 ? (
+                    <div className="max-w-32 overflow-hidden">
+                      <div className="truncate" title={user.sites.map(site => typeof site === 'object' ? site.name : site).join(', ')}>
+                        {user.sites.map(site => typeof site === 'object' ? site.name : site).join(', ')}
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-gray-500 italic">No sites</span>
+                  )}
                 </td>
                 <td className="hidden lg:table-cell px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {formatLastLogin(user.last_login)}
@@ -1459,8 +1696,38 @@ const UserManagement = () => {
           }
           
           setSelectedRole(role);
+          setShowRoleSelection(false);
+          
+          // Check if role requires site selection
+          if (['site_manager', 'uploader', 'meter_manager'].includes(role.value)) {
+            setShowSiteSelection(true);
+          } else if (role.value === 'super_user') {
+            // Super users get all sites automatically
+            const allSiteIds = companySites.map(site => site.id);
+            setSelectedSites(allSiteIds);
+            setShowUserForm(true);
+          } else {
+            // For admin, viewer - no site selection needed
+            setSelectedSites([]);
+            setShowUserForm(true);
+          }
+        }}
+      />
+
+      {/* Site Selection Modal */}
+      <SiteSelectionModal
+        isOpen={showSiteSelection}
+        onClose={() => {
+          setShowSiteSelection(false);
+          setSelectedRole(null);
+          setSelectedSites([]);
+        }}
+        onSiteSelect={(sites) => {
+          setSelectedSites(sites);
+          setShowSiteSelection(false);
           setShowUserForm(true);
         }}
+        selectedRole={selectedRole}
       />
 
       {/* Add User Form Modal */}
@@ -1469,11 +1736,14 @@ const UserManagement = () => {
         onClose={() => {
           setShowUserForm(false);
           setSelectedRole(null);
+          setSelectedSites([]);
         }}
         selectedRole={selectedRole}
+        selectedSites={selectedSites}
         onSuccess={() => {
           setShowUserForm(false);
           setSelectedRole(null);
+          setSelectedSites([]);
           fetchUsers();
         }}
       />

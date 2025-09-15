@@ -92,15 +92,38 @@ class FrameworkService:
     @staticmethod
     def assign_voluntary_framework(company, framework_id):
         """Assign a voluntary framework to a company"""
+        print(f"🔍 FrameworkService.assign_voluntary_framework called with company={company.name}, framework_id={framework_id}")
+
         try:
+            print(f"🔍 Looking for framework with framework_id={framework_id} and type='voluntary'")
             framework = Framework.objects.get(framework_id=framework_id, type='voluntary')
-            CompanyFramework.objects.get_or_create(
+            print(f"✅ Found framework: {framework.name}")
+
+            print(f"🔍 Creating/getting CompanyFramework...")
+            company_framework, created = CompanyFramework.objects.get_or_create(
                 company=company,
                 framework=framework,
                 defaults={'is_auto_assigned': False}
             )
+
+            if created:
+                print(f"✅ Created new CompanyFramework assignment")
+            else:
+                print(f"ℹ️ CompanyFramework assignment already exists")
+
             return True
         except Framework.DoesNotExist:
+            print(f"❌ Framework.DoesNotExist: No framework found with framework_id={framework_id} and type='voluntary'")
+
+            # Let's see what frameworks actually exist
+            all_frameworks = Framework.objects.all()
+            print(f"🔍 Available frameworks:")
+            for fw in all_frameworks:
+                print(f"  - ID: {fw.framework_id}, Type: {fw.type}")
+
+            return False
+        except Exception as e:
+            print(f"❌ Unexpected error in assign_voluntary_framework: {str(e)}")
             return False
 
 
@@ -146,128 +169,100 @@ class ProfilingService:
 
 
 class ChecklistService:
-    """Service for generating personalized checklists"""
-    
+    """Service for generating personalized checklists using FrameworkElement"""
+
     @staticmethod
-    def generate_personalized_checklist(company):
+    def generate_personalized_checklist(company, site=None):
         """
-        Generate the final personalized checklist based on:
-        1. Company's assigned frameworks (at minimum ESG framework)
-        2. Profiling wizard answers
-        3. De-duplication and frequency consolidation
+        Generate checklist using new FrameworkElement system based on:
+        1. Company's assigned frameworks
+        2. Profile answers (for conditional elements)
+        3. Must-have elements (always included)
         """
         with transaction.atomic():
-            # Clear existing checklist
-            CompanyChecklist.objects.filter(company=company).delete()
-            
-            company_frameworks = company.companyframework_set.all().values_list('framework_id', flat=True)
-            
-            # Ensure at least ESG framework is included
-            if not company_frameworks:
-                # If no frameworks assigned, use ESG as default
-                company_frameworks = ['ESG']
-            
-            # Get ALL must-have elements (they should always be included)
-            must_have_elements = DataElement.objects.filter(
-                type='must_have'
-            ).distinct()
-            
-            # Get conditional elements activated by "Yes" answers
-            yes_answers = CompanyProfileAnswer.objects.filter(
-                company=company,
-                answer=True
-            ).values_list('question__activates_element_id', flat=True)
-            
-            # Get conditional elements that were activated
-            conditional_elements = DataElement.objects.filter(
-                element_id__in=yes_answers
-            ).distinct()
-            
-            # Combine all elements
-            all_elements = must_have_elements.union(conditional_elements)
-            
-            # Create checklist items with consolidated cadence and framework mapping
-            for element in all_elements:
-                # Get all framework mappings for this element
-                mappings = DataElementFrameworkMapping.objects.filter(
+            # Clear existing checklist for this company (and site if specified)
+            filters = {'company': company}
+            if site:
+                filters['site'] = site
+            CompanyChecklist.objects.filter(**filters).delete()
+
+            # Use FrameworkProcessor to get applicable elements
+            processor = FrameworkProcessor(company)
+            applicable_elements = processor.get_applicable_elements()
+
+            print(f"🔍 Found {len(applicable_elements)} applicable framework elements")
+
+            # Create checklist items
+            created_items = []
+            for element in applicable_elements:
+                # Determine cadence based on element specifications
+                cadence = element.cadence if element.cadence else 'annually'
+
+                # Create checklist item
+                checklist_item = CompanyChecklist.objects.create(
+                    company=company,
+                    site=site,
                     element=element,
-                    framework_id__in=company_frameworks
+                    cadence=cadence,
+                    framework_id=element.framework_id,
+                    is_required=True
                 )
-                
-                # If no mappings exist for this element with company's frameworks,
-                # use default ESG framework mapping
-                if not mappings.exists():
-                    mappings = DataElementFrameworkMapping.objects.filter(
-                        element=element,
-                        framework_id='ESG'
-                    )
-                
-                # If still no mappings, create a default one
-                if not mappings.exists():
-                    # Default cadence based on element type
-                    default_cadence = 'monthly' if element.is_metered else 'annually'
-                    
-                    # Create checklist item with default cadence
-                    checklist_item = CompanyChecklist.objects.create(
-                        company=company,
-                        element=element,
-                        is_required=True,
-                        cadence=default_cadence
-                    )
-                else:
-                    # Determine most frequent cadence (monthly > quarterly > annually)
-                    cadence_priority = {'monthly': 1, 'quarterly': 2, 'annually': 3}
-                    final_cadence = min(mappings, key=lambda x: cadence_priority.get(x.cadence, 4)).cadence
-                    
-                    # Create checklist item
-                    checklist_item = CompanyChecklist.objects.create(
-                        company=company,
-                        element=element,
-                        is_required=True,
-                        cadence=final_cadence
-                    )
-                    
-                    # Map to frameworks
-                    for mapping in mappings:
-                        ChecklistFrameworkMapping.objects.create(
-                            checklist_item=checklist_item,
-                            framework=mapping.framework
-                        )
-            
-            return CompanyChecklist.objects.filter(company=company)
+                created_items.append(checklist_item)
+
+            print(f"✅ Created {len(created_items)} checklist items")
+            return created_items
 
 
 class MeterService:
     """Service for handling meter management"""
     
     @staticmethod
-    def auto_create_meters(company):
-        """Automatically create default meters for metered data elements"""
-        checklist_items = CompanyChecklist.objects.filter(
-            company=company,
-            element__is_metered=True
+    def auto_create_meters(company, site=None):
+        """Automatically create meters for FrameworkElements with carbon_specifications"""
+        # Get checklist items with carbon_specifications (metered elements)
+        filters = {'company': company, 'element__carbon_specifications__isnull': False}
+        if site:
+            filters['site'] = site
+
+        checklist_items = CompanyChecklist.objects.filter(**filters).exclude(
+            element__carbon_specifications={}
         )
-        
+
         created_meters = []
         for item in checklist_items:
-            # Create a default "Main" meter for each metered element type
-            meter_type = item.element.name  # Use element name as meter type
-            
-            # Check if a meter of this type already exists
-            existing_meter = Meter.objects.filter(
-                company=company,
-                type=meter_type
-            ).first()
-            
+            element = item.element
+
+            # Skip emissions calculations - they should be dashboard metrics, not meters
+            if any(keyword in element.name_plain.lower() for keyword in ['emissions', 'ghg', 'co2', 'carbon footprint']):
+                print(f"⏭️ Skipping emissions calculation: {element.name_plain} (dashboard metric)")
+                continue
+
+            # Use element name_plain as meter type
+            meter_type = element.name_plain
+
+            # Check if a meter of this type already exists for this company/site
+            existing_filters = {'company': company, 'type': meter_type}
+            if site:
+                existing_filters['site'] = site
+
+            existing_meter = Meter.objects.filter(**existing_filters).first()
+
             if not existing_meter:
+                # Create meter with data from carbon_specifications
+                carbon_specs = element.carbon_specifications or {}
+
                 meter = Meter.objects.create(
                     company=company,
+                    site=site,
                     type=meter_type,
                     name="Main",
-                    status='active'
+                    status='active',
+                    is_auto_created=True
                 )
                 created_meters.append(meter)
-        
+                print(f"✅ Created meter: {meter_type} for framework {element.framework_id}")
+
+        print(f"🔢 Created {len(created_meters)} meters from framework elements")
         return created_meters
     
     @staticmethod
@@ -296,18 +291,54 @@ class DataCollectionService:
             return []
     
     @staticmethod
-    def get_data_collection_tasks(company, year, month, user=None):
+    def get_data_collection_tasks(company, year, month, user=None, site=None):
         """Get all data collection tasks for a specific month - shared data visibility"""
         month_name = datetime(year, month, 1).strftime('%b')
         
-        # Get all checklist items
-        checklist_items = CompanyChecklist.objects.filter(company=company)
+        if site:
+            # For specific site, get site-specific checklist items
+            checklist_items = CompanyChecklist.objects.filter(company=company, site=site)
+            # print(f"🏢 Specific site {site.name}: Found {checklist_items.count()} checklist items")
+            return DataCollectionService._process_site_tasks(company, year, month_name, user, site, checklist_items)
+        else:
+            # For "All Locations", group tasks by site
+            sites = company.sites.all()
+            # print(f"🌐 All Locations: Found {sites.count()} sites")
+            grouped_tasks = []
+            
+            for current_site in sites:
+                site_checklist = CompanyChecklist.objects.filter(company=company, site=current_site)
+                # print(f"🏢 Site {current_site.name}: Found {site_checklist.count()} checklist items")
+                site_tasks = DataCollectionService._process_site_tasks(company, year, month_name, user, current_site, site_checklist)
+                # print(f"🏢 Site {current_site.name}: Generated {len(site_tasks)} tasks")
+                
+                if site_tasks:  # Only include sites with tasks
+                    grouped_tasks.append({
+                        'site': {
+                            'id': current_site.id,
+                            'name': current_site.name
+                        },
+                        'tasks': site_tasks
+                    })
+            
+            # print(f"🌐 Total grouped tasks: {len(grouped_tasks)} site groups")
+            return grouped_tasks
+    
+    @staticmethod
+    def _process_site_tasks(company, year, month_name, user, site, checklist_items):
         
+        """Process tasks for a specific site"""
         tasks = []
         for item in checklist_items:
-            if item.element.is_metered:
-                # For metered elements, create task for each active meter
-                # Match meters based on data element type (e.g., electricity, water, etc.)
+            element = item.element
+
+            # Skip emissions calculations - they should be dashboard metrics, not data collection tasks
+            if any(keyword in element.name_plain.lower() for keyword in ['emissions', 'ghg', 'co2', 'carbon footprint']):
+                print(f"⏭️ Skipping emissions task: {element.name_plain} (dashboard calculation)")
+                continue
+
+            if item.element.metered:
+                # For metered elements, create task for each active meter in this site
                 meter_type_mapping = {
                     'electricity': 'Electricity Consumption',
                     'water': 'Water Consumption', 
@@ -320,65 +351,97 @@ class DataCollectionService:
                     'renewable': 'Renewable Energy Usage'
                 }
                 
-                # Try to find the meter type based on element name
-                element_lower = item.element.name.lower()
-                meter_type = None
-                
-                # Use more specific matching - check for exact patterns first
-                if 'electricity' in element_lower:
-                    meter_type = 'Electricity Consumption'
-                elif 'water' in element_lower:
-                    meter_type = 'Water Consumption'
-                elif 'waste' in element_lower:
-                    meter_type = 'Waste to Landfill'
-                elif 'vehicle' in element_lower:
-                    meter_type = 'Vehicle Fuel Consumption'
-                elif 'generator' in element_lower:
-                    meter_type = 'Generator Fuel Consumption'
-                elif 'lpg' in element_lower:
-                    meter_type = 'LPG Usage'
-                elif 'renewable' in element_lower:
-                    meter_type = 'Renewable Energy Usage'
-                
-                # If no specific match found, get all active meters
-                if meter_type:
-                    # Try exact match first
-                    meters = Meter.objects.filter(
-                        company=company,
-                        type=meter_type,
-                        status='active'
-                    )
-                    
-                    # If no exact match, try flexible matching (for backwards compatibility)
-                    if not meters.exists():
-                        short_type = meter_type.replace(' Consumption', '').replace(' Usage', '').replace('Waste to Landfill', 'Waste')
-                        meters = Meter.objects.filter(
+                # Try to find appropriate meters based on element specifications
+                element = item.element
+                meters = []
+
+                # First, try to use carbon_specifications if available
+                if element.carbon_specifications and 'ef_data_dependencies' in element.carbon_specifications:
+                    dependencies = element.carbon_specifications['ef_data_dependencies']
+                    meter_types_to_find = []
+
+                    for dep in dependencies:
+                        dep_lower = dep.lower()
+                        if 'grid' in dep_lower or 'electricity' in dep_lower:
+                            meter_types_to_find.append('Electricity Consumption')
+                        elif 'district cooling' in dep_lower or 'cooling' in dep_lower:
+                            meter_types_to_find.append('District Cooling Consumption')
+                        elif 'water' in dep_lower:
+                            meter_types_to_find.append('Water Consumption')
+
+                    for meter_type in meter_types_to_find:
+                        type_meters = Meter.objects.filter(
                             company=company,
-                            type__icontains=short_type,
-                            status='active'
+                            type=meter_type,
+                            status='active',
+                            site=site
                         )
-                else:
-                    # Fallback: get all active meters
-                    meters = Meter.objects.filter(
-                        company=company,
-                        status='active'
-                    )
+                        meters.extend(type_meters)
+
+                # Fallback to element name pattern matching if no carbon_specifications
+                if not meters:
+                    element_lower = element.name_plain.lower()
+                    meter_type = None
+
+                    if 'electricity' in element_lower:
+                        meter_type = 'Electricity Consumption'
+                    elif 'water' in element_lower:
+                        meter_type = 'Water Consumption'
+                    elif 'waste' in element_lower:
+                        meter_type = 'Waste to Landfill'
+                    elif 'vehicle' in element_lower:
+                        meter_type = 'Vehicle Fuel Consumption'
+                    elif 'generator' in element_lower:
+                        meter_type = 'Generator Fuel Consumption'
+                    elif 'lpg' in element_lower:
+                        meter_type = 'LPG Usage'
+                    elif 'renewable' in element_lower:
+                        meter_type = 'Renewable Energy Usage'
+
+                    if meter_type:
+                        # Try exact match first
+                        exact_meters = Meter.objects.filter(
+                            company=company,
+                            type=meter_type,
+                            status='active',
+                            site=site
+                        )
+
+                        if exact_meters.exists():
+                            meters.extend(exact_meters)
+                        else:
+                            # If no exact match, try flexible matching
+                            short_type = meter_type.replace(' Consumption', '').replace(' Usage', '').replace('Waste to Landfill', 'Waste')
+                            flexible_meters = Meter.objects.filter(
+                                company=company,
+                                type__icontains=short_type,
+                                status='active',
+                                site=site
+                            )
+                            meters.extend(flexible_meters)
+
+                # If still no meters found and element is metered, skip this element (don't create tasks for ALL meters)
+                if not meters and element.metered:
+                    print(f"⚠️ No appropriate meters found for metered element: {element.name_plain}")
+                    continue
                 for meter in meters:
                     # Find existing submission from ANY user, or create new one for current user
                     submission = CompanyDataSubmission.objects.filter(
                         company=company,
-                        element=item.element,
+                        site=site,
+                        framework_element=item.element,
                         meter=meter,
                         reporting_year=year,
                         reporting_period=month_name
                     ).first()
-                    
+
                     if not submission:
                         # Create new submission record with current user
                         submission = CompanyDataSubmission.objects.create(
                             user=user,
                             company=company,
-                            element=item.element,
+                            site=site,
+                            framework_element=item.element,
                             meter=meter,
                             reporting_year=year,
                             reporting_period=month_name
@@ -395,18 +458,20 @@ class DataCollectionService:
                 # For non-metered elements, find existing submission from ANY user or create new
                 submission = CompanyDataSubmission.objects.filter(
                     company=company,
-                    element=item.element,
+                    site=site,
+                    framework_element=item.element,
                     meter=None,
                     reporting_year=year,
                     reporting_period=month_name
                 ).first()
-                
+
                 if not submission:
                     # Create new submission record with current user
                     submission = CompanyDataSubmission.objects.create(
                         user=user,
                         company=company,
-                        element=item.element,
+                        site=site,
+                        framework_element=item.element,
                         meter=None,
                         reporting_year=year,
                         reporting_period=month_name
@@ -419,14 +484,44 @@ class DataCollectionService:
                     'submission': submission,
                     'cadence': item.cadence
                 })
-        
-        return tasks
+
+        # Deduplicate tasks by grouping identical data requirements
+        # Use a simplified key that focuses on the actual data requirement, not how frameworks classify it
+        unique_tasks = {}
+        for task in tasks:
+            element = task['element']
+            meter = task['meter']
+
+            # Create a unique key based on the core data requirement (ignore metered/non-metered conflicts)
+            base_key = (
+                element.name_plain,  # Same data requirement name
+                element.unit or '',  # Same unit
+                element.cadence,     # Same reporting frequency
+            )
+
+            # For metered elements, include meter type AND meter ID to allow separate tasks for each meter
+            if task['type'] == 'metered' and meter:
+                task_key = base_key + (meter.type, meter.id)
+            else:
+                task_key = base_key + ('non_metered',)
+
+            # Prioritize metered tasks over non-metered when there's a conflict
+            if task_key not in unique_tasks:
+                unique_tasks[task_key] = task
+            elif task['type'] == 'metered' and unique_tasks[task_key]['type'] == 'non_metered':
+                # Replace non-metered with metered version for the same data requirement
+                unique_tasks[task_key] = task
+
+        deduplicated_tasks = list(unique_tasks.values())
+        print(f"🔄 Deduplicated tasks: {len(tasks)} → {len(deduplicated_tasks)}")
+
+        return deduplicated_tasks
     
     @staticmethod
-    def calculate_progress(company, year, month=None, user=None):
+    def calculate_progress(company, year, month=None, user=None, site=None):
         """Calculate data collection progress - counts data and evidence as separate tasks"""
         filters = {'company': company, 'reporting_year': year}
-        
+
         if month:
             month_name = datetime(year, month, 1).strftime('%b')
             filters['reporting_period'] = month_name
@@ -434,12 +529,16 @@ class DataCollectionService:
             # For yearly progress, ensure all tasks are created for all 12 months
             # Create submissions for the FULL year (Jan-Dec)
             for month_num in range(1, 13):
-                tasks = DataCollectionService.get_data_collection_tasks(company, year, month_num, user=user)
-        
+                tasks = DataCollectionService.get_data_collection_tasks(company, year, month_num, user=user, site=site)
+
         # Remove user filtering to allow shared data visibility
         # All users can see data entered by any user for the same company
-        
+
         submissions = CompanyDataSubmission.objects.filter(**filters)
+
+        # Filter by site if provided
+        if site:
+            submissions = submissions.filter(site=site)
         
         # Filter out submissions from inactive meters
         # Include submissions without meters (non-metered tasks) and submissions from active meters only
@@ -504,22 +603,31 @@ class DashboardService:
     """Service for dashboard statistics and data visualization"""
     
     @staticmethod
-    def get_dashboard_stats(company, user=None):
+    def get_dashboard_stats(company, user=None, site=None):
         """Get comprehensive dashboard statistics"""
         # Basic counts
         total_frameworks = company.companyframework_set.count()
-        total_data_elements = CompanyChecklist.objects.filter(company=company).count()
-        total_meters = Meter.objects.filter(company=company).count()
-        active_meters = Meter.objects.filter(company=company, status='active').count()
+        
+        # Filter data by site if provided
+        if site:
+            print(f"🏢 Dashboard filtered for site: {site.name}")
+            total_data_elements = CompanyChecklist.objects.filter(company=company, site=site).count()
+            total_meters = Meter.objects.filter(company=company, site=site).count()
+            active_meters = Meter.objects.filter(company=company, site=site, status='active').count()
+        else:
+            print(f"🌐 Dashboard showing aggregated stats for all locations")
+            total_data_elements = CompanyChecklist.objects.filter(company=company).count()
+            total_meters = Meter.objects.filter(company=company).count()
+            active_meters = Meter.objects.filter(company=company, status='active').count()
         
         # Data completeness (for current year)
         current_year = datetime.now().year
-        year_progress = DataCollectionService.calculate_progress(company, current_year, user=user)
+        year_progress = DataCollectionService.calculate_progress(company, current_year, user=user, site=site)
         
         # Monthly data for charts
         monthly_data = []
         for month in range(1, 13):
-            month_progress = DataCollectionService.calculate_progress(company, current_year, month, user=user)
+            month_progress = DataCollectionService.calculate_progress(company, current_year, month, user=user, site=site)
             monthly_data.append({
                 'month': datetime(current_year, month, 1).strftime('%b'),
                 'data_progress': month_progress['data_progress'],
@@ -535,3 +643,248 @@ class DashboardService:
             'evidence_completeness_percentage': year_progress['evidence_progress'],
             'monthly_data': monthly_data
         }
+
+
+class FrameworkProcessor:
+    """Processes framework elements and evaluates conditional logic"""
+
+    def __init__(self, company):
+        from .models import FrameworkElement, CompanyProfileAnswer
+        self.company = company
+        self.profile_answers = self._get_profile_answers()
+
+    def _get_profile_answers(self):
+        """Get all profile answers for the company (NEW SYSTEM)"""
+        from .models import CompanyProfileAnswer
+        answers = CompanyProfileAnswer.objects.filter(company=self.company)
+        return {
+            answer.question.question_id: str(answer.answer).lower() if answer.answer is not None else None
+            for answer in answers
+        }
+
+    def get_applicable_elements(self, framework_id=None, sector=None):
+        """Get all applicable framework elements for this company"""
+        from .models import FrameworkElement
+
+        queryset = FrameworkElement.objects.all()
+
+        if framework_id:
+            queryset = queryset.filter(framework_id=framework_id)
+
+        if sector:
+            queryset = queryset.filter(sector__in=[sector, 'generic'])
+
+        applicable_elements = []
+
+        for element in queryset:
+            if self._is_element_applicable(element):
+                applicable_elements.append(element)
+
+        return applicable_elements
+
+    def _is_element_applicable(self, element):
+        """Evaluate if an element is applicable based on conditional logic"""
+        # Must-have elements are always applicable
+        if element.type == 'must-have':
+            return True
+
+        # If no condition logic, conditional elements default to applicable
+        if not element.condition_logic:
+            return True
+
+        try:
+            return self._evaluate_condition(element.condition_logic)
+        except Exception as e:
+            # Log error and default to applicable for safety
+            print(f"Error evaluating condition for {element.element_id}: {e}")
+            return True
+
+    def _evaluate_condition(self, condition_logic):
+        """Evaluate conditional logic string"""
+        if not condition_logic:
+            return True
+
+        # Handle common condition patterns
+        condition_lower = condition_logic.lower()
+
+        # Location-based conditions
+        if 'dubai' in condition_lower:
+            company_emirate = getattr(self.company, 'emirate', '').lower()
+            return 'dubai' in company_emirate
+
+        # Sector-based conditions
+        if 'hospitality' in condition_lower:
+            company_sector = getattr(self.company, 'sector', '').lower()
+            return 'hospitality' in company_sector or 'hotel' in company_sector
+
+        # Activity-based conditions
+        if 'food service' in condition_lower or 'restaurant' in condition_lower:
+            activities = self.company.companyactivity_set.values_list('activity__name', flat=True)
+            activity_names = ' '.join(activities).lower()
+            return any(term in activity_names for term in ['food', 'restaurant', 'catering', 'dining'])
+
+        # Room count conditions
+        if 'rooms' in condition_lower:
+            import re
+            room_keywords = ['rooms', 'room count', 'number of rooms']
+            for keyword in room_keywords:
+                if keyword in self.profile_answers:
+                    try:
+                        room_count = int(self.profile_answers[keyword])
+                        # Extract room count threshold from condition
+                        match = re.search(r'(\d+)\s*rooms?', condition_lower)
+                        if match:
+                            threshold = int(match.group(1))
+                            return room_count >= threshold
+                    except (ValueError, TypeError):
+                        continue
+
+        # Swimming pool conditions
+        if 'pool' in condition_lower or 'swimming' in condition_lower:
+            pool_keywords = ['swimming pool', 'pool', 'pools', 'has pool']
+            for keyword in pool_keywords:
+                if keyword in self.profile_answers:
+                    answer = self.profile_answers[keyword]
+                    return answer in ['yes', 'true', '1', 'have', 'has']
+
+        # Spa conditions
+        if 'spa' in condition_lower:
+            spa_keywords = ['spa', 'wellness', 'spa services', 'has spa']
+            for keyword in spa_keywords:
+                if keyword in self.profile_answers:
+                    answer = self.profile_answers[keyword]
+                    return answer in ['yes', 'true', '1', 'have', 'has']
+
+        # Fleet conditions
+        if 'fleet' in condition_lower or 'vehicles' in condition_lower:
+            fleet_keywords = ['fleet', 'vehicles', 'company vehicles', 'transport']
+            for keyword in fleet_keywords:
+                if keyword in self.profile_answers:
+                    answer = self.profile_answers[keyword]
+                    if answer in ['yes', 'true', '1', 'have', 'has']:
+                        return True
+                    try:
+                        vehicle_count = int(answer)
+                        return vehicle_count > 0
+                    except (ValueError, TypeError):
+                        continue
+
+        # Default to applicable if condition cannot be evaluated
+        return True
+
+    def get_wizard_questions(self, framework_id=None):
+        """Get wizard questions to determine element applicability"""
+        from .models import FrameworkElement
+
+        # Determine applicable frameworks based on company profile
+        applicable_frameworks = self._get_applicable_frameworks()
+
+        # Filter elements by applicable frameworks
+        elements = FrameworkElement.objects.filter(
+            type='conditional',
+            wizard_question__isnull=False,
+            framework_id__in=applicable_frameworks
+        )
+
+        if framework_id:
+            elements = elements.filter(framework_id=framework_id)
+
+        questions = []
+        seen_questions = set()
+
+        for element in elements:
+            if element.wizard_question and element.wizard_question not in seen_questions:
+                questions.append({
+                    'id': f"wizard_{element.element_id}",
+                    'question': element.wizard_question,
+                    'element_id': element.element_id,
+                    'framework_id': element.framework_id,
+                    'condition_logic': element.condition_logic
+                })
+                seen_questions.add(element.wizard_question)
+
+        return questions
+
+    def _get_applicable_frameworks(self):
+        """Determine which frameworks apply to this company based on profile and user selections"""
+        from .models import CompanyFramework, Framework
+        applicable = []
+
+        # UAE Climate Law - mandatory for all UAE companies
+        applicable.append('UAE-CLIMATE-LAW-2024')
+
+        # Dubai Sustainable Tourism - mandatory for Dubai hospitality companies
+        if (self.company.emirate == 'dubai' and
+            self.company.sector == 'hospitality'):
+            applicable.append('DUBAI-SUSTAINABLE-TOURISM')
+
+        # Get user-selected voluntary frameworks from database
+        try:
+            company_frameworks = CompanyFramework.objects.filter(
+                company=self.company,
+                is_auto_assigned=False  # Only manually selected frameworks
+            ).select_related('framework')
+
+            for cf in company_frameworks:
+                # Since frontend now uses correct framework IDs, no mapping needed
+                framework_id = cf.framework.framework_id
+                print(f"🔍 Adding selected framework: {framework_id}")
+                applicable.append(framework_id)
+
+        except Exception as e:
+            # If error fetching selections, include no voluntary frameworks
+            print(f"Error fetching company frameworks: {e}")
+
+        return applicable
+
+    def calculate_carbon_emissions(self, element, value, period='monthly'):
+        """Calculate carbon emissions using framework specifications"""
+        if not element.carbon_specifications:
+            return {'error': 'No carbon specifications available'}
+
+        try:
+            carbon_specs = element.carbon_specifications
+            emission_factor = carbon_specs.get('emission_factor', 0)
+            unit = carbon_specs.get('unit', 'kg CO2e')
+            scope = carbon_specs.get('scope', 'unknown')
+
+            # Basic calculation: value * emission_factor
+            carbon_emissions = value * emission_factor
+
+            # Adjust for reporting period
+            if period == 'monthly' and 'annual' in carbon_specs.get('calculation_notes', ''):
+                carbon_emissions *= 12
+            elif period == 'quarterly':
+                carbon_emissions *= 4
+
+            return {
+                'carbon_emissions': carbon_emissions,
+                'unit': unit,
+                'scope': scope,
+                'emission_factor': emission_factor,
+                'calculation_method': carbon_specs.get('calculation_method', 'direct_multiplication')
+            }
+
+        except Exception as e:
+            return {'error': f'Carbon calculation failed: {str(e)}'}
+
+    def get_evidence_requirements(self, element):
+        """Get evidence requirements for an element"""
+        if not element.evidence_requirements:
+            return []
+
+        return element.evidence_requirements
+
+    def get_data_providers(self, element, emirate=None):
+        """Get recommended data providers by emirate"""
+        if not element.providers_by_emirate:
+            return []
+
+        emirate_key = (emirate or self.company.emirate or '').lower()
+        providers = element.providers_by_emirate.get(emirate_key, [])
+
+        # Fallback to generic providers if none found
+        if not providers:
+            providers = element.providers_by_emirate.get('generic', [])
+
+        return providers

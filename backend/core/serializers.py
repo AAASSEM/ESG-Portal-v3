@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (
-    Company, Activity, CompanyActivity, Framework, CompanyFramework,
-    DataElement, DataElementFrameworkMapping, ProfilingQuestion,
+    Company, Site, Activity, CompanyActivity, Framework, CompanyFramework,
+    DataElement, FrameworkElement, DataElementFrameworkMapping, ProfilingQuestion,
     CompanyProfileAnswer, Meter, CompanyDataSubmission, CompanyChecklist,
     ElementAssignment
 )
@@ -29,6 +29,20 @@ class DataElementSerializer(serializers.ModelSerializer):
     def get_frameworks(self, obj):
         mappings = DataElementFrameworkMapping.objects.filter(element=obj)
         return [{'framework': mapping.framework.name, 'cadence': mapping.cadence} for mapping in mappings]
+
+
+class FrameworkElementSerializer(serializers.ModelSerializer):
+    """Serializer for framework-based elements with rich specifications"""
+
+    class Meta:
+        model = FrameworkElement
+        fields = [
+            'element_id', 'framework_id', 'official_code', 'name_plain', 'description',
+            'category', 'type', 'unit', 'cadence', 'metered', 'meter_type', 'meter_scope',
+            'condition_logic', 'wizard_question', 'prompt', 'calculation', 'aggregation',
+            'evidence_requirements', 'providers_by_emirate', 'data_source_systems',
+            'quality_checks', 'tags', 'notes', 'sources', 'carbon_specifications'
+        ]
 
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -66,6 +80,17 @@ class CompanyCreateSerializer(serializers.ModelSerializer):
         return company
 
 
+class SiteSerializer(serializers.ModelSerializer):
+    meter_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Site
+        fields = ['id', 'name', 'location', 'address', 'is_active', 'meter_count', 'created_at', 'updated_at']
+    
+    def get_meter_count(self, obj):
+        return obj.meters.count()
+
+
 class ProfilingQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfilingQuestion
@@ -82,14 +107,15 @@ class CompanyProfileAnswerSerializer(serializers.ModelSerializer):
 
 class MeterSerializer(serializers.ModelSerializer):
     has_data = serializers.BooleanField(read_only=True)
+    site_name = serializers.CharField(source='site.name', read_only=True, allow_null=True)
     
     class Meta:
         model = Meter
-        fields = ['id', 'type', 'name', 'account_number', 'location_description', 'status', 'has_data', 'created_at']
+        fields = ['id', 'type', 'name', 'account_number', 'location_description', 'status', 'has_data', 'created_at', 'site_name']
 
 
 class CompanyDataSubmissionSerializer(serializers.ModelSerializer):
-    element_name = serializers.CharField(source='element.name', read_only=True)
+    element_name = serializers.CharField(read_only=True)
     meter_name = serializers.CharField(source='meter.name', read_only=True, allow_null=True)
     status = serializers.CharField(read_only=True)
     assigned_to = serializers.SerializerMethodField()
@@ -110,7 +136,7 @@ class CompanyDataSubmissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompanyDataSubmission
         fields = [
-            'id', 'element', 'element_name', 'meter', 'meter_name', 
+            'id', 'element_name', 'meter', 'meter_name',
             'reporting_year', 'reporting_period', 'value', 'evidence_file',
             'status', 'assigned_to', 'assigned_by_name', 'assigned_at',
             'created_at', 'updated_at'
@@ -118,22 +144,33 @@ class CompanyDataSubmissionSerializer(serializers.ModelSerializer):
 
 
 class CompanyChecklistSerializer(serializers.ModelSerializer):
-    element_name = serializers.CharField(source='element.name', read_only=True)
+    element_name = serializers.CharField(source='element.name_plain', read_only=True)
     element_description = serializers.CharField(source='element.description', read_only=True)
     element_unit = serializers.CharField(source='element.unit', read_only=True)
-    is_metered = serializers.BooleanField(source='element.is_metered', read_only=True)
+    is_metered = serializers.BooleanField(source='element.metered', read_only=True)
     category = serializers.CharField(source='element.category', read_only=True)
     frameworks_list = serializers.SerializerMethodField()
+    site_info = serializers.SerializerMethodField()
     
     class Meta:
         model = CompanyChecklist
         fields = [
             'id', 'element', 'element_name', 'element_description', 'element_unit',
-            'is_metered', 'is_required', 'cadence', 'frameworks_list', 'created_at', 'category'
+            'is_metered', 'is_required', 'cadence', 'frameworks_list', 'created_at', 'category', 'site_info'
         ]
     
     def get_frameworks_list(self, obj):
-        return [framework.name for framework in obj.frameworks.all()]
+        return [obj.framework_id] if obj.framework_id else []
+    
+    def get_site_info(self, obj):
+        """Return site information for this checklist item"""
+        if obj.site:
+            return {
+                'id': obj.site.id,
+                'name': obj.site.name,
+                'location': obj.site.location
+            }
+        return None
 
 
 class ProgressSerializer(serializers.Serializer):

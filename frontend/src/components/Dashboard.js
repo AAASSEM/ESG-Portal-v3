@@ -825,12 +825,12 @@ const Dashboard = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [chartData, handleMeterNavigation]);
 
-  const kpiCards = dashboardData ? (() => {
+  const kpiCards = (() => {
     // Calculate time-range specific metrics
     let periodLabel = '';
-    let dataPointsCount = dashboardData.total_data_elements || 0;
+    let dataPointsCount = dashboardData?.total_data_elements || 0;
     let changePercent = 0;
-    
+
     switch(selectedTimeRange) {
       case 'Last 7 Days':
         periodLabel = '7d';
@@ -840,21 +840,21 @@ const Dashboard = () => {
         break;
       case 'This Month':
         periodLabel = '30d';
-        dataPointsCount = dashboardData.total_data_elements || 0;
+        dataPointsCount = dashboardData?.total_data_elements || 0;
         changePercent = 8.5;
         break;
       case 'Last Quarter':
         periodLabel = 'Q3';
-        dataPointsCount = dashboardData.total_data_elements || 0;
+        dataPointsCount = dashboardData?.total_data_elements || 0;
         changePercent = -2.1; // Slight decrease
         break;
       case 'Last Year':
         periodLabel = '12m';
-        dataPointsCount = dashboardData.total_data_elements || 0;
+        dataPointsCount = dashboardData?.total_data_elements || 0;
         changePercent = 24.7; // Year over year growth
         break;
     }
-    
+
     return [
       {
         title: `Data Points (${periodLabel})`,
@@ -867,7 +867,7 @@ const Dashboard = () => {
       },
       {
         title: 'Active Meters',
-        value: dashboardData.active_meters || '0',
+        value: dashboardData?.active_meters || '0',
         unit: 'units',
         change: 0,
         trend: 'up',
@@ -876,7 +876,7 @@ const Dashboard = () => {
       },
       {
         title: 'Frameworks',
-        value: dashboardData.total_frameworks || '0',
+        value: dashboardData?.total_frameworks || '0',
         unit: 'active',
         change: 0,
         trend: 'up',
@@ -885,54 +885,17 @@ const Dashboard = () => {
       },
       {
         title: `Completeness (${periodLabel})`,
-        value: Math.round(dashboardData.data_completeness_percentage || 0),
+        value: Math.round(dashboardData?.data_completeness_percentage || 0),
         unit: '%',
-        change: selectedTimeRange === 'Last 7 Days' ? 5.2 : 
-                selectedTimeRange === 'This Month' ? 3.1 : 
+        change: selectedTimeRange === 'Last 7 Days' ? 5.2 :
+                selectedTimeRange === 'This Month' ? 3.1 :
                 selectedTimeRange === 'Last Quarter' ? -1.5 : 11.0,
         trend: selectedTimeRange === 'Last Quarter' ? 'down' : 'up',
         color: 'yellow',
         icon: 'fas fa-chart-pie'
       }
     ];
-  })() : [
-    {
-      title: 'Energy Consumption',
-      value: '2,450',
-      unit: 'kWh',
-      change: -12.5,
-      trend: 'down',
-      color: 'yellow',
-      icon: 'fas fa-bolt'
-    },
-    {
-      title: 'Water Usage',
-      value: '1,250',
-      unit: 'L/day',
-      change: 8.2,
-      trend: 'up',
-      color: 'blue',
-      icon: 'fas fa-tint'
-    },
-    {
-      title: 'GHG Emissions',
-      value: '245',
-      unit: 'tCO2e',
-      change: -15.7,
-      trend: 'down',
-      color: 'gray',
-      icon: 'fas fa-smog'
-    },
-    {
-      title: 'Waste Generated',
-      value: '89',
-      unit: 'kg/day',
-      change: -22.1,
-      trend: 'down',
-      color: 'green',
-      icon: 'fas fa-trash-alt'
-    }
-  ];
+  })();
 
   const frameworkStatus = (() => {
     // Use real framework data from API
@@ -1571,3 +1534,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

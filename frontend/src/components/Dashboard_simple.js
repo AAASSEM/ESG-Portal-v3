@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLocationContext } from '../context/LocationContext';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { selectedLocation, loading: locationLoading } = useLocationContext();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const companyId = 1;
@@ -70,6 +72,52 @@ const Dashboard = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while LocationContext is initializing
+  if (locationLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-3 text-sm sm:text-base text-gray-600">Loading location data...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while component is fetching data
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-3 text-sm sm:text-base text-gray-600">Loading dashboard...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if location is selected ONLY AFTER LocationContext has loaded
+  if (!locationLoading && !selectedLocation) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="flex items-center justify-center py-12">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
+            <i className="fas fa-map-marker-alt text-4xl text-yellow-600 mb-4"></i>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">No Location Selected</h2>
+            <p className="text-gray-600 mb-4">Please select a location to view dashboard data.</p>
+            <button 
+              onClick={() => navigate('/location')}
+              className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium"
+            >
+              <i className="fas fa-arrow-left mr-2"></i>
+              Go to Location Selection
+            </button>
+          </div>
         </div>
       </div>
     );

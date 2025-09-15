@@ -1,0 +1,1584 @@
+[
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "G",
+    "official_code": "GK-G-001",
+    "name_plain": "Environmental Manager Appointment",
+    "description": "Appointment of an environmental manager from amongst the staff of the establishment responsible for sustainability initiatives",
+    "unit": "boolean",
+    "cadence": "on change",
+    "evidence": [
+      "Job description",
+      "Organizational chart",
+      "Management meeting minutes"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Have you appointed an environmental manager from your staff?",
+    "prompt": "Confirm the appointment of an environmental manager responsible for sustainability initiatives.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Internal HR department"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "HR management system",
+      "Organizational documents"
+    ],
+    "quality_checks": [
+      "Verify the environmental manager is included in the organizational structure",
+      "Ensure job description includes environmental responsibilities"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "governance",
+      "staff",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "The environmental manager can be any staff member but is typically from engineering, housekeeping, front desk, HR, or management.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "G",
+    "official_code": "GK-G-002",
+    "name_plain": "Sustainability Policy",
+    "description": "A formal sustainability policy covering environmental, social, and economic commitments of the establishment",
+    "unit": "boolean",
+    "cadence": "every 3 years",
+    "evidence": [
+      "Sustainability policy document",
+      "Management approval records"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have a formal sustainability policy?",
+    "prompt": "Confirm the existence of a sustainability policy covering environmental, social, and economic commitments.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Management team"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Document management system",
+      "Policy repository"
+    ],
+    "quality_checks": [
+      "Verify policy is less than 3 years old",
+      "Ensure policy covers both environmental and social commitments"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "governance",
+      "policy",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "The policy must include commitments to resource consumption, circular economy, reducing pollutants, carbon footprint reduction, and biodiversity protection.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "G",
+    "official_code": "GK-G-003",
+    "name_plain": "Annual Action Plan",
+    "description": "Objectives and annual action plan for continuous improvement with minimum three action points across different sustainability areas",
+    "unit": "count",
+    "cadence": "annual",
+    "evidence": [
+      "Action plan document",
+      "Progress reports",
+      "Meeting minutes"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have an annual action plan with sustainability objectives?",
+    "prompt": "Enter the number of action points in your annual sustainability action plan.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Management team",
+        "Environmental manager"
+      ]
+    },
+    "calculation": "Count of distinct action points in the annual plan",
+    "aggregation": null,
+    "data_source_systems": [
+      "Project management system",
+      "Action plan documents"
+    ],
+    "quality_checks": [
+      "Verify minimum of three action points across different sustainability areas",
+      "Ensure action plan is available to staff"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "governance",
+      "planning",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "Action points should reflect concrete work toward fulfilling the sustainability policy.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "GK-E-001",
+    "name_plain": "Total GHG Emissions",
+    "description": "Calculation of the establishment's carbon footprint using a carbon measurement tool",
+    "unit": "tCO2e",
+    "cadence": "annual",
+    "evidence": [
+      "Carbon footprint report",
+      "Calculation tool output"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you calculate your establishment's carbon footprint annually?",
+    "prompt": "Enter the total carbon footprint (tCO2e) calculated for your establishment.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Environmental manager",
+        "Carbon calculation tools"
+      ]
+    },
+    "calculation": "Using carbon measurement tool (e.g., HCMI) to calculate total emissions from all sources",
+    "aggregation": "Aggregate all emission sources to organizational total",
+    "data_source_systems": [
+      "Carbon calculation tool",
+      "Energy management system"
+    ],
+    "quality_checks": [
+      "Ensure all relevant emission sources are included",
+      "Verify calculation methodology follows recognized standards"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "environmental",
+      "carbon",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "Carbon footprint calculation should include direct emissions from owned or controlled sources and indirect emissions from electricity.",
+    "sources": [],
+    "carbon": {
+      "scope": {
+        "scope_number": [
+          1,
+          2
+        ],
+        "subcategory": "all relevant categories",
+        "method": [
+          "GHG_protocol",
+          "HCMI"
+        ]
+      },
+      "co2e_equation": "Total = Σ(activity_data × emission_factor) across all relevant sources",
+      "emission_factor_requirements": {
+        "factor_type": "multi-source",
+        "factor_units": {
+          "input": "various",
+          "output": "tCO2e"
+        }
+      },
+      "ef_determination": "Use UAE-specific or international standard emission factors for each activity stream",
+      "ef_readiness_state": "available",
+      "ef_data_dependencies": [
+        "Electricity EF",
+        "Fuel EFs",
+        "Refrigerant GWPs",
+        "Waste EFs"
+      ],
+      "ef_default_strategy": "Use published UAE/region EFs, fallback to international standards if local not available",
+      "ef_review_cycle": "Annually",
+      "override_policy": "Update factors if government releases new ones",
+      "intensity_outputs": [
+        {
+          "metric": "tCO2e_per_occupied_room",
+          "equation": "total CO2e / total occupied room nights"
+        },
+        {
+          "metric": "tCO2e_per_m2",
+          "equation": "total CO2e / total floor area"
+        }
+      ],
+      "example_calculation": "If Electricity=27.6 tCO2e, Fuels=1.3 tCO2e, Waste=0.3 tCO2e, then Total = 29.2 tCO2e"
+    }
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "G",
+    "official_code": "GK-G-004",
+    "name_plain": "Carbon Reduction Target",
+    "description": "Concrete target set by the establishment to reduce its carbon footprint",
+    "unit": "%",
+    "cadence": "annual",
+    "evidence": [
+      "Carbon reduction target document",
+      "Action plan",
+      "Management approval"
+    ],
+    "type": "conditional",
+    "condition_logic": "Entity has calculated its carbon footprint and is committed to reduction",
+    "wizard_question": "Have you set a target to reduce your carbon footprint?",
+    "prompt": "Enter the percentage reduction target for your carbon footprint.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Management team",
+        "Environmental manager"
+      ]
+    },
+    "calculation": "Percentage reduction target compared to baseline year",
+    "aggregation": null,
+    "data_source_systems": [
+      "Sustainability planning documents",
+      "Carbon management system"
+    ],
+    "quality_checks": [
+      "Verify target is specific, measurable, and time-bound",
+      "Ensure target is aligned with industry best practices"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "governance",
+      "carbon",
+      "conditional",
+      "green_key_guideline"
+    ],
+    "notes": "This is a guideline criterion that becomes mandatory after the first year of certification.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "GK-E-002",
+    "name_plain": "Water Consumption",
+    "description": "Total water consumption from all sources registered at least monthly",
+    "unit": "m³",
+    "cadence": "monthly",
+    "evidence": [
+      "Water utility bills",
+      "Water meter readings",
+      "Consumption logs"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you monitor your total water consumption monthly?",
+    "prompt": "Enter the total water consumed (in cubic meters) each month.",
+    "metered": true,
+    "meter_type": "water",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "DEWA"
+      ],
+      "Abu Dhabi": [
+        "ADDC",
+        "AADC"
+      ],
+      "Sharjah": [
+        "SEWA"
+      ],
+      "Northern Emirates": [
+        "Etihad WE"
+      ]
+    },
+    "calculation": "Sum of water meter readings or billed volume over the period",
+    "aggregation": "Aggregate monthly water use to annual total; breakdown by site if multiple",
+    "data_source_systems": [
+      "Utility billing system",
+      "Building management system"
+    ],
+    "quality_checks": [
+      "Cross-verify billed water usage with meter readings",
+      "Flag anomalies (e.g., sudden surges indicating leaks)"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "environmental",
+      "water",
+      "consumption",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "Regular monitoring helps detect leaks and identify conservation opportunities.",
+    "sources": [],
+    "carbon": {
+      "scope": {
+        "scope_number": [
+          3
+        ],
+        "subcategory": "upstream_treatment_of_water",
+        "method": [
+          "activity_data"
+        ]
+      },
+      "co2e_equation": "tCO2e = m³ × EF",
+      "emission_factor_requirements": {
+        "factor_type": "volumetric",
+        "factor_units": {
+          "input": "m³",
+          "output": "tCO2e"
+        }
+      },
+      "ef_determination": "Use UAE-specific emission factors for water supply and wastewater treatment.",
+      "ef_readiness_state": "available",
+      "ef_data_dependencies": [
+        "Regional water/wastewater emission factors"
+      ],
+      "ef_default_strategy": "Use national average EFs if regional not available, fallback to international standards.",
+      "ef_review_cycle": "Annually",
+      "override_policy": "Update factors if government releases new ones.",
+      "intensity_outputs": [
+        {
+          "metric": "m³_per_occupied_room",
+          "equation": "total m³ / total occupied room nights"
+        }
+      ],
+      "example_calculation": "If annual consumption = 10,000 m³ and EF = 0.000344 tCO2e/m³, then emissions = 3.44 tCO2e."
+    }
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "GK-E-003",
+    "name_plain": "Water Flow Rate - Showers",
+    "description": "Water flow rate in showers, which must not exceed 9 litres per minute in at least 75% of showers",
+    "unit": "L/min",
+    "cadence": "on installation",
+    "evidence": [
+      "Showerhead specifications",
+      "Flow rate measurements",
+      "Installation records"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do your showers have a maximum flow rate of 9 litres per minute?",
+    "prompt": "Enter the flow rate (L/min) of your showerheads.",
+    "metered": true,
+    "meter_type": "water",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Plumbing contractors",
+        "Facility management"
+      ]
+    },
+    "calculation": "Direct measurement of flow rate using flow meter or measuring container",
+    "aggregation": "Calculate percentage of showers meeting the 9 L/min requirement",
+    "data_source_systems": [
+      "Facility maintenance records",
+      "Plumbing specifications"
+    ],
+    "quality_checks": [
+      "Verify at least 75% of showers meet the requirement",
+      "Ensure measurements are taken under normal operating pressure"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "environmental",
+      "water",
+      "efficiency",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "Low-flow showerheads significantly reduce water consumption without affecting guest experience.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "GK-E-004",
+    "name_plain": "Water Flow Rate - Taps",
+    "description": "Water flow rate in taps, which must not exceed 8 litres per minute in at least 75% of taps",
+    "unit": "L/min",
+    "cadence": "on installation",
+    "evidence": [
+      "Tap specifications",
+      "Flow rate measurements",
+      "Installation records"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do your taps have a maximum flow rate of 8 litres per minute?",
+    "prompt": "Enter the flow rate (L/min) of your taps.",
+    "metered": true,
+    "meter_type": "water",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Plumbing contractors",
+        "Facility management"
+      ]
+    },
+    "calculation": "Direct measurement of flow rate using flow meter or measuring container",
+    "aggregation": "Calculate percentage of taps meeting the 8 L/min requirement",
+    "data_source_systems": [
+      "Facility maintenance records",
+      "Plumbing specifications"
+    ],
+    "quality_checks": [
+      "Verify at least 75% of taps meet the requirement",
+      "Ensure measurements are taken under normal operating pressure"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "environmental",
+      "water",
+      "efficiency",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "Aerators and flow restrictors can be installed to reduce tap flow rates.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "GK-E-005",
+    "name_plain": "Dual Flush Toilets",
+    "description": "Toilets with 3/6 litres dual flush system",
+    "unit": "boolean",
+    "cadence": "on installation",
+    "evidence": [
+      "Toilet specifications",
+      "Installation records",
+      "Physical inspection"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Are your newly purchased toilets dual flush (3/6 litres)?",
+    "prompt": "Confirm that newly purchased toilets have a 3/6 litres dual flush system.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Plumbing contractors",
+        "Facility management"
+      ]
+    },
+    "calculation": null,
+    "aggregation": "Calculate percentage of toilets with dual flush",
+    "data_source_systems": [
+      "Facility maintenance records",
+      "Plumbing specifications"
+    ],
+    "quality_checks": [
+      "Verify dual flush mechanism is working properly",
+      "Ensure flush volumes are 3 and 6 litres"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "environmental",
+      "water",
+      "efficiency",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "Dual flush toilets can reduce water consumption by up to 67% compared to older models.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "G",
+    "official_code": "GK-G-005",
+    "name_plain": "Water Leak Detection System",
+    "description": "System to regularly check for dripping taps and leaky toilets as well as leaky swimming pools",
+    "unit": "count",
+    "cadence": "daily",
+    "evidence": [
+      "Leak detection logs",
+      "Maintenance records",
+      "Staff checklists"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have a system to regularly check for water leaks?",
+    "prompt": "Enter the number of leak checks performed daily.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Housekeeping staff",
+        "Maintenance team"
+      ]
+    },
+    "calculation": "Count of daily leak detection checks performed",
+    "aggregation": "Aggregate to monthly total of checks performed",
+    "data_source_systems": [
+      "Maintenance management system",
+      "Housekeeping logs"
+    ],
+    "quality_checks": [
+      "Verify checks are performed daily",
+      "Ensure leaks are promptly repaired when detected"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "governance",
+      "water",
+      "maintenance",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "A single leaking toilet can waste 750 litres of water per day.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "GK-E-006",
+    "name_plain": "Sub-metered Water Consumption",
+    "description": "Separate water meters installed in areas with high degree of water consumption",
+    "unit": "m³",
+    "cadence": "monthly",
+    "evidence": [
+      "Sub-meter readings",
+      "Installation records",
+      "Consumption reports"
+    ],
+    "type": "conditional",
+    "condition_logic": "Entity has areas with high water consumption (kitchens, pools, laundry)",
+    "wizard_question": "Do you have separate water meters for high consumption areas?",
+    "prompt": "Enter the monthly water consumption (m³) from sub-metered areas.",
+    "metered": true,
+    "meter_type": "water",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Plumbing contractors",
+        "Facility management"
+      ]
+    },
+    "calculation": "Sum of sub-meter readings for high consumption areas",
+    "aggregation": "Aggregate monthly sub-meter readings to annual total",
+    "data_source_systems": [
+      "Building management system",
+      "Utility monitoring system"
+    ],
+    "quality_checks": [
+      "Verify sub-meters are installed in high consumption areas",
+      "Ensure readings are taken monthly"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "environmental",
+      "water",
+      "monitoring",
+      "conditional",
+      "green_key_guideline"
+    ],
+    "notes": "Sub-metering helps identify specific areas of high water use and target conservation efforts.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "GK-E-007",
+    "name_plain": "Electricity Consumption",
+    "description": "Total energy use registered at least once a month",
+    "unit": "kWh",
+    "cadence": "monthly",
+    "evidence": [
+      "Electricity bills",
+      "Meter readings",
+      "Energy management system"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you monitor your total electricity consumption monthly?",
+    "prompt": "Enter the total electricity consumed (in kWh) each month.",
+    "metered": true,
+    "meter_type": "electricity",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "DEWA"
+      ],
+      "Abu Dhabi": [
+        "ADDC",
+        "AADC"
+      ],
+      "Sharjah": [
+        "SEWA"
+      ],
+      "Northern Emirates": [
+        "Etihad WE"
+      ]
+    },
+    "calculation": "Sum of electricity meter readings or billed volume over the period",
+    "aggregation": "Aggregate monthly electricity use to annual total; breakdown by site if multiple",
+    "data_source_systems": [
+      "Utility billing system",
+      "Building energy management system"
+    ],
+    "quality_checks": [
+      "Compare billed kWh against meter readings for consistency",
+      "Flag abnormal consumption spikes month-over-month"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "environmental",
+      "energy",
+      "electricity",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "Regular monitoring helps identify energy conservation opportunities and unusual consumption patterns.",
+    "sources": [],
+    "carbon": {
+      "scope": {
+        "scope_number": [
+          2
+        ],
+        "subcategory": "purchased_electricity",
+        "method": [
+          "location_based"
+        ]
+      },
+      "co2e_equation": "tCO2e = kWh × EF",
+      "emission_factor_requirements": {
+        "factor_type": "grid_average",
+        "factor_units": {
+          "input": "kWh",
+          "output": "tCO2e"
+        }
+      },
+      "ef_determination": "Use UAE-specific grid emission factor (location-based) per kWh",
+      "ef_readiness_state": "available (published by local authorities or international values)",
+      "ef_data_dependencies": [
+        "Annual grid CO2 emission factor for each utility region"
+      ],
+      "ef_default_strategy": "If company-specific factor unavailable, use national grid average EF",
+      "ef_review_cycle": "Annually (update EF based on latest data)",
+      "override_policy": "EF may be updated if government issues new factor; document any overrides",
+      "intensity_outputs": [
+        {
+          "metric": "kWh_per_occupied_room",
+          "equation": "total kWh / total occupied room nights"
+        },
+        {
+          "metric": "kWh_per_m2",
+          "equation": "total kWh / facility square meters"
+        }
+      ],
+      "example_calculation": "If annual consumption = 120,000 kWh and EF = 0.00023 tCO2e/kWh, then emissions = 27.6 tCO2e."
+    }
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "GK-E-008",
+    "name_plain": "Energy-efficient Lighting",
+    "description": "Percentage of energy-efficient light bulbs in the establishment",
+    "unit": "%",
+    "cadence": "on installation",
+    "evidence": [
+      "Lighting inventory",
+      "Purchase records",
+      "Physical inspection"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "What percentage of your light bulbs are energy-efficient?",
+    "prompt": "Enter the percentage of energy-efficient light bulbs in your establishment.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Facility management",
+        "Electrical contractors"
+      ]
+    },
+    "calculation": "(Number of energy-efficient bulbs / Total number of bulbs) × 100",
+    "aggregation": "Calculate percentage across all areas of the establishment",
+    "data_source_systems": [
+      "Asset management system",
+      "Facility maintenance records"
+    ],
+    "quality_checks": [
+      "Verify at least 75% of bulbs are energy-efficient",
+      "Ensure calculation includes all lighting in the establishment"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "environmental",
+      "energy",
+      "lighting",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "At least 75% of all light bulbs must be energy-efficient and at least 50% must be LED bulbs.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "GK-E-009",
+    "name_plain": "LED Lighting Percentage",
+    "description": "Percentage of LED light bulbs in the establishment",
+    "unit": "%",
+    "cadence": "on installation",
+    "evidence": [
+      "Lighting inventory",
+      "Purchase records",
+      "Physical inspection"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "What percentage of your light bulbs are LED?",
+    "prompt": "Enter the percentage of LED light bulbs in your establishment.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Facility management",
+        "Electrical contractors"
+      ]
+    },
+    "calculation": "(Number of LED bulbs / Total number of bulbs) × 100",
+    "aggregation": "Calculate percentage across all areas of the establishment",
+    "data_source_systems": [
+      "Asset management system",
+      "Facility maintenance records"
+    ],
+    "quality_checks": [
+      "Verify at least 50% of bulbs are LED",
+      "Ensure calculation includes all lighting in the establishment"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "environmental",
+      "energy",
+      "lighting",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "LED bulbs use up to 90% less energy and last up to 25 times longer than incandescent bulbs.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "GK-E-010",
+    "name_plain": "Renewable Energy Percentage",
+    "description": "Percentage of renewable and/or eco-labelled electricity used or purchased by the establishment",
+    "unit": "%",
+    "cadence": "monthly",
+    "evidence": [
+      "Energy purchase contracts",
+      "Renewable energy certificates",
+      "Utility bills"
+    ],
+    "type": "conditional",
+    "condition_logic": "Entity purchases or generates renewable energy",
+    "wizard_question": "Do you use or purchase renewable energy?",
+    "prompt": "Enter the percentage of renewable energy in your total energy consumption.",
+    "metered": true,
+    "meter_type": "electricity",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "DEWA (Shams Dubai)"
+      ],
+      "Abu Dhabi": [
+        "ADPower/Masdar"
+      ],
+      "Other": [
+        "Local utility renewable programs"
+      ]
+    },
+    "calculation": "(Renewable energy kWh / Total energy kWh) × 100",
+    "aggregation": "Calculate monthly percentage and aggregate to annual average",
+    "data_source_systems": [
+      "Utility billing system",
+      "Energy management system"
+    ],
+    "quality_checks": [
+      "Verify renewable energy sources are certified",
+      "Ensure calculation method is consistent"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "environmental",
+      "energy",
+      "renewable",
+      "conditional",
+      "green_key_guideline"
+    ],
+    "notes": "There are two levels: 50% for basic guideline and 100% for advanced guideline.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "G",
+    "official_code": "GK-G-006",
+    "name_plain": "Automatic Energy Control Systems",
+    "description": "Automatic systems that turn off lights and electrical appliances when leaving guest/meeting rooms",
+    "unit": "boolean",
+    "cadence": "on installation",
+    "evidence": [
+      "System specifications",
+      "Installation records",
+      "Physical inspection"
+    ],
+    "type": "conditional",
+    "condition_logic": "Entity has implemented energy control systems",
+    "wizard_question": "Do you have automatic systems to turn off electricity when rooms are not in use?",
+    "prompt": "Confirm the presence of automatic energy control systems in guest and meeting rooms.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Building management system providers",
+        "Electrical contractors"
+      ]
+    },
+    "calculation": null,
+    "aggregation": "Calculate percentage of rooms with automatic control systems",
+    "data_source_systems": [
+      "Building management system",
+      "Facility maintenance records"
+    ],
+    "quality_checks": [
+      "Verify systems are installed and functioning properly",
+      "Ensure systems cover at least 75% of guest rooms"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "governance",
+      "energy",
+      "automation",
+      "conditional",
+      "green_key_guideline"
+    ],
+    "notes": "Key card systems, motion sensors, and occupancy sensors are common types of automatic control systems.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "GK-E-011",
+    "name_plain": "Non-hazardous Waste Generated",
+    "description": "Total amount of waste generated by the establishment",
+    "unit": "kg",
+    "cadence": "monthly",
+    "evidence": [
+      "Waste collection invoices",
+      "Weighbridge slips",
+      "Waste management logs"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you track your total waste generation?",
+    "prompt": "Enter the total quantity of waste generated (kg) for the period.",
+    "metered": false,
+    "meter_type": "waste",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Waste management companies",
+        "Municipal waste services"
+      ]
+    },
+    "calculation": "Sum of all waste collected from the facility",
+    "aggregation": "Aggregate waste data across all sites; break down by waste type if needed",
+    "data_source_systems": [
+      "Waste management system",
+      "Facility maintenance logs"
+    ],
+    "quality_checks": [
+      "Ensure units (kg/tonnes) are consistent across records",
+      "Compare waste generated per employee or per room against benchmarks"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "environmental",
+      "waste",
+      "generation",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "Tracking waste generation is the first step in implementing waste reduction strategies.",
+    "sources": [],
+    "carbon": {
+      "scope": {
+        "scope_number": [
+          3
+        ],
+        "subcategory": "waste_disposal",
+        "method": [
+          "activity_data"
+        ]
+      },
+      "co2e_equation": "tCO2e = waste(kg) × EF (by waste type)",
+      "emission_factor_requirements": {
+        "factor_type": "waste_type_specific",
+        "factor_units": {
+          "input": "kg",
+          "output": "tCO2e"
+        }
+      },
+      "ef_determination": "Use default emission factors for landfill/incineration",
+      "ef_readiness_state": "expected",
+      "ef_data_dependencies": [
+        "Waste composition or type"
+      ],
+      "ef_default_strategy": "If composition unknown, assume municipal solid waste default EF",
+      "ef_review_cycle": "Annually or as waste management technology changes",
+      "override_policy": "No override unless specific facility methane capture data is available",
+      "intensity_outputs": [
+        {
+          "metric": "kg_waste_per_occupied_room",
+          "equation": "total kg waste / total occupied room nights"
+        }
+      ],
+      "example_calculation": "If 5,000 kg waste generated and EF = 0.00006 tCO2e/kg, then ~0.3 tCO2e emitted."
+    }
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "G",
+    "official_code": "GK-G-007",
+    "name_plain": "Waste Separation Categories",
+    "description": "Number of waste categories separated as per national legislation with a minimum of three categories",
+    "unit": "count",
+    "cadence": "on implementation",
+    "evidence": [
+      "Waste separation plan",
+      "Bin labeling",
+      "Staff training records"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you separate waste into different categories?",
+    "prompt": "Enter the number of waste categories you separate for recycling.",
+    "metered": false,
+    "meter_type": "waste",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Waste management companies",
+        "Municipal waste services"
+      ]
+    },
+    "calculation": "Count of distinct waste separation categories",
+    "aggregation": null,
+    "data_source_systems": [
+      "Waste management system",
+      "Operational procedures"
+    ],
+    "quality_checks": [
+      "Verify at least three categories are separated",
+      "Ensure separation meets national legislation requirements"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "governance",
+      "waste",
+      "separation",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "Common categories include paper, plastic, glass, organic, and hazardous waste.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "GK-E-012",
+    "name_plain": "Recycling Rate",
+    "description": "Percentage of waste diverted from landfill to recycling",
+    "unit": "%",
+    "cadence": "monthly",
+    "evidence": [
+      "Recycling vendor receipts",
+      "Waste management logs",
+      "Recycling reports"
+    ],
+    "type": "conditional",
+    "condition_logic": "Entity separates and recycles part of its waste stream",
+    "wizard_question": "Do you track your recycling rate?",
+    "prompt": "Enter the percentage of waste that is recycled.",
+    "metered": false,
+    "meter_type": "waste",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Recycling services",
+        "Waste management companies"
+      ]
+    },
+    "calculation": "(Recycled waste kg / Total waste kg) × 100",
+    "aggregation": "Calculate monthly rate and aggregate to annual average",
+    "data_source_systems": [
+      "Waste management system",
+      "Recycling contractor reports"
+    ],
+    "quality_checks": [
+      "Verify recycled amount ≤ total waste generated for same period",
+      "Cross-check recycling records against waste generation"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "environmental",
+      "waste",
+      "recycling",
+      "conditional",
+      "green_key_guideline"
+    ],
+    "notes": "A higher recycling rate indicates better waste management practices.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "GK-E-013",
+    "name_plain": "Organic Waste Composting",
+    "description": "Amount of organic waste composted or used for other purposes",
+    "unit": "kg",
+    "cadence": "monthly",
+    "evidence": [
+      "Composting records",
+      "Waste management logs",
+      "Compost use documentation"
+    ],
+    "type": "conditional",
+    "condition_logic": "Entity generates organic waste and has composting facilities",
+    "wizard_question": "Do you compost your organic waste?",
+    "prompt": "Enter the quantity of organic waste composted (kg) in the period.",
+    "metered": false,
+    "meter_type": "waste",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Composting services",
+        "Waste management companies"
+      ]
+    },
+    "calculation": "Sum of all organic waste sent for composting",
+    "aggregation": "Aggregate monthly composting quantities to annual total",
+    "data_source_systems": [
+      "Waste management system",
+      "Composting records"
+    ],
+    "quality_checks": [
+      "Verify composting process meets environmental standards",
+      "Ensure organic waste is properly separated"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "environmental",
+      "waste",
+      "composting",
+      "conditional",
+      "green_key_guideline"
+    ],
+    "notes": "Composting organic waste reduces methane emissions from landfills and produces valuable soil amendment.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "GK-E-014",
+    "name_plain": "Sustainable Food Products",
+    "description": "Number of types of food/beverage products that are organic, eco-labelled, fair-trade labelled and/or locally produced",
+    "unit": "count",
+    "cadence": "on purchase",
+    "evidence": [
+      "Purchase records",
+      "Supplier certifications",
+      "Menu documentation"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you purchase sustainable food products?",
+    "prompt": "Enter the number of types of sustainable food/beverage products you purchase.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Food suppliers",
+        "Local producers",
+        "Certification bodies"
+      ]
+    },
+    "calculation": "Count of distinct sustainable food/beverage product types",
+    "aggregation": null,
+    "data_source_systems": [
+      "Procurement system",
+      "Inventory management"
+    ],
+    "quality_checks": [
+      "Verify minimum of five types of sustainable products",
+      "Ensure products have valid certifications"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "environmental",
+      "food",
+      "sustainable",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "At least five types of sustainable products must be purchased and registered.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "G",
+    "official_code": "GK-G-008",
+    "name_plain": "Food Waste Reduction",
+    "description": "Initiatives to reduce the level of food waste",
+    "unit": "boolean",
+    "cadence": "on implementation",
+    "evidence": [
+      "Food waste reduction plan",
+      "Staff training records",
+      "Monitoring reports"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have initiatives to reduce food waste?",
+    "prompt": "Confirm the implementation of food waste reduction initiatives.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "F&B management",
+        "Kitchen staff"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Food management system",
+      "Operational procedures"
+    ],
+    "quality_checks": [
+      "Verify initiatives are documented and implemented",
+      "Ensure staff are trained on food waste reduction"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "governance",
+      "food",
+      "waste_reduction",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "Common initiatives include portion control, inventory management, and staff training.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "GK-E-015",
+    "name_plain": "Vegetarian/Vegan Options",
+    "description": "Availability of vegetarian/vegan alternative menu options",
+    "unit": "boolean",
+    "cadence": "on menu change",
+    "evidence": [
+      "Menu documentation",
+      "Recipe records",
+      "Staff training"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you offer vegetarian and vegan menu options?",
+    "prompt": "Confirm the availability of vegetarian and vegan menu options.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "F&B management",
+        "Kitchen staff"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Menu management system",
+      "Recipe database"
+    ],
+    "quality_checks": [
+      "Verify vegetarian and vegan options are clearly marked on menus",
+      "Ensure kitchen staff are trained on preparation"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "environmental",
+      "food",
+      "vegetarian",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "Plant-based options generally have a lower environmental footprint than meat-based dishes.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "S",
+    "official_code": "GK-S-001",
+    "name_plain": "Staff Training Hours",
+    "description": "Yearly training on environmental and other sustainability issues for staff members",
+    "unit": "hours",
+    "cadence": "annual",
+    "evidence": [
+      "Training records",
+      "Attendance sheets",
+      "Training materials"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you provide yearly environmental training to your staff?",
+    "prompt": "Enter the total hours of environmental and sustainability training provided to staff annually.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "HR department",
+        "Training providers"
+      ]
+    },
+    "calculation": "Sum of all environmental and sustainability training hours provided",
+    "aggregation": "Calculate average training hours per employee",
+    "data_source_systems": [
+      "Learning management system",
+      "HR training records"
+    ],
+    "quality_checks": [
+      "Verify all staff receive training annually",
+      "Ensure training covers environmental and sustainability topics"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "social",
+      "staff",
+      "training",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "Training should cover environmental management, sustainability initiatives, and specific green practices.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "S",
+    "official_code": "GK-S-002",
+    "name_plain": "Guest Environmental Information",
+    "description": "Information about Green Key and environmental initiatives available to guests",
+    "unit": "boolean",
+    "cadence": "on implementation",
+    "evidence": [
+      "Information materials",
+      "Website content",
+      "Guest room displays"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you provide environmental information to your guests?",
+    "prompt": "Confirm the availability of environmental information to guests.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Marketing team",
+        "Front desk staff"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Website management system",
+      "Guest information materials"
+    ],
+    "quality_checks": [
+      "Verify information is available in guest rooms and public areas",
+      "Ensure information is also available on the website"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "social",
+      "guests",
+      "information",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "Information should cover Green Key certification, environmental initiatives, and how guests can participate.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "S",
+    "official_code": "GK-S-003",
+    "name_plain": "Community Engagement",
+    "description": "Active collaboration with relevant local stakeholders and support for community development activities",
+    "unit": "count",
+    "cadence": "annual",
+    "evidence": [
+      "Partnership agreements",
+      "Activity reports",
+      "Community feedback"
+    ],
+    "type": "conditional",
+    "condition_logic": "Entity engages with local community and stakeholders",
+    "wizard_question": "Do you collaborate with local stakeholders on environmental initiatives?",
+    "prompt": "Enter the number of community engagement activities you participate in annually.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Local community organizations",
+        "Government agencies",
+        "NGOs"
+      ]
+    },
+    "calculation": "Count of distinct community engagement activities",
+    "aggregation": null,
+    "data_source_systems": [
+      "CSR management system",
+      "Community engagement records"
+    ],
+    "quality_checks": [
+      "Verify activities are documented and implemented",
+      "Ensure activities support environmental or social sustainability"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "social",
+      "community",
+      "engagement",
+      "conditional",
+      "green_key_guideline"
+    ],
+    "notes": "Activities could include environmental education, local conservation projects, or supporting local sustainable businesses.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "G",
+    "official_code": "GK-G-009",
+    "name_plain": "Eco-labeled Cleaning Products",
+    "description": "Percentage of chemical cleaning products for daily use that have a recognised eco-label",
+    "unit": "%",
+    "cadence": "on purchase",
+    "evidence": [
+      "Purchase records",
+      "Product certifications",
+      "Safety data sheets"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you use eco-labeled cleaning products?",
+    "prompt": "Enter the percentage of eco-labeled cleaning products you use.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Cleaning product suppliers",
+        "Eco-label certification bodies"
+      ]
+    },
+    "calculation": "(Eco-labeled cleaning products / Total cleaning products) × 100",
+    "aggregation": "Calculate percentage across all cleaning products used",
+    "data_source_systems": [
+      "Procurement system",
+      "Inventory management"
+    ],
+    "quality_checks": [
+      "Verify at least 75% of daily-use cleaning products are eco-labeled",
+      "Ensure eco-labels are recognized and valid"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "governance",
+      "cleaning",
+      "eco_products",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "Eco-labeled products reduce environmental impact and improve indoor air quality.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "G",
+    "official_code": "GK-G-010",
+    "name_plain": "Non-chlorine Paper Products",
+    "description": "Use of paper towels, facial tissues and toilet paper made of non-chlorine bleached paper or awarded with an eco-label",
+    "unit": "boolean",
+    "cadence": "on purchase",
+    "evidence": [
+      "Purchase records",
+      "Product specifications",
+      "Eco-label certificates"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you use non-chlorine bleached or eco-labeled paper products?",
+    "prompt": "Confirm the use of non-chlorine bleached or eco-labeled paper products.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Paper product suppliers",
+        "Eco-label certification bodies"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Procurement system",
+      "Inventory management"
+    ],
+    "quality_checks": [
+      "Verify paper products are non-chlorine bleached or eco-labeled",
+      "Ensure all paper products meet this requirement"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "governance",
+      "paper",
+      "eco_products",
+      "baseline_core",
+      "green_key_imperative"
+    ],
+    "notes": "Non-chlorine bleaching reduces harmful chemical release into the environment.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "GREEN-KEY-HOSPITALITY",
+    "sector": "hospitality",
+    "category": "G",
+    "official_code": "GK-G-011",
+    "name_plain": "Eco-labeled Equipment",
+    "description": "Use of eco-labeled dishwashers, laundry machines, and other equipment",
+    "unit": "boolean",
+    "cadence": "on purchase",
+    "evidence": [
+      "Purchase records",
+      "Equipment specifications",
+      "Eco-label certificates"
+    ],
+    "type": "conditional",
+    "condition_logic": "Entity purchases new equipment",
+    "wizard_question": "Do you purchase eco-labeled equipment?",
+    "prompt": "Confirm that newly purchased equipment is eco-labeled.",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Equipment suppliers",
+        "Eco-label certification bodies"
+      ]
+    },
+    "calculation": null,
+    "aggregation": "Calculate percentage of newly purchased equipment that is eco-labeled",
+    "data_source_systems": [
+      "Procurement system",
+      "Asset management"
+    ],
+    "quality_checks": [
+      "Verify newly purchased equipment is eco-labeled",
+      "Ensure eco-labels are recognized and valid"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "governance",
+      "equipment",
+      "eco_products",
+      "conditional",
+      "green_key_guideline"
+    ],
+    "notes": "Eco-labeled equipment is more energy and water efficient, reducing environmental impact.",
+    "sources": [],
+    "carbon": null
+  }
+]

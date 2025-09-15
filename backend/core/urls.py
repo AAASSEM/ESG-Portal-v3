@@ -1,19 +1,21 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    CompanyViewSet, ActivityViewSet, FrameworkViewSet,
+    CompanyViewSet, SiteViewSet, ActivityViewSet, FrameworkViewSet, FrameworkElementViewSet,
     ProfilingQuestionViewSet, CompanyChecklistViewSet,
     MeterViewSet, DataCollectionViewSet, DashboardView
 )
 from .user_views import UserViewSet
-from .auth_views import SignupView, LoginView, LogoutView, UserProfileView, CsrfTokenView, UserSitesView, RoleSwitchView, ResetPasswordView, CompanyUpdateView, EmailVerificationView, EmailCodeVerificationView, ResendVerificationView, SendResetCodeView, VerifyResetCodeView, MagicLinkAuthView
+from .auth_views import SignupView, LoginView, LogoutView, UserProfileView, CsrfTokenView, UserSitesView, UserPermissionsView, RoleSwitchView, ResetPasswordView, CompanyUpdateView, EmailVerificationView, EmailCodeVerificationView, ResendVerificationView, SendResetCodeView, VerifyResetCodeView, MagicLinkAuthView
 from .assignment_views import ElementAssignmentViewSet
 
 # Create router and register viewsets
 router = DefaultRouter()
 router.register(r'companies', CompanyViewSet, basename='companies')
+router.register(r'sites', SiteViewSet, basename='sites')
 router.register(r'activities', ActivityViewSet, basename='activities')
 router.register(r'frameworks', FrameworkViewSet, basename='frameworks')
+router.register(r'framework-elements', FrameworkElementViewSet, basename='framework-elements')
 router.register(r'profiling-questions', ProfilingQuestionViewSet, basename='profiling-questions')
 router.register(r'checklist', CompanyChecklistViewSet, basename='checklist')
 router.register(r'meters', MeterViewSet, basename='meters')
@@ -43,6 +45,7 @@ urlpatterns = [
     path('auth/magic-link/<str:token>/', MagicLinkAuthView.as_view(), name='magic-link-auth'),
     # User endpoints
     path('user/sites/', UserSitesView.as_view(), name='user-sites'),
+    path('user/permissions/', UserPermissionsView.as_view(), name='user-permissions'),
     # Direct company update (bypasses DRF router)
     path('company/<int:company_id>/update/', CompanyUpdateView.as_view(), name='company-update'),
 ]

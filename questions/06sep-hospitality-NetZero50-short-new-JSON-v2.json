@@ -1,0 +1,747 @@
+[
+  {
+    "framework_id": "UAE-CLIMATE-LAW-2024",
+    "sector": "generic",
+    "category": "E",
+    "official_code": "UAE-CLIMATE-E-001",
+    "name_plain": "Total GHG Emissions",
+    "description": "Total greenhouse gas emissions (tCO2e) from all sources as required by UAE Climate Change Law",
+    "unit": "tCO2e",
+    "cadence": "annual",
+    "evidence": [
+      "Emissions inventory report",
+      "Third-party verification statement"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": null,
+    "prompt": "Enter your organization's total greenhouse gas emissions for the reporting period",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Calculated internally from activity data"
+      ]
+    },
+    "calculation": "Sum of Scope 1, Scope 2, and applicable Scope 3 emissions",
+    "aggregation": "Aggregate all site-level emissions to organizational total",
+    "data_source_systems": [
+      "ESG reporting platform",
+      "Carbon calculator module"
+    ],
+    "quality_checks": [
+      "Verify all emission sources are included",
+      "Check calculation methodology aligns with GHG Protocol",
+      "Ensure emission factors are UAE-specific or IPCC defaults"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "emissions",
+      "scope1",
+      "scope2",
+      "scope3",
+      "uae_climate_law",
+      "mandatory"
+    ],
+    "notes": "Required for UAE Climate Change Law compliance. Must include all six GHGs (CO2, CH4, N2O, HFCs, PFCs, SF6).",
+    "sources": [],
+    "carbon": {
+      "scope": {
+        "scope_number": [
+          1,
+          2,
+          3
+        ],
+        "subcategory": "all relevant categories",
+        "method": [
+          "GHG_protocol"
+        ]
+      },
+      "co2e_equation": "Total = Σ(activity_data_i × EF_i) for all emission sources",
+      "emission_factor_requirements": {
+        "factor_type": "multi-source",
+        "factor_units": {
+          "input": "various",
+          "output": "tCO2e"
+        }
+      },
+      "ef_determination": "Use UAE-specific emission factors where available, otherwise IPCC defaults",
+      "ef_readiness_state": "available",
+      "ef_data_dependencies": [
+        "UAE national emission factors",
+        "IPCC emission factors"
+      ],
+      "ef_default_strategy": "Use published UAE factors, fallback to IPCC if local not available",
+      "ef_review_cycle": "Annually",
+      "override_policy": "Update factors if government releases new ones",
+      "intensity_outputs": [
+        {
+          "metric": "tCO2e_per_revenue",
+          "equation": "total CO2e / total annual revenue"
+        },
+        {
+          "metric": "tCO2e_per_employee",
+          "equation": "total CO2e / total employees"
+        }
+      ],
+      "example_calculation": "If Scope 1=10 tCO2e, Scope 2=20 tCO2e, Scope 3=5 tCO2e, then Total = 35 tCO2e"
+    }
+  },
+  {
+    "framework_id": "UAE-CLIMATE-LAW-2024",
+    "sector": "generic",
+    "category": "E",
+    "official_code": "UAE-CLIMATE-E-002",
+    "name_plain": "Scope 1 Emissions",
+    "description": "Direct greenhouse gas emissions from owned or controlled sources",
+    "unit": "tCO2e",
+    "cadence": "annual",
+    "evidence": [
+      "Fuel consumption records",
+      "Refrigerant logs",
+      "Process emission data"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": null,
+    "prompt": "Enter your organization's direct (Scope 1) greenhouse gas emissions",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Calculated internally from activity data"
+      ]
+    },
+    "calculation": "Sum of emissions from stationary combustion, mobile combustion, process emissions, and fugitive emissions",
+    "aggregation": "Aggregate all Scope 1 sources to organizational total",
+    "data_source_systems": [
+      "Fuel management system",
+      "HVAC maintenance system",
+      "Process monitoring system"
+    ],
+    "quality_checks": [
+      "Verify all emission sources are identified and included",
+      "Check calculation methodology for each emission category",
+      "Ensure proper emission factors are applied"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "emissions",
+      "scope1",
+      "direct_emissions",
+      "uae_climate_law",
+      "mandatory"
+    ],
+    "notes": "Required for UAE Climate Change Law compliance. Includes CO2, CH4, N2O, HFCs, PFCs, SF6 from owned sources.",
+    "sources": [],
+    "carbon": {
+      "scope": {
+        "scope_number": [
+          1
+        ],
+        "subcategory": "all relevant categories",
+        "method": [
+          "GHG_protocol"
+        ]
+      },
+      "co2e_equation": "Scope 1 = Σ(activity_data_i × EF_i) for all direct emission sources",
+      "emission_factor_requirements": {
+        "factor_type": "source_specific",
+        "factor_units": {
+          "input": "various",
+          "output": "tCO2e"
+        }
+      },
+      "ef_determination": "Use source-specific emission factors (e.g., fuel type, refrigerant type)",
+      "ef_readiness_state": "available",
+      "ef_data_dependencies": [
+        "Fuel emission factors",
+        "Refrigerant GWPs"
+      ],
+      "ef_default_strategy": "Use UAE-specific factors where available, otherwise IPCC defaults",
+      "ef_review_cycle": "Annually",
+      "override_policy": "Update factors if government releases new ones",
+      "intensity_outputs": [
+        {
+          "metric": "tCO2e_per_unit_output",
+          "equation": "Scope 1 CO2e / production units"
+        }
+      ],
+      "example_calculation": "If diesel=500L (EF=2.68kg/L), refrigerant=10kg R134a (GWP=1300), then Scope 1 = (500×0.00268) + (10×1.3) = 1.34 + 13 = 14.34 tCO2e"
+    }
+  },
+  {
+    "framework_id": "UAE-CLIMATE-LAW-2024",
+    "sector": "generic",
+    "category": "E",
+    "official_code": "UAE-CLIMATE-E-003",
+    "name_plain": "Scope 2 Emissions",
+    "description": "Indirect greenhouse gas emissions from purchased electricity, steam, heat, and cooling",
+    "unit": "tCO2e",
+    "cadence": "annual",
+    "evidence": [
+      "Utility bills",
+      "Energy purchase contracts",
+      "Meter readings"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": null,
+    "prompt": "Enter your organization's indirect (Scope 2) greenhouse gas emissions from purchased energy",
+    "metered": true,
+    "meter_type": "energy",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "DEWA"
+      ],
+      "Abu Dhabi": [
+        "ADDC",
+        "AADC"
+      ],
+      "Sharjah": [
+        "SEWA"
+      ],
+      "Northern Emirates": [
+        "Etihad WE"
+      ]
+    },
+    "calculation": "Sum of emissions from purchased electricity, steam, heat, and cooling",
+    "aggregation": "Aggregate all Scope 2 sources to organizational total",
+    "data_source_systems": [
+      "Utility billing system",
+      "Energy management system"
+    ],
+    "quality_checks": [
+      "Verify all energy purchases are included",
+      "Check utility bills against meter readings",
+      "Ensure correct emission factors are applied for each energy type"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "emissions",
+      "scope2",
+      "indirect_emissions",
+      "uae_climate_law",
+      "mandatory"
+    ],
+    "notes": "Required for UAE Climate Change Law compliance. Includes emissions from purchased electricity, steam, heat, and cooling.",
+    "sources": [],
+    "carbon": {
+      "scope": {
+        "scope_number": [
+          2
+        ],
+        "subcategory": "purchased_energy",
+        "method": [
+          "location_based"
+        ]
+      },
+      "co2e_equation": "Scope 2 = Σ(energy_consumed_i × EF_i) for each energy type",
+      "emission_factor_requirements": {
+        "factor_type": "energy_specific",
+        "factor_units": {
+          "input": "various",
+          "output": "tCO2e"
+        }
+      },
+      "ef_determination": "Use UAE grid emission factors for electricity, provider-specific factors for steam/heat/cooling",
+      "ef_readiness_state": "available",
+      "ef_data_dependencies": [
+        "UAE grid emission factors",
+        "District cooling emission factors"
+      ],
+      "ef_default_strategy": "Use published UAE factors, fallback to IPCC if local not available",
+      "ef_review_cycle": "Annually",
+      "override_policy": "Update factors if government releases new ones",
+      "intensity_outputs": [
+        {
+          "metric": "tCO2e_per_floor_area",
+          "equation": "Scope 2 CO2e / facility square meters"
+        }
+      ],
+      "example_calculation": "If electricity=100,000 kWh (EF=0.23kg/kWh), cooling=500 RT-h (EF=0.09kg/RT-h), then Scope 2 = (100000×0.00023) + (500×0.00009) = 23 + 0.045 = 23.045 tCO2e"
+    }
+  },
+  {
+    "framework_id": "UAE-CLIMATE-LAW-2024",
+    "sector": "generic",
+    "category": "E",
+    "official_code": "UAE-CLIMATE-E-004",
+    "name_plain": "Scope 3 Emissions",
+    "description": "Indirect greenhouse gas emissions from the value chain (not included in Scope 2)",
+    "unit": "tCO2e",
+    "cadence": "annual",
+    "evidence": [
+      "Supplier data",
+      "Business travel records",
+      "Waste disposal data"
+    ],
+    "type": "conditional",
+    "condition_logic": "Entity has significant value chain emissions or chooses to report Scope 3",
+    "wizard_question": "Does your organization have significant value chain emissions that should be reported?",
+    "prompt": "Enter your organization's value chain (Scope 3) greenhouse gas emissions, if applicable",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "value_chain",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Suppliers",
+        "Service providers",
+        "Waste contractors"
+      ]
+    },
+    "calculation": "Sum of emissions from relevant Scope 3 categories",
+    "aggregation": "Aggregate all relevant Scope 3 categories",
+    "data_source_systems": [
+      "Supply chain management system",
+      "Travel booking system",
+      "Waste management system"
+    ],
+    "quality_checks": [
+      "Verify data collection methodology for each Scope 3 category",
+      "Check supplier data quality and coverage",
+      "Ensure appropriate emission factors are applied"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "emissions",
+      "scope3",
+      "value_chain",
+      "uae_climate_law",
+      "conditional"
+    ],
+    "notes": "Conditional reporting based on materiality and relevance. Required for entities with significant value chain emissions.",
+    "sources": [],
+    "carbon": {
+      "scope": {
+        "scope_number": [
+          3
+        ],
+        "subcategory": "value_chain",
+        "method": [
+          "GHG_protocol"
+        ]
+      },
+      "co2e_equation": "Scope 3 = Σ(activity_data_i × EF_i) for each relevant category",
+      "emission_factor_requirements": {
+        "factor_type": "category_specific",
+        "factor_units": {
+          "input": "various",
+          "output": "tCO2e"
+        }
+      },
+      "ef_determination": "Use category-specific emission factors (e.g., waste, business travel, purchased goods)",
+      "ef_readiness_state": "partial",
+      "ef_data_dependencies": [
+        "Category-specific emission factors",
+        "Supplier data"
+      ],
+      "ef_default_strategy": "Use published UAE factors where available, otherwise IPCC defaults",
+      "ef_review_cycle": "Annually",
+      "override_policy": "Update factors if government releases new ones",
+      "intensity_outputs": [
+        {
+          "metric": "tCO2e_per_revenue",
+          "equation": "Scope 3 CO2e / total revenue"
+        }
+      ],
+      "example_calculation": "If business travel=50,000 km (EF=0.2kg/km), waste=10,000kg (EF=0.06kg/kg), then Scope 3 = (50000×0.0002) + (10000×0.00006) = 10 + 0.6 = 10.6 tCO2e"
+    }
+  },
+  {
+    "framework_id": "UAE-CLIMATE-LAW-2024",
+    "sector": "generic",
+    "category": "E",
+    "official_code": "UAE-CLIMATE-E-005",
+    "name_plain": "Baseline Year Emissions",
+    "description": "Greenhouse gas emissions from the baseline year selected for tracking progress",
+    "unit": "tCO2e",
+    "cadence": "on_change",
+    "evidence": [
+      "Historical emissions data",
+      "Baseline year documentation"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": null,
+    "prompt": "Enter your organization's baseline year emissions and specify the baseline year",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Calculated internally from historical data"
+      ]
+    },
+    "calculation": "Total emissions (Scope 1+2+3) from the selected baseline year",
+    "aggregation": null,
+    "data_source_systems": [
+      "Historical energy records",
+      "Previous emissions reports"
+    ],
+    "quality_checks": [
+      "Verify baseline year selection methodology",
+      "Check consistency with organizational boundaries",
+      "Ensure calculation methodology aligns with current reporting"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "baseline",
+      "emissions",
+      "uae_climate_law",
+      "mandatory"
+    ],
+    "notes": "Required for UAE Climate Change Law compliance. Baseline year should be representative of normal operations.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "UAE-CLIMATE-LAW-2024",
+    "sector": "generic",
+    "category": "E",
+    "official_code": "UAE-CLIMATE-E-006",
+    "name_plain": "Emissions Reduction Target",
+    "description": "Organization's target for reducing greenhouse gas emissions in alignment with UAE climate neutrality goals",
+    "unit": "%",
+    "cadence": "annual",
+    "evidence": [
+      "Climate action plan",
+      "Board approval documents",
+      "Public commitments"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": null,
+    "prompt": "Enter your organization's emissions reduction target (percentage reduction from baseline)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Internal management"
+      ]
+    },
+    "calculation": "Target percentage reduction from baseline emissions",
+    "aggregation": null,
+    "data_source_systems": [
+      "Strategic planning system",
+      "Board minutes"
+    ],
+    "quality_checks": [
+      "Verify target is aligned with UAE Net Zero 2050 strategy",
+      "Check target has been approved by senior management",
+      "Ensure target is specific, measurable, and time-bound"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "target",
+      "reduction",
+      "climate_neutrality",
+      "uae_climate_law",
+      "mandatory"
+    ],
+    "notes": "Required for UAE Climate Change Law compliance. Should align with national climate neutrality pathway.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "UAE-CLIMATE-LAW-2024",
+    "sector": "generic",
+    "category": "E",
+    "official_code": "UAE-CLIMATE-E-007",
+    "name_plain": "Emissions Reduction Measures",
+    "description": "Description of current and planned measures to reduce greenhouse gas emissions",
+    "unit": "text",
+    "cadence": "annual",
+    "evidence": [
+      "Climate action plan",
+      "Project documentation",
+      "Investment records"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": null,
+    "prompt": "Describe your organization's current and planned measures to reduce greenhouse gas emissions",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Internal management",
+        "Technical teams"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Project management system",
+      "Climate action plan"
+    ],
+    "quality_checks": [
+      "Verify measures are specific and actionable",
+      "Check alignment with reduction targets",
+      "Ensure measures cover relevant emission sources"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "reduction",
+      "measures",
+      "climate_action",
+      "uae_climate_law",
+      "mandatory"
+    ],
+    "notes": "Required for UAE Climate Change Law compliance. Should include energy efficiency, renewable energy, and other mitigation measures.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "UAE-CLIMATE-LAW-2024",
+    "sector": "generic",
+    "category": "E",
+    "official_code": "UAE-CLIMATE-E-008",
+    "name_plain": "Carbon Offsets Purchased",
+    "description": "Quantity of carbon offsets purchased to compensate for emissions",
+    "unit": "tCO2e",
+    "cadence": "annual",
+    "evidence": [
+      "Offset purchase certificates",
+      "Registry transactions",
+      "Verification statements"
+    ],
+    "type": "conditional",
+    "condition_logic": "Entity engages in carbon offsetting activities",
+    "wizard_question": "Does your organization purchase carbon offsets to compensate for emissions?",
+    "prompt": "Enter the quantity of carbon offsets purchased during the reporting period",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Carbon offset providers",
+        "National Carbon Credit Registry"
+      ]
+    },
+    "calculation": "Sum of all carbon offsets purchased",
+    "aggregation": null,
+    "data_source_systems": [
+      "Carbon accounting system",
+      "Procurement records"
+    ],
+    "quality_checks": [
+      "Verify offsets are from recognized standards",
+      "Check verification status of offsets",
+      "Ensure no double counting of offsets"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "offsets",
+      "compensation",
+      "carbon_credits",
+      "uae_climate_law",
+      "conditional"
+    ],
+    "notes": "Conditional reporting for entities using carbon offsetting. Offsets must be verified and registered.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "UAE-CLIMATE-LAW-2024",
+    "sector": "generic",
+    "category": "G",
+    "official_code": "UAE-CLIMATE-G-001",
+    "name_plain": "Emissions Inventory Verification Status",
+    "description": "Whether the greenhouse gas emissions inventory has been verified by an independent third party",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Verification statement",
+      "Auditor report",
+      "Verification certificate"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": null,
+    "prompt": "Has your organization's emissions inventory been verified by an independent third party? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Accredited verification bodies"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Verification records",
+      "Quality management system"
+    ],
+    "quality_checks": [
+      "Verify verification body is accredited",
+      "Check verification statement covers all reported emissions",
+      "Ensure verification is current for reporting period"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "verification",
+      "assurance",
+      "uae_climate_law",
+      "mandatory"
+    ],
+    "notes": "Required for UAE Climate Change Law compliance. Verification enhances credibility of reported data.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "UAE-CLIMATE-LAW-2024",
+    "sector": "generic",
+    "category": "G",
+    "official_code": "UAE-CLIMATE-G-002",
+    "name_plain": "Record Retention Period",
+    "description": "Period for which emissions records are maintained (minimum 5 years as required by law)",
+    "unit": "years",
+    "cadence": "on_change",
+    "evidence": [
+      "Record retention policy",
+      "Data management procedures"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": null,
+    "prompt": "Enter the period (in years) for which your organization retains emissions records",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Internal records management"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Document management system",
+      "Records management policy"
+    ],
+    "quality_checks": [
+      "Verify retention period meets minimum legal requirement (5 years)",
+      "Check records are accessible for audits",
+      "Ensure secure storage of records"
+    ],
+    "privacy_level": "internal",
+    "tags": [
+      "record_keeping",
+      "compliance",
+      "uae_climate_law",
+      "mandatory"
+    ],
+    "notes": "Required for UAE Climate Change Law compliance. Minimum 5 years retention.",
+    "sources": [
+      "UAE Climate Change Law Article 6(1)(c)"
+    ],
+    "carbon": null
+  },
+  {
+    "framework_id": "UAE-CLIMATE-LAW-2024",
+    "sector": "generic",
+    "category": "G",
+    "official_code": "UAE-CLIMATE-G-003",
+    "name_plain": "Climate Risk Assessment",
+    "description": "Assessment of climate-related risks to the organization's operations and strategy",
+    "unit": "text",
+    "cadence": "annual",
+    "evidence": [
+      "Risk assessment report",
+      "Climate scenario analysis",
+      "Board minutes"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": null,
+    "prompt": "Describe your organization's climate risk assessment process and key findings",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Internal risk management",
+        "External consultants"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Risk management system",
+      "Strategic planning system"
+    ],
+    "quality_checks": [
+      "Verify assessment covers physical and transition risks",
+      "Check alignment with TCFD recommendations",
+      "Ensure assessment informs strategy and planning"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "risk",
+      "climate_risk",
+      "adaptation",
+      "uae_climate_law",
+      "mandatory"
+    ],
+    "notes": "Required for UAE Climate Change Law compliance. Should address both physical and transition climate risks.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "UAE-CLIMATE-LAW-2024",
+    "sector": "generic",
+    "category": "G",
+    "official_code": "UAE-CLIMATE-G-004",
+    "name_plain": "Board Oversight of Climate Issues",
+    "description": "Whether the board or governing body has oversight of climate-related issues and targets",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Board minutes",
+      "Governance policies",
+      "Committee charters"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": null,
+    "prompt": "Does your board or governing body have oversight of climate-related issues and targets? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "UAE-wide": [
+        "Board of Directors",
+        "Governing body"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Corporate governance system",
+      "Board minutes"
+    ],
+    "quality_checks": [
+      "Verify board explicitly discusses climate issues",
+      "Check climate targets are approved by board",
+      "Ensure regular reporting to board on climate progress"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "governance",
+      "board_oversight",
+      "climate_governance",
+      "uae_climate_law",
+      "mandatory"
+    ],
+    "notes": "Required for UAE Climate Change Law compliance. Demonstrates senior management commitment to climate action.",
+    "sources": [],
+    "carbon": null
+  }
+]

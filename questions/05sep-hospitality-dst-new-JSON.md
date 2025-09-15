@@ -1,0 +1,1695 @@
+[
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-E-Carbon-Calculator-001",
+    "name_plain": "Carbon Emissions - Electricity",
+    "description": "Monthly electricity consumption for carbon footprint calculation as required by Dubai Carbon Calculator",
+    "unit": "kWh",
+    "cadence": "monthly",
+    "evidence": [
+      "Utility bills",
+      "DEWA bills",
+      "Meter readings"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Enter your monthly electricity consumption in kWh",
+    "prompt": "Enter the total electricity consumed (in kWh) each month from your utility provider.",
+    "metered": true,
+    "meter_type": "electricity",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "DEWA"
+      ]
+    },
+    "calculation": "Sum of kWh from all electricity meters/sites over the month",
+    "aggregation": "Aggregate monthly kWh to annual total for DST reporting",
+    "data_source_systems": [
+      "DEWA online portal",
+      "Building energy management system",
+      "Dubai Carbon Calculator"
+    ],
+    "quality_checks": [
+      "Compare billed kWh against meter readings for consistency",
+      "Flag abnormal consumption spikes month-over-month"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "energy",
+      "electricity",
+      "scope2",
+      "dst_mandatory",
+      "carbon_calculator"
+    ],
+    "notes": "Mandatory monthly submission to Dubai Carbon Calculator for all Dubai hotels. Required for Dubai Sustainable Tourism compliance.",
+    "sources": [],
+    "carbon": {
+      "scope": {
+        "scope_number": [
+          2
+        ],
+        "subcategory": "purchased_electricity",
+        "method": [
+          "location_based"
+        ]
+      },
+      "co2e_equation": "tCO2e = kWh × EF",
+      "emission_factor_requirements": {
+        "factor_type": "grid_average",
+        "factor_units": {
+          "input": "kWh",
+          "output": "tCO2e"
+        }
+      },
+      "ef_determination": "Use Dubai-specific grid emission factor provided by Carbon Calculator",
+      "ef_readiness_state": "available (provided by DST)",
+      "ef_data_dependencies": [
+        "Annual grid CO2 emission factor for Dubai"
+      ],
+      "ef_default_strategy": "Use DST-provided emission factor",
+      "ef_review_cycle": "Annually (updated by DST)",
+      "override_policy": "Use DST-mandated emission factors",
+      "intensity_outputs": [
+        {
+          "metric": "kWh_per_guest_room",
+          "equation": "total kWh / total guest rooms"
+        },
+        {
+          "metric": "kWh_per_occupancy",
+          "equation": "total kWh / total occupied room nights"
+        }
+      ],
+      "example_calculation": "If monthly consumption = 10,000 kWh and EF = 0.00023 tCO2e/kWh, then emissions = 2.3 tCO2e."
+    }
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-E-Carbon-Calculator-002",
+    "name_plain": "Carbon Emissions - Water",
+    "description": "Monthly water consumption for carbon footprint calculation as required by Dubai Carbon Calculator",
+    "unit": "m³",
+    "cadence": "monthly",
+    "evidence": [
+      "Water utility bills",
+      "Water meter logs"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Enter your monthly water consumption in cubic meters",
+    "prompt": "Enter the total water consumed (in cubic meters) each month.",
+    "metered": true,
+    "meter_type": "water",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "DEWA"
+      ]
+    },
+    "calculation": "Sum of water meter readings or billed volume over the month",
+    "aggregation": "Aggregate monthly water use to annual total for DST reporting",
+    "data_source_systems": [
+      "DEWA billing system",
+      "Dubai Carbon Calculator"
+    ],
+    "quality_checks": [
+      "Cross-verify billed water usage with meter readings",
+      "Flag anomalies (e.g., sudden surges indicating leaks)"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "water",
+      "dst_mandatory",
+      "carbon_calculator"
+    ],
+    "notes": "Mandatory monthly submission to Dubai Carbon Calculator for all Dubai hotels. Water consumption contributes to carbon footprint through treatment and pumping energy.",
+    "sources": [],
+    "carbon": {
+      "scope": {
+        "scope_number": [
+          3
+        ],
+        "subcategory": "water_supply",
+        "method": [
+          "activity_data"
+        ]
+      },
+      "co2e_equation": "tCO2e = m³ × EF (water treatment and distribution)",
+      "emission_factor_requirements": {
+        "factor_type": "water_supply",
+        "factor_units": {
+          "input": "m³",
+          "output": "tCO2e"
+        }
+      },
+      "ef_determination": "Use Dubai-specific water emission factor provided by Carbon Calculator",
+      "ef_readiness_state": "available (provided by DST)",
+      "ef_data_dependencies": [
+        "Dubai water supply emission factor"
+      ],
+      "ef_default_strategy": "Use DST-provided water emission factor",
+      "ef_review_cycle": "Annually (updated by DST)",
+      "override_policy": "Use DST-mandated emission factors",
+      "intensity_outputs": [
+        {
+          "metric": "m3_per_guest_room",
+          "equation": "total m³ / total guest rooms"
+        },
+        {
+          "metric": "m3_per_occupancy",
+          "equation": "total m³ / total occupied room nights"
+        }
+      ],
+      "example_calculation": "If monthly consumption = 1,000 m³ and EF = 0.0005 tCO2e/m³, then emissions = 0.5 tCO2e."
+    }
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-E-Carbon-Calculator-003",
+    "name_plain": "Carbon Emissions - District Cooling",
+    "description": "Monthly district cooling consumption for carbon footprint calculation as required by Dubai Carbon Calculator",
+    "unit": "RT-h",
+    "cadence": "monthly",
+    "evidence": [
+      "District cooling bills",
+      "Cooling meter readings"
+    ],
+    "type": "conditional",
+    "condition_logic": "Hotel is connected to district cooling network",
+    "wizard_question": "Does your hotel use district cooling services?",
+    "prompt": "Enter the total district cooling energy consumed (in RT-h) each month.",
+    "metered": true,
+    "meter_type": "district_cooling",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Empower",
+        "Emicool"
+      ]
+    },
+    "calculation": "Sum of RT-h from all district cooling meters/sites over the month",
+    "aggregation": "Aggregate monthly RT-h to annual total for DST reporting",
+    "data_source_systems": [
+      "District cooling provider portal",
+      "Dubai Carbon Calculator"
+    ],
+    "quality_checks": [
+      "Compare billed RT-h against meter readings for consistency",
+      "Flag abnormal consumption spikes month-over-month"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "energy",
+      "cooling",
+      "scope2",
+      "dst_mandatory",
+      "carbon_calculator"
+    ],
+    "notes": "Mandatory monthly submission to Dubai Carbon Calculator for Dubai hotels using district cooling. Major source of Scope 2 emissions.",
+    "sources": [],
+    "carbon": {
+      "scope": {
+        "scope_number": [
+          2
+        ],
+        "subcategory": "purchased_cooling",
+        "method": [
+          "location_based"
+        ]
+      },
+      "co2e_equation": "tCO2e = RT-h × EF",
+      "emission_factor_requirements": {
+        "factor_type": "provider_specific",
+        "factor_units": {
+          "input": "RT-h",
+          "output": "tCO2e"
+        }
+      },
+      "ef_determination": "Use provider-specific emission factor provided by Carbon Calculator",
+      "ef_readiness_state": "available (provided by DST and cooling providers)",
+      "ef_data_dependencies": [
+        "Provider-specific cooling emission factor"
+      ],
+      "ef_default_strategy": "Use DST-provided cooling emission factor",
+      "ef_review_cycle": "Annually (updated by DST)",
+      "override_policy": "Use DST-mandated emission factors",
+      "intensity_outputs": [
+        {
+          "metric": "RT-h_per_guest_room",
+          "equation": "total RT-h / total guest rooms"
+        },
+        {
+          "metric": "RT-h_per_occupancy",
+          "equation": "total RT-h / total occupied room nights"
+        }
+      ],
+      "example_calculation": "If monthly consumption = 50,000 RT-h and EF = 0.00009 tCO2e/RT-h, then emissions = 4.5 tCO2e."
+    }
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-E-Carbon-Calculator-004",
+    "name_plain": "Carbon Emissions - LPG",
+    "description": "Monthly liquefied petroleum gas consumption for carbon footprint calculation as required by Dubai Carbon Calculator",
+    "unit": "kg",
+    "cadence": "monthly",
+    "evidence": [
+      "LPG delivery receipts",
+      "Tank refill records"
+    ],
+    "type": "conditional",
+    "condition_logic": "Hotel uses LPG for operations (kitchens, heating, etc.)",
+    "wizard_question": "Does your hotel use LPG (cooking gas) in your operations?",
+    "prompt": "Enter the total LPG consumed (in kg) in the month.",
+    "metered": false,
+    "meter_type": "fuel",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Emirates Gas",
+        "ADNOC Distribution"
+      ]
+    },
+    "calculation": "Sum of LPG quantities used (cylinder weights or bulk deliveries)",
+    "aggregation": "Aggregate monthly LPG usage to annual total for DST reporting",
+    "data_source_systems": [
+      "Fuel supply records",
+      "Facilities usage logs",
+      "Dubai Carbon Calculator"
+    ],
+    "quality_checks": [
+      "Convert LPG units if needed (e.g., 1 cylinder = 22 kg) to maintain consistency",
+      "Check usage against operational days for anomalies"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "fuel",
+      "LPG",
+      "scope1",
+      "dst_mandatory",
+      "carbon_calculator"
+    ],
+    "notes": "Mandatory monthly submission to Dubai Carbon Calculator for Dubai hotels using LPG. Common in hotel kitchens and laundry operations.",
+    "sources": [],
+    "carbon": {
+      "scope": {
+        "scope_number": [
+          1
+        ],
+        "subcategory": "stationary_combustion",
+        "method": [
+          "standard"
+        ]
+      },
+      "co2e_equation": "tCO2e = kg LPG × EF",
+      "emission_factor_requirements": {
+        "factor_type": "fuel_specific",
+        "factor_units": {
+          "input": "kg",
+          "output": "tCO2e"
+        }
+      },
+      "ef_determination": "Use DST-provided LPG emission factor",
+      "ef_readiness_state": "available (provided by DST)",
+      "ef_data_dependencies": [
+        "LPG emission factor"
+      ],
+      "ef_default_strategy": "Use DST-provided LPG emission factor",
+      "ef_review_cycle": "Annually (updated by DST)",
+      "override_policy": "Use DST-mandated emission factors",
+      "intensity_outputs": [
+        {
+          "metric": "kg_per_guest_room",
+          "equation": "total kg / total guest rooms"
+        }
+      ],
+      "example_calculation": "If monthly consumption = 500 kg LPG and EF = 0.003 tCO2e/kg, then emissions = 1.5 tCO2e."
+    }
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-E-Carbon-Calculator-005",
+    "name_plain": "Carbon Emissions - Landfill Waste",
+    "description": "Monthly waste sent to landfill for carbon footprint calculation as required by Dubai Carbon Calculator",
+    "unit": "kg",
+    "cadence": "monthly",
+    "evidence": [
+      "Waste collection invoices",
+      "Weighbridge slips"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Enter your monthly landfill waste quantity",
+    "prompt": "Enter the total quantity of waste sent to landfill (kg) for the month.",
+    "metered": false,
+    "meter_type": "waste",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Dubai Municipality waste services",
+        "Private waste contractors"
+      ]
+    },
+    "calculation": "Sum of all waste collected from the facility sent to landfill",
+    "aggregation": "Aggregate waste data across all sites for DST reporting",
+    "data_source_systems": [
+      "Waste management logs",
+      "Dubai Carbon Calculator"
+    ],
+    "quality_checks": [
+      "Ensure units (kg/tonnes) are consistent across records",
+      "Compare waste generated per guest room against benchmarks"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "waste",
+      "landfill",
+      "scope3",
+      "dst_mandatory",
+      "carbon_calculator"
+    ],
+    "notes": "Mandatory monthly submission to Dubai Carbon Calculator for all Dubai hotels. Landfill waste generates methane emissions.",
+    "sources": [],
+    "carbon": {
+      "scope": {
+        "scope_number": [
+          3
+        ],
+        "subcategory": "waste_disposal",
+        "method": [
+          "activity_data"
+        ]
+      },
+      "co2e_equation": "tCO2e = waste(kg) × EF (landfill)",
+      "emission_factor_requirements": {
+        "factor_type": "waste_type_specific",
+        "factor_units": {
+          "input": "kg",
+          "output": "tCO2e"
+        }
+      },
+      "ef_determination": "Use DST-provided landfill emission factor",
+      "ef_readiness_state": "available (provided by DST)",
+      "ef_data_dependencies": [
+        "Landfill emission factor for mixed waste"
+      ],
+      "ef_default_strategy": "Use DST-provided landfill emission factor",
+      "ef_review_cycle": "Annually (updated by DST)",
+      "override_policy": "Use DST-mandated emission factors",
+      "intensity_outputs": [
+        {
+          "metric": "kg_waste_per_guest_room",
+          "equation": "total kg waste / total guest rooms"
+        }
+      ],
+      "example_calculation": "If 2,000 kg waste sent to landfill and EF = 0.00006 tCO2e/kg, then ~0.12 tCO2e emitted."
+    }
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-E-Carbon-Calculator-006",
+    "name_plain": "Carbon Emissions - Recycled Waste",
+    "description": "Monthly waste diverted to recycling for carbon footprint calculation as required by Dubai Carbon Calculator",
+    "unit": "kg",
+    "cadence": "monthly",
+    "evidence": [
+      "Recycling vendor receipts",
+      "Internal waste logs"
+    ],
+    "type": "conditional",
+    "condition_logic": "Hotel separates and recycles part of its waste stream",
+    "wizard_question": "Do you segregate and recycle any of your waste?",
+    "prompt": "Enter the quantity of waste recycled (kg) in the month.",
+    "metered": false,
+    "meter_type": "waste",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Recycling services (Bee'ah, Dulsco, etc.)"
+      ]
+    },
+    "calculation": "Sum of all recycled materials collected",
+    "aggregation": "Aggregate recycled waste quantities across all sites for DST reporting",
+    "data_source_systems": [
+      "Waste management logs",
+      "Dubai Carbon Calculator"
+    ],
+    "quality_checks": [
+      "Verify that recycled amount ≤ total waste generated for same period",
+      "Cross-check recycling records against waste generation"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "waste",
+      "recycling",
+      "scope3",
+      "dst_mandatory",
+      "carbon_calculator"
+    ],
+    "notes": "Mandatory monthly submission to Dubai Carbon Calculator for Dubai hotels that recycle. Recycling avoids landfill emissions.",
+    "sources": [],
+    "carbon": {
+      "scope": {
+        "scope_number": [
+          3
+        ],
+        "subcategory": "waste_recycling",
+        "method": [
+          "activity_data"
+        ]
+      },
+      "co2e_equation": "Potential avoided emissions can be noted but not counted in inventory",
+      "emission_factor_requirements": {
+        "factor_type": null,
+        "factor_units": null
+      },
+      "ef_determination": "n/a (Recycling is treated as avoided emissions)",
+      "ef_readiness_state": null,
+      "ef_data_dependencies": [],
+      "ef_default_strategy": null,
+      "ef_review_cycle": null,
+      "override_policy": null,
+      "intensity_outputs": [
+        {
+          "metric": "recycling_rate",
+          "equation": "(recycled kg / total waste kg) × 100"
+        }
+      ],
+      "example_calculation": "If 500 kg recycled out of 2,000 kg total waste, recycling rate = 25%."
+    }
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-E-Carbon-Calculator-007",
+    "name_plain": "Carbon Emissions - Petrol",
+    "description": "Monthly petrol consumption for hotel vehicles for carbon footprint calculation as required by Dubai Carbon Calculator",
+    "unit": "liters",
+    "cadence": "monthly",
+    "evidence": [
+      "Fuel receipts or fuel card statements"
+    ],
+    "type": "conditional",
+    "condition_logic": "Hotel owns/operates gasoline-powered vehicles",
+    "wizard_question": "Do you have petrol-fueled vehicles (company cars/fleet)?",
+    "prompt": "Enter the total petrol fuel consumed by company vehicles (liters per month).",
+    "metered": false,
+    "meter_type": "fuel",
+    "meter_scope": "fleet",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Fuel stations (ENOC, ADNOC, Emarat, etc.)"
+      ]
+    },
+    "calculation": "Sum of all petrol fuel purchases for vehicles in the month",
+    "aggregation": "Aggregate fuel usage across all company vehicles for DST reporting",
+    "data_source_systems": [
+      "Fleet management system",
+      "Dubai Carbon Calculator"
+    ],
+    "quality_checks": [
+      "Ensure fuel volume aligns with vehicle mileage",
+      "Separate petrol vs diesel vehicles to avoid double counting"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "fuel",
+      "petrol",
+      "transportation",
+      "scope1",
+      "dst_mandatory",
+      "carbon_calculator"
+    ],
+    "notes": "Mandatory monthly submission to Dubai Carbon Calculator for Dubai hotels with petrol vehicles.",
+    "sources": [],
+    "carbon": {
+      "scope": {
+        "scope_number": [
+          1
+        ],
+        "subcategory": "mobile_combustion",
+        "method": [
+          "standard"
+        ]
+      },
+      "co2e_equation": "tCO2e = liters × EF (petrol)",
+      "emission_factor_requirements": {
+        "factor_type": "fuel_specific",
+        "factor_units": {
+          "input": "liter",
+          "output": "tCO2e"
+        }
+      },
+      "ef_determination": "Use DST-provided petrol emission factor",
+      "ef_readiness_state": "available (provided by DST)",
+      "ef_data_dependencies": [],
+      "ef_default_strategy": "Use DST-provided petrol emission factor",
+      "ef_review_cycle": "Annually (updated by DST)",
+      "override_policy": "Use DST-mandated emission factors",
+      "intensity_outputs": [
+        {
+          "metric": "liters_per_100km",
+          "equation": "(total liters / total km driven) × 100"
+        }
+      ],
+      "example_calculation": "If 200 L petrol used and EF = 0.00231 tCO2e/L, emissions ≈ 0.46 tCO2e."
+    }
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-E-Carbon-Calculator-008",
+    "name_plain": "Carbon Emissions - Diesel",
+    "description": "Monthly diesel consumption for hotel vehicles and generators for carbon footprint calculation as required by Dubai Carbon Calculator",
+    "unit": "liters",
+    "cadence": "monthly",
+    "evidence": [
+      "Fuel purchase receipts",
+      "Fleet fuel card records",
+      "Generator fuel logs"
+    ],
+    "type": "conditional",
+    "condition_logic": "Hotel owns/operates diesel vehicles or generators",
+    "wizard_question": "Do you have diesel-fueled vehicles or generators?",
+    "prompt": "Enter the total diesel fuel consumed (liters per month).",
+    "metered": false,
+    "meter_type": "fuel",
+    "meter_scope": "fleet",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Fuel stations (ENOC, ADNOC, etc.)"
+      ]
+    },
+    "calculation": "Sum of all diesel fuel dispensed to vehicles and generators",
+    "aggregation": "Aggregate across all diesel sources for DST reporting",
+    "data_source_systems": [
+      "Fleet fuel tracking system",
+      "Generator logs",
+      "Dubai Carbon Calculator"
+    ],
+    "quality_checks": [
+      "Verify diesel vehicle list to ensure no petrol vehicles included",
+      "Check fuel efficiency against expected values"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "fuel",
+      "diesel",
+      "transportation",
+      "scope1",
+      "dst_mandatory",
+      "carbon_calculator"
+    ],
+    "notes": "Mandatory monthly submission to Dubai Carbon Calculator for Dubai hotels with diesel vehicles or generators.",
+    "sources": [],
+    "carbon": {
+      "scope": {
+        "scope_number": [
+          1
+        ],
+        "subcategory": "mobile_combustion",
+        "method": [
+          "standard"
+        ]
+      },
+      "co2e_equation": "tCO2e = liters × EF (diesel)",
+      "emission_factor_requirements": {
+        "factor_type": "fuel_specific",
+        "factor_units": {
+          "input": "liter",
+          "output": "tCO2e"
+        }
+      },
+      "ef_determination": "Use DST-provided diesel emission factor",
+      "ef_readiness_state": "available (provided by DST)",
+      "ef_data_dependencies": [],
+      "ef_default_strategy": "Use DST-provided diesel emission factor",
+      "ef_review_cycle": "Annually (updated by DST)",
+      "override_policy": "Use DST-mandated emission factors",
+      "intensity_outputs": [
+        {
+          "metric": "liters_per_100km",
+          "equation": "(total liters / total km driven) × 100"
+        }
+      ],
+      "example_calculation": "If 300 L diesel used and EF = 0.00268 tCO2e/L, emissions ≈ 0.80 tCO2e."
+    }
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-E-Carbon-Calculator-009",
+    "name_plain": "Carbon Emissions - Refrigerants",
+    "description": "Monthly refrigerant gas leakage or refills for carbon footprint calculation as required by Dubai Carbon Calculator",
+    "unit": "kg",
+    "cadence": "monthly",
+    "evidence": [
+      "Maintenance logs from HVAC technicians",
+      "Refrigerant purchase records"
+    ],
+    "type": "conditional",
+    "condition_logic": "Hotel operates HVAC or refrigeration units",
+    "wizard_question": "Do you have air conditioning or refrigeration units that require refrigerant servicing?",
+    "prompt": "Enter the total amount of refrigerant (kg) added or leaked in the month.",
+    "metered": false,
+    "meter_type": "refrigerant",
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "HVAC service companies",
+        "Refrigerant gas suppliers"
+      ]
+    },
+    "calculation": "Sum of refrigerant added to all equipment over the month",
+    "aggregation": "If multiple refrigerant types, track each separately for DST reporting",
+    "data_source_systems": [
+      "Facilities maintenance system",
+      "Dubai Carbon Calculator"
+    ],
+    "quality_checks": [
+      "Ensure units (kg) are used",
+      "Check if any major leaks are documented"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "refrigerant",
+      "fugitive_emissions",
+      "scope1",
+      "dst_mandatory",
+      "carbon_calculator"
+    ],
+    "notes": "Mandatory monthly submission to Dubai Carbon Calculator for Dubai hotels with HVAC systems. HFCs have high GWP.",
+    "sources": [],
+    "carbon": {
+      "scope": {
+        "scope_number": [
+          1
+        ],
+        "subcategory": "fugitive_emissions",
+        "method": [
+          "GHG_protocol"
+        ]
+      },
+      "co2e_equation": "tCO2e = Σ(refrigerant_kg × GWP)",
+      "emission_factor_requirements": {
+        "factor_type": "GWP",
+        "factor_units": {
+          "input": "kg refrigerant",
+          "output": "tCO2e"
+        }
+      },
+      "ef_determination": "Use DST-provided GWP values for each refrigerant type",
+      "ef_readiness_state": "available (provided by DST)",
+      "ef_data_dependencies": [
+        "Refrigerant chemical type"
+      ],
+      "ef_default_strategy": "Use DST-provided GWP values",
+      "ef_review_cycle": "Annually (updated by DST)",
+      "override_policy": "Use DST-mandated GWP values",
+      "intensity_outputs": [],
+      "example_calculation": "If 5 kg of R134a leaked, and GWP=1,300, then emissions = 5 × 1300 / 1000 = 6.5 tCO2e."
+    }
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "G",
+    "official_code": "DST-REQ-001",
+    "name_plain": "Sustainability Management Approach",
+    "description": "Implementation of a sustainability management system addressing environmental, social, cultural, economic, quality, human rights, health, safety, risk and crisis management issues",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Sustainability policy document",
+      "Management system documentation",
+      "Implementation records"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have a sustainability management system?",
+    "prompt": "Do you have a formal sustainability management system in place? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Internal management",
+        "Sustainability consultants"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Policy management system",
+      "Document management system"
+    ],
+    "quality_checks": [
+      "Verify documentation covers all required areas",
+      "Check evidence of implementation",
+      "Review continuous improvement processes"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "sustainability_management",
+      "dst_mandatory",
+      "policy",
+      "requirement_1"
+    ],
+    "notes": "Mandatory requirement #1 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-REQ-002",
+    "name_plain": "Performance Metrics (Carbon Calculator)",
+    "description": "Monthly reporting of carbon emissions through the Dubai Carbon Calculator covering 9 emission sources: electricity, water, district cooling, LPG, landfill waste, recycled waste, petrol, diesel, and refrigerants",
+    "unit": "boolean",
+    "cadence": "monthly",
+    "evidence": [
+      "Carbon Calculator submission records",
+      "Monthly emission reports",
+      "Dubai DST confirmation"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you use the Dubai Carbon Calculator?",
+    "prompt": "Do you submit monthly carbon emission data through the Dubai Carbon Calculator? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Dubai Carbon Calculator",
+        "Dubai Sustainable Tourism"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Dubai Carbon Calculator platform",
+      "Reporting system"
+    ],
+    "quality_checks": [
+      "Verify monthly submissions are completed",
+      "Check all 9 emission sources are reported",
+      "Review submission confirmation records"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "carbon_calculator",
+      "performance_metrics",
+      "dst_mandatory",
+      "emissions",
+      "requirement_2"
+    ],
+    "notes": "Mandatory requirement #2 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Requires monthly submission of 9 emission sources through the Dubai Carbon Calculator.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "S",
+    "official_code": "DST-REQ-003",
+    "name_plain": "Sustainability Personnel Training",
+    "description": "Training provided to personnel on sustainability practices and procedures",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Training records",
+      "Training materials",
+      "Certificates",
+      "Training schedule"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you provide sustainability training to staff?",
+    "prompt": "Do you provide formal sustainability training to your personnel? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "Dubai": [
+        "HR department",
+        "Training department"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Learning Management System",
+      "HR training records"
+    ],
+    "quality_checks": [
+      "Verify training covers sustainability topics",
+      "Check staff participation records",
+      "Review training materials and content"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "staff_training",
+      "sustainability",
+      "dst_mandatory",
+      "requirement_3"
+    ],
+    "notes": "Mandatory requirement #3 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "S",
+    "official_code": "DST-REQ-004",
+    "name_plain": "Sustainability Committee",
+    "description": "Establishment of a sustainability committee or team responsible for coordinating sustainability initiatives",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Committee charter",
+      "Meeting minutes",
+      "Committee member list",
+      "Terms of reference"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have a sustainability committee?",
+    "prompt": "Do you have a formal sustainability committee or team? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Internal management",
+        "Sustainability team"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Committee records",
+      "Meeting management system"
+    ],
+    "quality_checks": [
+      "Verify committee meets regularly",
+      "Check meeting minutes for sustainability discussions",
+      "Review committee composition and authority"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "sustainability_committee",
+      "team",
+      "dst_mandatory",
+      "governance",
+      "requirement_4"
+    ],
+    "notes": "Mandatory requirement #4 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "S",
+    "official_code": "DST-REQ-005",
+    "name_plain": "Staff Engagement and Education",
+    "description": "Programs for engaging and educating staff on sustainability practices and environmental responsibility",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Engagement programs",
+      "Educational materials",
+      "Staff feedback",
+      "Participation records"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have staff engagement and education programs?",
+    "prompt": "Do you have formal staff engagement and education programs for sustainability? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "Dubai": [
+        "HR department",
+        "Training department",
+        "Sustainability team"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "HR system",
+      "Learning Management System",
+      "Communication platforms"
+    ],
+    "quality_checks": [
+      "Verify engagement programs exist",
+      "Check educational materials and training content",
+      "Review staff participation and feedback"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "staff_engagement",
+      "education",
+      "dst_mandatory",
+      "human_resources",
+      "requirement_5"
+    ],
+    "notes": "Mandatory requirement #5 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "S",
+    "official_code": "DST-REQ-006",
+    "name_plain": "Guest Education",
+    "description": "Programs and materials to educate guests about sustainability practices and encourage their participation",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Guest communication materials",
+      "In-room information",
+      "Website content",
+      "Guest feedback"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you provide sustainability information to guests?",
+    "prompt": "Do you educate guests about your sustainability practices? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Marketing department",
+        "Front office",
+        "Guest services"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Content management system",
+      "Guest feedback system"
+    ],
+    "quality_checks": [
+      "Verify materials are available to guests",
+      "Check content covers sustainability topics",
+      "Review guest feedback on environmental initiatives"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "guest_education",
+      "communication",
+      "dst_mandatory",
+      "requirement_6"
+    ],
+    "notes": "Mandatory requirement #6 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "S",
+    "official_code": "DST-REQ-007",
+    "name_plain": "Green Events",
+    "description": "Implementation of sustainable practices for events, meetings, and conferences held at the hotel",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Green event policy",
+      "Event sustainability guidelines",
+      "Implementation records",
+      "Client feedback"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have green event practices?",
+    "prompt": "Do you implement sustainable practices for events and conferences? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Events team",
+        "Sustainability team",
+        "Operations"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Event management system",
+      "Sustainability documentation"
+    ],
+    "quality_checks": [
+      "Verify green event policy exists",
+      "Check implementation for actual events",
+      "Review client satisfaction with green initiatives"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "green_events",
+      "sustainable_events",
+      "dst_mandatory",
+      "requirement_7"
+    ],
+    "notes": "Mandatory requirement #7 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-REQ-008",
+    "name_plain": "Energy Management Plan",
+    "description": "Implementation of an energy management plan including monitoring, targets, and conservation measures",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Energy management plan",
+      "Monitoring data",
+      "Conservation measures",
+      "Energy targets"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have an energy management plan?",
+    "prompt": "Do you have a formal energy management plan in place? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Facilities management",
+        "Energy consultants"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Energy management system",
+      "Document management system"
+    ],
+    "quality_checks": [
+      "Verify energy management plan exists and is comprehensive",
+      "Check implementation of conservation measures",
+      "Review monitoring and reporting systems"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "energy_management",
+      "conservation",
+      "dst_mandatory",
+      "requirement_8"
+    ],
+    "notes": "Mandatory requirement #8 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-REQ-009",
+    "name_plain": "Energy Management - Automation",
+    "description": "Implementation of automated systems for energy management and efficiency optimization",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Automation system documentation",
+      "Building management system records",
+      "Energy savings data"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have automated energy management systems?",
+    "prompt": "Do you have automated systems for energy management? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Facilities management",
+        "Building automation team"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Building automation system",
+      "Energy management system"
+    ],
+    "quality_checks": [
+      "Verify automation systems are installed and operational",
+      "Check energy efficiency improvements",
+      "Review system performance data"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "energy_automation",
+      "building_automation",
+      "dst_mandatory",
+      "requirement_9"
+    ],
+    "notes": "Mandatory requirement #9 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-REQ-010",
+    "name_plain": "Transportation",
+    "description": "Implementation of sustainable transportation options for guests and staff including electric vehicles and public transport",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Transportation plan",
+      "EV charging stations",
+      "Public transport information",
+      "Bicycle facilities"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have sustainable transportation options?",
+    "prompt": "Do you provide sustainable transportation options for guests and staff? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Transportation team",
+        "Facilities management"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Transportation management system",
+      "Facilities records"
+    ],
+    "quality_checks": [
+      "Verify sustainable transportation options are available",
+      "Check EV charging infrastructure",
+      "Assess public transport integration"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "sustainable_transportation",
+      "EV",
+      "public_transport",
+      "dst_mandatory",
+      "requirement_10"
+    ],
+    "notes": "Mandatory requirement #10 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-REQ-011",
+    "name_plain": "Water Conservation",
+    "description": "Implementation of water conservation measures including efficient fixtures, monitoring, and reduction targets",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Water conservation plan",
+      "Efficient fixture inventory",
+      "Water monitoring data",
+      "Reduction targets"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have water conservation measures?",
+    "prompt": "Do you have formal water conservation measures in place? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Facilities management",
+        "Water conservation consultants"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Water management system",
+      "Facility records"
+    ],
+    "quality_checks": [
+      "Verify water conservation measures are implemented",
+      "Check efficient fixture installation",
+      "Review water consumption monitoring"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "water_conservation",
+      "efficiency",
+      "dst_mandatory",
+      "requirement_11"
+    ],
+    "notes": "Mandatory requirement #11 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-REQ-012",
+    "name_plain": "Wastewater",
+    "description": "Implementation of wastewater management practices including treatment, reuse, and proper disposal",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Wastewater management plan",
+      "Treatment systems records",
+      "Reuse programs",
+      "Disposal documentation"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have wastewater management practices?",
+    "prompt": "Do you have formal wastewater management practices in place? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Facilities management",
+        "Environmental team"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Wastewater management system",
+      "Environmental management system"
+    ],
+    "quality_checks": [
+      "Verify wastewater management practices are implemented",
+      "Check treatment and reuse systems",
+      "Review disposal documentation"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "wastewater",
+      "water_treatment",
+      "reuse",
+      "dst_mandatory",
+      "requirement_12"
+    ],
+    "notes": "Mandatory requirement #12 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-REQ-013",
+    "name_plain": "Waste Management Plan",
+    "description": "Implementation of a comprehensive waste management plan including reduction, recycling, and proper disposal",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Waste management plan",
+      "Recycling program records",
+      "Waste audit reports",
+      "Disposal documentation"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have a waste management plan?",
+    "prompt": "Do you have a formal waste management plan in place? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Environmental team",
+        "Waste management contractors"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Waste management system",
+      "Environmental management system"
+    ],
+    "quality_checks": [
+      "Verify waste management plan is comprehensive",
+      "Check recycling program implementation",
+      "Review waste audit and disposal records"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "waste_management",
+      "recycling",
+      "dst_mandatory",
+      "requirement_13"
+    ],
+    "notes": "Mandatory requirement #13 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-REQ-014",
+    "name_plain": "Waste Management – Bathroom",
+    "description": "Implementation of sustainable waste management practices specifically for bathroom areas including refillable dispensers and recycling",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Bathroom waste management plan",
+      "Refillable dispenser records",
+      "Recycling bins in bathrooms",
+      "Staff training records"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have sustainable bathroom waste management?",
+    "prompt": "Do you have sustainable waste management practices in bathrooms? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Housekeeping",
+        "Environmental team",
+        "Facilities management"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Housekeeping management system",
+      "Environmental management system"
+    ],
+    "quality_checks": [
+      "Verify refillable dispensers are installed",
+      "Check recycling bins are available in bathrooms",
+      "Review staff training on bathroom waste management"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "bathroom_waste",
+      "refillable_dispensers",
+      "dst_mandatory",
+      "requirement_14"
+    ],
+    "notes": "Mandatory requirement #14 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-REQ-015",
+    "name_plain": "Waste Management – Food",
+    "description": "Implementation of sustainable food waste management practices including reduction, donation, and composting",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Food waste management plan",
+      "Food donation records",
+      "Composting program",
+      "Waste tracking data"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have sustainable food waste management?",
+    "prompt": "Do you have sustainable food waste management practices? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "F&B department",
+        "Environmental team",
+        "Kitchen management"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "F&B management system",
+      "Waste tracking system"
+    ],
+    "quality_checks": [
+      "Verify food waste reduction measures are implemented",
+      "Check food donation and composting programs",
+      "Review food waste tracking and analysis"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "food_waste",
+      "composting",
+      "donation",
+      "dst_mandatory",
+      "requirement_15"
+    ],
+    "notes": "Mandatory requirement #15 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-REQ-016",
+    "name_plain": "Minimise Pollution",
+    "description": "Implementation of practices to minimize pollution including air, noise, light, and chemical pollution",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Pollution management plan",
+      "Monitoring data",
+      "Control measures documentation",
+      "Compliance records"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have pollution minimization practices?",
+    "prompt": "Do you have practices to minimize pollution? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Environmental team",
+        "Facilities management",
+        "Operations"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Environmental management system",
+      "Compliance tracking system"
+    ],
+    "quality_checks": [
+      "Verify pollution control measures are implemented",
+      "Check monitoring programs for different pollution types",
+      "Review compliance with environmental regulations"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "pollution_control",
+      "air_quality",
+      "noise_control",
+      "dst_mandatory",
+      "requirement_16"
+    ],
+    "notes": "Mandatory requirement #16 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-REQ-017",
+    "name_plain": "Harmful Substances",
+    "description": "Management and reduction of harmful substances including chemicals, pesticides, and hazardous materials",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Harmful substances management plan",
+      "Chemical inventory",
+      "Safety data sheets",
+      "Reduction initiatives"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you manage harmful substances?",
+    "prompt": "Do you have practices to manage and reduce harmful substances? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "site",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Environmental team",
+        "Facilities management",
+        "Procurement"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Chemical management system",
+      "Procurement system"
+    ],
+    "quality_checks": [
+      "Verify harmful substances inventory exists",
+      "Check safety data sheets are available",
+      "Review reduction initiatives and safer alternatives"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "harmful_substances",
+      "chemicals",
+      "hazardous_materials",
+      "dst_mandatory",
+      "requirement_17"
+    ],
+    "notes": "Mandatory requirement #17 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "E",
+    "official_code": "DST-REQ-018",
+    "name_plain": "Sustainable Purchasing",
+    "description": "Implementation of sustainable purchasing practices including local, eco-friendly, and ethical sourcing",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Sustainable purchasing policy",
+      "Supplier sustainability assessments",
+      "Eco-labeled product inventory",
+      "Local procurement records"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you have sustainable purchasing practices?",
+    "prompt": "Do you have sustainable purchasing practices? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "organization",
+    "providers_by_emirate": {
+      "Dubai": [
+        "Procurement department",
+        "Sustainability team"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "Procurement system",
+      "Supplier management system"
+    ],
+    "quality_checks": [
+      "Verify sustainable purchasing policy exists",
+      "Check supplier sustainability assessments",
+      "Review eco-labeled and local procurement data"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "sustainable_purchasing",
+      "local_sourcing",
+      "eco_products",
+      "dst_mandatory",
+      "requirement_18"
+    ],
+    "notes": "Mandatory requirement #18 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  },
+  {
+    "framework_id": "DUBAI-SUSTAINABLE-TOURISM",
+    "sector": "hospitality",
+    "category": "S",
+    "official_code": "DST-REQ-019",
+    "name_plain": "Local Communities",
+    "description": "Engagement with and support for local communities through various initiatives and partnerships",
+    "unit": "boolean",
+    "cadence": "annual",
+    "evidence": [
+      "Community engagement programs",
+      "Partnership agreements",
+      "Local hiring records",
+      "Community impact reports"
+    ],
+    "type": "must-have",
+    "condition_logic": null,
+    "wizard_question": "Do you engage with local communities?",
+    "prompt": "Do you have formal local community engagement initiatives? (Yes/No)",
+    "metered": false,
+    "meter_type": null,
+    "meter_scope": "local_community",
+    "providers_by_emirate": {
+      "Dubai": [
+        "CSR team",
+        "Community relations",
+        "HR department"
+      ]
+    },
+    "calculation": null,
+    "aggregation": null,
+    "data_source_systems": [
+      "CSR management system",
+      "Community partnership records",
+      "HR system"
+    ],
+    "quality_checks": [
+      "Verify community engagement programs exist",
+      "Check local hiring and procurement practices",
+      "Review community impact and feedback"
+    ],
+    "privacy_level": "public",
+    "tags": [
+      "community_engagement",
+      "local_support",
+      "dst_mandatory",
+      "social_impact",
+      "requirement_19"
+    ],
+    "notes": "Mandatory requirement #19 under Dubai Sustainable Tourism's 19 Sustainability Requirements. Required for all Dubai hotels.",
+    "sources": [],
+    "carbon": null
+  }
+]

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     Company, Activity, CompanyActivity, Framework, CompanyFramework,
-    DataElement, DataElementFrameworkMapping, ProfilingQuestion,
+    DataElement, FrameworkElement, DataElementFrameworkMapping, ProfilingQuestion,
     CompanyProfileAnswer, Meter, CompanyDataSubmission, CompanyChecklist,
     ChecklistFrameworkMapping
 )
@@ -44,16 +44,24 @@ class CompanyFrameworkAdmin(admin.ModelAdmin):
 
 @admin.register(DataElement)
 class DataElementAdmin(admin.ModelAdmin):
-    list_display = ['element_id', 'name', 'type', 'is_metered', 'unit']
-    list_filter = ['type', 'is_metered']
+    list_display = ['element_id', 'name', 'category', 'type', 'is_metered', 'unit']
+    list_filter = ['category', 'type', 'is_metered']
     search_fields = ['name', 'element_id']
+
+
+@admin.register(FrameworkElement)
+class FrameworkElementAdmin(admin.ModelAdmin):
+    list_display = ['official_code', 'name_plain', 'framework_id', 'category', 'type', 'metered', 'unit']
+    list_filter = ['framework_id', 'category', 'type', 'metered', 'cadence']
+    search_fields = ['name_plain', 'official_code', 'element_id']
+    readonly_fields = ['element_id']
 
 
 @admin.register(DataElementFrameworkMapping)
 class DataElementFrameworkMappingAdmin(admin.ModelAdmin):
     list_display = ['element', 'framework', 'cadence']
     list_filter = ['framework', 'cadence']
-    search_fields = ['element__name', 'framework__name']
+    search_fields = ['element__name_plain', 'framework__name']
 
 
 @admin.register(ProfilingQuestion)
@@ -82,7 +90,7 @@ class MeterAdmin(admin.ModelAdmin):
 class CompanyDataSubmissionAdmin(admin.ModelAdmin):
     list_display = ['company', 'element', 'meter', 'reporting_year', 'reporting_period', 'status', 'updated_at']
     list_filter = ['reporting_year', 'reporting_period', 'element', 'updated_at']
-    search_fields = ['company__name', 'element__name']
+    search_fields = ['company__name', 'element__name_plain']
     
     def status(self, obj):
         return obj.status
@@ -91,10 +99,9 @@ class CompanyDataSubmissionAdmin(admin.ModelAdmin):
 
 @admin.register(CompanyChecklist)
 class CompanyChecklistAdmin(admin.ModelAdmin):
-    list_display = ['company', 'element', 'is_required', 'cadence', 'created_at']
-    list_filter = ['is_required', 'cadence', 'created_at']
-    search_fields = ['company__name', 'element__name']
-    filter_horizontal = ['frameworks']
+    list_display = ['company', 'element', 'framework_id', 'is_required', 'cadence', 'created_at']
+    list_filter = ['is_required', 'cadence', 'framework_id', 'created_at']
+    search_fields = ['company__name', 'element__name_plain', 'framework_id']
 
 
 @admin.register(ChecklistFrameworkMapping)

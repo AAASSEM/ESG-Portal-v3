@@ -13,9 +13,9 @@ const getApiUrl = () => {
   
   // Development: Dynamic port detection
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    // If React is running on port 3000, assume Django is on 8000
+    // If React is running on port 3000, assume Django is on 8080
     if (window.location.port === '3000') {
-      const backendPort = process.env.REACT_APP_BACKEND_PORT || '8000';
+      const backendPort = process.env.REACT_APP_BACKEND_PORT || '8080';
       return `http://${window.location.hostname}:${backendPort}`;
     }
     // If React is running on port 3001, assume Django is on 8080

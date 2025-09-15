@@ -16,19 +16,19 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 
 from .models import (
-    Company, Activity, CompanyActivity, Framework, CompanyFramework, DataElement, ProfilingQuestion,
+    Company, Site, Activity, CompanyActivity, Framework, CompanyFramework, DataElement, FrameworkElement, ProfilingQuestion,
     CompanyProfileAnswer, Meter, CompanyDataSubmission, CompanyChecklist
 )
 from .serializers import (
-    CompanySerializer, CompanyCreateSerializer, ActivitySerializer,
-    FrameworkSerializer, DataElementSerializer, ProfilingQuestionSerializer,
-    CompanyProfileAnswerSerializer, MeterSerializer, 
+    CompanySerializer, CompanyCreateSerializer, SiteSerializer, ActivitySerializer,
+    FrameworkSerializer, DataElementSerializer, FrameworkElementSerializer, ProfilingQuestionSerializer,
+    CompanyProfileAnswerSerializer, MeterSerializer,
     CompanyDataSubmissionSerializer, CompanyChecklistSerializer,
     DashboardStatsSerializer, ProgressSerializer
 )
 from .services import (
-    FrameworkService, ProfilingService, ChecklistService,
-    MeterService, DataCollectionService, DashboardService
+    ProfilingService, ChecklistService,
+    MeterService, DataCollectionService, DashboardService, FrameworkProcessor
 )
 
 
@@ -289,16 +289,27 @@ class CompanyViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['get'])
     def profile_answers(self, request, pk=None):
-        """Get company's profiling wizard answers"""
+        """Get company's profiling wizard answers - site-specific or aggregated"""
         company = self._get_user_company(pk)
+        site_id = request.query_params.get('site_id')
         
-        # Get the most recent answers for each question for this company
+        # Get the most recent answers for each question for this company/site
         # Users should see company-wide answers, not just their own
         from django.db.models import Max
         
+        # Build filter
+        filters = {'company': company}
+        if site_id:
+            filters['site_id'] = site_id
+            print(f"🏢 Getting profile answers for site_id: {site_id}")
+        else:
+            print(f"🌐 Getting aggregated profile answers for all locations")
+            # For "All Locations" view, get answers from all sites
+            # Don't filter by site to show aggregated data
+        
         # Get the latest answer for each question
         latest_answers = CompanyProfileAnswer.objects.filter(
-            company=company
+            **filters
         ).values('question').annotate(
             latest_time=Max('answered_at')
         )
@@ -306,10 +317,16 @@ class CompanyViewSet(viewsets.ModelViewSet):
         # Get the actual answer records
         answer_ids = []
         for item in latest_answers:
+            answer_filters = {
+                'company': company,
+                'question': item['question'],
+                'answered_at': item['latest_time']
+            }
+            if site_id:
+                answer_filters['site_id'] = site_id
+                
             latest_answer = CompanyProfileAnswer.objects.filter(
-                company=company,
-                question=item['question'],
-                answered_at=item['latest_time']
+                **answer_filters
             ).first()
             if latest_answer:
                 answer_ids.append(latest_answer.id)
@@ -336,6 +353,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
         
         question_id = request.data.get('question')
         answer = request.data.get('answer')
+        site_id = request.data.get('site_id')
         
         if question_id is None or answer is None:
             return Response(
@@ -343,13 +361,25 @@ class CompanyViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        # Get site if provided
+        site = None
+        if site_id:
+            try:
+                site = Site.objects.get(id=site_id, company=company)
+            except Site.DoesNotExist:
+                return Response(
+                    {'error': 'Site not found or unauthorized'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        
         try:
             question = ProfilingQuestion.objects.get(question_id=question_id)
             
-            # Update or create the answer (company-wide, not user-specific)
+            # Update or create the answer (site-specific)
             profile_answer, created = CompanyProfileAnswer.objects.update_or_create(
                 user=None,  # Company-wide answer, not tied to specific user
                 company=company,
+                site=site,  # Site-specific answer
                 question=question,
                 defaults={'answer': answer}
             )
@@ -362,6 +392,164 @@ class CompanyViewSet(viewsets.ModelViewSet):
                 {'error': 'Question not found'}, 
                 status=status.HTTP_404_NOT_FOUND
             )
+
+
+class SiteViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing company sites/locations"""
+    serializer_class = SiteSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [CsrfExemptSessionAuthentication, SessionAuthentication]
+    
+    def get_queryset(self):
+        """Return sites for user's company"""
+        user = self.request.user
+        
+        # Get company from request or user's default company
+        company_id = self.request.query_params.get('company_id')
+        
+        if company_id:
+            try:
+                company = get_user_company(user, company_id)
+            except PermissionDenied:
+                return Site.objects.none()
+        else:
+            # Get user's assigned company
+            company = None
+            if hasattr(user, 'company') and user.company:
+                company = user.company
+            elif hasattr(user, 'userprofile') and user.userprofile and user.userprofile.company:
+                company = user.userprofile.company
+            else:
+                # Fallback: try to find first company user owns (legacy support)
+                company = Company.objects.filter(user=user).first()
+            
+        if not company:
+            return Site.objects.none()
+            
+        return Site.objects.filter(company=company).order_by('name')
+    
+    def perform_create(self, serializer):
+        """Create a new site for the company"""
+        user = self.request.user
+        company_id = self.request.data.get('company_id')
+        
+        if not company_id:
+            # Get user's first company if no company_id provided
+            company = Company.objects.filter(user=user).first()
+            if not company:
+                raise PermissionDenied("No company found for user")
+        else:
+            company = get_object_or_404(Company, id=company_id, user=user)
+        
+        serializer.save(company=company)
+    
+    @action(detail=True, methods=['post'])
+    def set_active(self, request, pk=None):
+        """Set a site as the active location for the user"""
+        user = request.user
+
+        # Check user role - meter managers and uploaders should not have access to location features
+        user_role = 'viewer'  # default
+        if hasattr(user, 'userprofile') and user.userprofile:
+            user_role = user.userprofile.role
+
+        # Role-based access control - block meter managers and uploaders
+        if user_role in ['meter_manager', 'uploader']:
+            return Response({
+                'error': 'Access denied',
+                'message': 'Meter managers and uploaders do not have access to location features'
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        site = self.get_object()
+
+        # Update user profile with selected site
+        if hasattr(request.user, 'userprofile'):
+            profile = request.user.userprofile
+            profile.site = site
+            profile.view_all_locations = False  # Clear "All Locations" flag when selecting a specific site
+            profile.save()
+            
+            return Response({
+                'success': True,
+                'message': f'Active location set to {site.name}',
+                'site': SiteSerializer(site).data
+            })
+        
+        return Response({
+            'error': 'User profile not found'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['get'])
+    def active(self, request):
+        """Get the currently active site for the user"""
+        user = request.user
+
+        # Check user role - meter managers and uploaders should not have access to location features
+        user_role = 'viewer'  # default
+        if hasattr(user, 'userprofile') and user.userprofile:
+            user_role = user.userprofile.role
+
+        # Role-based access control - block meter managers and uploaders
+        if user_role in ['meter_manager', 'uploader']:
+            return Response({
+                'error': 'Access denied',
+                'message': 'Meter managers and uploaders do not have access to location features'
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        if hasattr(request.user, 'userprofile'):
+            profile = request.user.userprofile
+
+            # Check if "All Locations" view is active
+            if profile.view_all_locations:
+                return Response({
+                    'id': 'all',
+                    'name': 'All Locations'
+                })
+
+            # Check for regular site selection
+            if profile.site:
+                site = profile.site
+                return Response(SiteSerializer(site).data)
+
+        return Response({
+            'message': 'No active site selected'
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    @action(detail=False, methods=['post'])
+    def set_all_locations(self, request):
+        """Set the user to view all locations"""
+        user = request.user
+
+        # Check user role - meter managers and uploaders should not have access to location features
+        user_role = 'viewer'  # default
+        if hasattr(user, 'userprofile') and user.userprofile:
+            user_role = user.userprofile.role
+
+        # Role-based access control - block meter managers and uploaders
+        if user_role in ['meter_manager', 'uploader']:
+            return Response({
+                'error': 'Access denied',
+                'message': 'Meter managers and uploaders do not have access to location features'
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        if hasattr(request.user, 'userprofile'):
+            profile = request.user.userprofile
+            profile.site = None  # Clear specific site selection
+            profile.view_all_locations = True  # Set "All Locations" flag
+            profile.save()
+            
+            return Response({
+                'success': True,
+                'message': 'Active view set to All Locations',
+                'site': {
+                    'id': 'all',
+                    'name': 'All Locations'
+                }
+            })
+        
+        return Response({
+            'error': 'User profile not found'
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -479,22 +667,51 @@ class FrameworkViewSet(viewsets.ReadOnlyModelViewSet):
         """Assign voluntary framework to company"""
         company_id = request.data.get('company_id')
         framework_id = request.data.get('framework_id')
-        
+
+        print(f"🔍 assign_voluntary called with company_id={company_id}, framework_id={framework_id}")
+        print(f"🔍 Request data: {request.data}")
+
+        if not company_id:
+            print("❌ Missing company_id")
+            return Response(
+                {'error': 'company_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not framework_id:
+            print("❌ Missing framework_id")
+            return Response(
+                {'error': 'framework_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         try:
             company = Company.objects.get(pk=company_id)
+            print(f"✅ Found company: {company.name}")
+
             success = FrameworkService.assign_voluntary_framework(company, framework_id)
-            
+            print(f"🔍 FrameworkService.assign_voluntary_framework returned: {success}")
+
             if success:
+                print("✅ Framework assigned successfully")
                 return Response({'message': 'Framework assigned successfully'})
             else:
+                print("❌ FrameworkService returned False")
                 return Response(
-                    {'error': 'Framework not found or not voluntary'}, 
+                    {'error': 'Framework not found or not voluntary'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
         except Company.DoesNotExist:
+            print(f"❌ Company not found with ID: {company_id}")
             return Response(
-                {'error': 'Company not found'}, 
+                {'error': 'Company not found'},
                 status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            print(f"❌ Unexpected error: {str(e)}")
+            return Response(
+                {'error': f'Unexpected error: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
     @action(detail=False, methods=['post'])
@@ -525,6 +742,150 @@ class FrameworkViewSet(viewsets.ReadOnlyModelViewSet):
                 {'error': 'Framework not found or not voluntary'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+class FrameworkElementViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for framework-based elements with rich specifications"""
+    queryset = FrameworkElement.objects.all()
+    serializer_class = FrameworkElementSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Filter framework elements based on company context"""
+        queryset = super().get_queryset()
+
+        # Filter by framework if specified
+        framework_id = self.request.query_params.get('framework_id')
+        if framework_id:
+            queryset = queryset.filter(framework_id=framework_id)
+
+        # Filter by sector if specified
+        sector = self.request.query_params.get('sector')
+        if sector:
+            queryset = queryset.filter(sector=sector)
+
+        # Filter by category if specified
+        category = self.request.query_params.get('category')
+        if category:
+            queryset = queryset.filter(category=category)
+
+        # Filter by type if specified
+        element_type = self.request.query_params.get('type')
+        if element_type:
+            queryset = queryset.filter(type=element_type)
+
+        return queryset.order_by('official_code')
+
+    @action(detail=False, methods=['get'])
+    def for_company(self, request):
+        """Get framework elements applicable to a specific company"""
+        company_id = request.query_params.get('company_id')
+
+        if not company_id:
+            return Response(
+                {'error': 'company_id parameter is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            company = get_object_or_404(Company, id=company_id)
+
+            # Use framework processor to get applicable elements
+            processor = FrameworkProcessor(company)
+            framework_id = request.query_params.get('framework_id')
+            applicable_elements = processor.get_applicable_elements(framework_id=framework_id, sector=company.sector)
+
+            serializer = self.get_serializer(applicable_elements, many=True)
+            return Response(serializer.data)
+
+        except Company.DoesNotExist:
+            return Response(
+                {'error': 'Company not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    @action(detail=False, methods=['get'])
+    def wizard_questions(self, request):
+        """Get wizard questions for determining element applicability"""
+        company_id = request.query_params.get('company_id')
+        framework_id = request.query_params.get('framework_id')
+
+        if not company_id:
+            return Response(
+                {'error': 'company_id parameter is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            company = get_object_or_404(Company, id=company_id)
+            processor = FrameworkProcessor(company)
+            questions = processor.get_wizard_questions(framework_id=framework_id)
+            return Response({'questions': questions})
+
+        except Company.DoesNotExist:
+            return Response(
+                {'error': 'Company not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    @action(detail=True, methods=['post'])
+    def calculate_carbon(self, request, pk=None):
+        """Calculate carbon emissions for an element"""
+        element = self.get_object()
+        value = request.data.get('value')
+        period = request.data.get('period', 'monthly')
+
+        if value is None:
+            return Response(
+                {'error': 'value parameter is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            value = float(value)
+            company_id = request.data.get('company_id')
+
+            if company_id:
+                company = get_object_or_404(Company, id=company_id)
+                processor = FrameworkProcessor(company)
+                result = processor.calculate_carbon_emissions(element, value, period)
+            else:
+                # Fallback to basic calculation without company context
+                result = {'error': 'company_id required for carbon calculations'}
+
+            return Response(result)
+
+        except (ValueError, TypeError):
+            return Response(
+                {'error': 'Invalid value - must be a number'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=True, methods=['get'])
+    def evidence_requirements(self, request, pk=None):
+        """Get evidence requirements for an element"""
+        element = self.get_object()
+        company_id = request.query_params.get('company_id')
+
+        if company_id:
+            try:
+                company = get_object_or_404(Company, id=company_id)
+                processor = FrameworkProcessor(company)
+                requirements = processor.get_evidence_requirements(element)
+                providers = processor.get_data_providers(element)
+
+                return Response({
+                    'evidence_requirements': requirements,
+                    'recommended_providers': providers
+                })
+            except Company.DoesNotExist:
+                pass
+
+        # Fallback without company context
+        return Response({
+            'evidence_requirements': element.evidence_requirements or [],
+            'recommended_providers': []
+        })
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -572,25 +933,85 @@ class ProfilingQuestionViewSet(viewsets.ReadOnlyModelViewSet):
             )
         
         company_id = request.data.get('company_id')
+        site_id = request.data.get('site_id')
         answers = request.data.get('answers', [])
         
         try:
             # CRITICAL: Ensure user can only save answers for their own company
             company = get_user_company(request.user, company_id)
+            
+            # Get site if provided
+            site = None
+            if site_id:
+                try:
+                    site = Site.objects.get(id=site_id, company=company)
+                    print(f"🏢 Saving profile answers for site: {site.name}")
+                except Site.DoesNotExist:
+                    return Response(
+                        {'error': 'Site not found or unauthorized'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
                     
-            ProfilingService.save_profiling_answers(company, answers, request.user)
-            
-            # Generate personalized checklist after saving answers
-            ChecklistService.generate_personalized_checklist(company)
-            
-            # Auto-create meters for metered data elements
-            MeterService.auto_create_meters(company)
+            # Save framework element answers directly (NEW SYSTEM)
+            # Store answers directly without using the old ProfilingQuestion system
+            from django.db import transaction
+            from .models import CompanyProfileAnswer, ProfilingQuestion, DataElement
+
+            with transaction.atomic():
+                # Clear existing answers for this company
+                CompanyProfileAnswer.objects.filter(company=company).delete()
+
+                # Create answers using a simplified approach
+                for answer_data in answers:
+                    element_id = answer_data.get('question_id')  # Actually element_id in new system
+                    answer_value = answer_data.get('answer')
+
+                    # Get or create a dummy DataElement for compatibility
+                    dummy_element, created = DataElement.objects.get_or_create(
+                        element_id=f"dummy_{element_id}",
+                        defaults={
+                            'name': element_id,
+                            'description': f'Dummy element for {element_id}',
+                            'type': 'conditional'
+                        }
+                    )
+
+                    # Get or create ProfilingQuestion with required activates_element
+                    question, created = ProfilingQuestion.objects.get_or_create(
+                        question_id=element_id,
+                        defaults={
+                            'text': element_id,
+                            'activates_element': dummy_element
+                        }
+                    )
+
+                    # Store the answer
+                    CompanyProfileAnswer.objects.create(
+                        company=company,
+                        question=question,
+                        answer=answer_value,
+                        user=request.user
+                    )
+
+            # Generate personalized checklist after saving answers (site-specific)
+            ChecklistService.generate_personalized_checklist(company, site)
+
+            # Auto-create meters for metered data elements (site-specific)
+            MeterService.auto_create_meters(company, site)
             
             return Response({'message': 'Answers saved, checklist generated, and meters created successfully'})
         except Company.DoesNotExist:
             return Response(
-                {'error': 'Company not found'}, 
+                {'error': 'Company not found'},
                 status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            print(f"❌ Error in save_answers: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return Response(
+                {'error': f'Failed to save answers and generate checklist: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -603,36 +1024,123 @@ class CompanyChecklistViewSet(viewsets.ReadOnlyModelViewSet):
     
     def get_queryset(self):
         company_id = self.request.query_params.get('company_id')
+        site_id = self.request.query_params.get('site_id')
+        
         if company_id:
             # CRITICAL: Ensure user can only access checklists for their own company
             try:
                 company = get_user_company(self.request.user, company_id)
-                return CompanyChecklist.objects.filter(company_id=company_id)
+                queryset = CompanyChecklist.objects.filter(company_id=company_id)
+                
+                # Filter by site if provided
+                if site_id:
+                    queryset = queryset.filter(site_id=site_id)
+                    print(f"🏢 Filtering checklist by site_id: {site_id}")
+                else:
+                    # For "All Locations" view, return checklists from all sites for this company
+                    print(f"🌐 Showing aggregated checklist for all locations")
+                    # Don't filter by site - show all checklists for the company
+                    
+                return queryset
             except PermissionDenied:
                 return CompanyChecklist.objects.none()
         return CompanyChecklist.objects.none()
     
-    @action(detail=False, methods=['post'])
-    def generate(self, request):
-        """Generate personalized checklist for company"""
-        company_id = request.data.get('company_id')
+    def list(self, request, *args, **kwargs):
+        """Override list to provide location aggregation info for All Locations view"""
+        print("🚀 CUSTOM LIST METHOD CALLED!")
+        company_id = self.request.query_params.get('company_id')
+        site_id = self.request.query_params.get('site_id')
         
-        try:
-            # CRITICAL: Ensure user can only generate checklist for their own company
-            company = get_user_company(request.user, company_id)
+        print(f"🔍 Parameters: company_id={company_id}, site_id={site_id}")
+        
+        if company_id and not site_id:  # All Locations view - aggregate by element
+            print("🌍 All Locations aggregation logic triggered!")
+            try:
+                company = get_user_company(request.user, company_id)
+                
+                # Get all checklist items for all sites
+                all_items = CompanyChecklist.objects.filter(
+                    company_id=company_id
+                ).select_related('element', 'site').order_by('element__element_id')
+                
+                print(f"📊 Found {all_items.count()} total checklist items across all sites")
+                
+                # Group by element ID to deduplicate
+                element_map = {}
+                
+                for item in all_items:
+                    element_id = item.element.element_id
                     
-            checklist = ChecklistService.generate_personalized_checklist(company)
-            
-            # Auto-create meters for metered data elements
-            MeterService.auto_create_meters(company)
-            
-            serializer = self.get_serializer(checklist, many=True)
-            return Response(serializer.data)
-        except Company.DoesNotExist:
-            return Response(
-                {'error': 'Company not found'}, 
-                status=status.HTTP_404_NOT_FOUND
-            )
+                    if element_id not in element_map:
+                        element_map[element_id] = {
+                            'item': item,  # Keep first item as template
+                            'sites': []
+                        }
+                    
+                    # Add site info if not already added
+                    if item.site and not any(s['id'] == item.site.id for s in element_map[element_id]['sites']):
+                        element_map[element_id]['sites'].append({
+                            'id': item.site.id,
+                            'name': item.site.name,
+                            'location': item.site.location
+                        })
+                
+                # Build aggregated response - one entry per unique element
+                results = []
+                shared_count = 0
+                unique_count = 0
+                
+                for element_id, data in element_map.items():
+                    # Use the checklist serializer for base data
+                    serializer = self.get_serializer(data['item'])
+                    item_data = serializer.data
+                    
+                    # Add aggregated location info
+                    site_count = len(data['sites'])
+                    item_data['locations'] = data['sites']
+                    item_data['location_count'] = site_count
+                    
+                    # Determine if shared or unique
+                    if site_count > 1:
+                        item_data['location_type'] = 'shared'
+                        shared_count += 1
+                        print(f"   🔵 SHARED: {item_data['element_name']} in {site_count} sites")
+                    elif site_count == 1:
+                        item_data['location_type'] = 'unique'
+                        unique_count += 1
+                        print(f"   🟠 UNIQUE: {item_data['element_name']} only in {data['sites'][0]['name']}")
+                    else:
+                        item_data['location_type'] = 'none'
+                        print(f"   ⚪ NO SITE: {item_data['element_name']}")
+                    
+                    results.append(item_data)
+                
+                # Sort results for consistent display
+                results.sort(key=lambda x: (x.get('category', ''), x.get('element_name', '')))
+                
+                print(f"📊 Aggregation complete: {len(results)} elements ({shared_count} shared, {unique_count} unique)")
+                
+                return Response({
+                    'results': results,
+                    'count': len(results),
+                    'aggregation_stats': {
+                        'total_elements': len(results),
+                        'shared_elements': shared_count,
+                        'unique_elements': unique_count
+                    }
+                })
+                
+            except Exception as e:
+                print(f"❌ Error in All Locations aggregation: {e}")
+                return Response(
+                    {'error': 'Failed to load aggregated checklist'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+        
+        # Default behavior for specific location
+        print(f"🔍 Using default list behavior for site_id={site_id}")
+        return super().list(request, *args, **kwargs)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -644,11 +1152,23 @@ class MeterViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         company_id = self.request.query_params.get('company_id')
+        site_id = self.request.query_params.get('site_id')
+        
         if company_id:
             # CRITICAL: Filter by user's company to ensure data isolation
             try:
                 company = get_user_company(self.request.user, company_id)
-                return Meter.objects.filter(company_id=company_id)
+                queryset = Meter.objects.filter(company_id=company_id)
+                
+                # Filter by site if provided
+                if site_id:
+                    queryset = queryset.filter(site_id=site_id)
+                    print(f"🏢 Filtering meters by site_id: {site_id}")
+                else:
+                    print(f"🌐 Showing aggregated meters for all locations")
+                    # For "All Locations" view, show all meters for the company
+                
+                return queryset
             except PermissionDenied:
                 return Meter.objects.none()
         return Meter.objects.none()
@@ -686,10 +1206,21 @@ class MeterViewSet(viewsets.ModelViewSet):
             meter_data['company_id'] = company_id
             print(f"🔧 Creating meter with data: {meter_data}")
             
+            # Get site if provided
+            site_id = request.query_params.get('site_id') or request.data.get('site_id')
+            site = None
+            if site_id:
+                try:
+                    site = Site.objects.get(id=site_id, company=company)
+                    print(f"📍 Assigning meter to site: {site.name}")
+                except Site.DoesNotExist:
+                    print(f"⚠️ Site {site_id} not found for company {company_id}")
+            
             # Create meter directly (company-wide, not user-specific)
             meter = Meter.objects.create(
                 user=None,  # Company-wide meter, not tied to specific user
                 company=company,
+                site=site,  # Assign to site if provided
                 type=meter_data.get('type'),
                 name=meter_data.get('name'),
                 account_number=meter_data.get('account_number', ''),
@@ -784,6 +1315,7 @@ class DataCollectionViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         company_id = self.request.query_params.get('company_id')
+        site_id = self.request.query_params.get('site_id')
         year = self.request.query_params.get('year')
         month = self.request.query_params.get('month')
         
@@ -791,6 +1323,15 @@ class DataCollectionViewSet(viewsets.ModelViewSet):
         
         if company_id:
             queryset = queryset.filter(company_id=company_id)
+            
+        # Filter by site using direct site field
+        if site_id:
+            queryset = queryset.filter(site_id=site_id)
+            print(f"📍 Filtering data submissions by site_id: {site_id}")
+        else:
+            print(f"🌐 Showing aggregated data submissions for all locations")
+            # For "All Locations" view, show all submissions for the company
+            
         if year:
             queryset = queryset.filter(reporting_year=year)
         if month:
@@ -816,6 +1357,7 @@ class DataCollectionViewSet(viewsets.ModelViewSet):
     def tasks(self, request):
         """Get data collection tasks for specific month"""
         company_id = request.query_params.get('company_id')
+        site_id = request.query_params.get('site_id')
         year = request.query_params.get('year')
         month = request.query_params.get('month')
         
@@ -828,37 +1370,86 @@ class DataCollectionViewSet(viewsets.ModelViewSet):
         try:
             # CRITICAL: Added proper permission check
             company = get_user_company(request.user, company_id)
+            
+            # Get site if specified
+            site = None
+            if site_id:
+                try:
+                    site = Site.objects.get(id=site_id, company=company)
+                    print(f"📍 Tasks filtered for site: {site.name}")
+                except Site.DoesNotExist:
+                    return Response(
+                        {'error': 'Site not found or unauthorized'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+            
             print(f"🔐 Tasks request from user: {request.user} (ID: {request.user.id if hasattr(request.user, 'id') else 'N/A'})")
             tasks = DataCollectionService.get_data_collection_tasks(
-                company, int(year), int(month), user=request.user
+                company, int(year), int(month), user=request.user, site=site
             )
             
-            # Serialize the tasks
-            task_data = []
-            for task in tasks:
-                submission_data = CompanyDataSubmissionSerializer(task['submission']).data
-                meter_info = None
-                if task['meter']:
-                    meter_info = {
-                        'id': task['meter'].id,
-                        'name': task['meter'].name,
-                        'type': task['meter'].type,
-                        'location': task['meter'].location_description,
-                        'account_number': task['meter'].account_number,
-                        'status': task['meter'].status
-                    }
+            # Check if tasks are grouped by site (All Locations) or ungrouped (specific site)
+            if site:
+                # Specific site: serialize tasks normally
+                task_data = []
+                for task in tasks:
+                    submission_data = CompanyDataSubmissionSerializer(task['submission']).data
+                    meter_info = None
+                    if task['meter']:
+                        meter_info = {
+                            'id': task['meter'].id,
+                            'name': task['meter'].name,
+                            'type': task['meter'].type,
+                            'location': task['meter'].location_description,
+                            'account_number': task['meter'].account_number,
+                            'status': task['meter'].status
+                        }
+                    
+                    task_data.append({
+                        'type': task['type'],
+                        'element_name': task['element'].name_plain,
+                        'element_unit': task['element'].unit,
+                        'element_description': task['element'].description,
+                        'meter': meter_info,
+                        'cadence': task['cadence'],
+                        'submission': submission_data
+                    })
                 
-                task_data.append({
-                    'type': task['type'],
-                    'element_name': task['element'].name,
-                    'element_unit': task['element'].unit,
-                    'element_description': task['element'].description,
-                    'meter': meter_info,
-                    'cadence': task['cadence'],
-                    'submission': submission_data
-                })
-            
-            return Response(task_data)
+                return Response(task_data)
+            else:
+                # All Locations: serialize grouped by site
+                grouped_data = []
+                for site_group in tasks:
+                    site_tasks = []
+                    for task in site_group['tasks']:
+                        submission_data = CompanyDataSubmissionSerializer(task['submission']).data
+                        meter_info = None
+                        if task['meter']:
+                            meter_info = {
+                                'id': task['meter'].id,
+                                'name': task['meter'].name,
+                                'type': task['meter'].type,
+                                'location': task['meter'].location_description,
+                                'account_number': task['meter'].account_number,
+                                'status': task['meter'].status
+                            }
+                        
+                        site_tasks.append({
+                            'type': task['type'],
+                            'element_name': task['element'].name_plain,
+                            'element_unit': task['element'].unit,
+                            'element_description': task['element'].description,
+                            'meter': meter_info,
+                            'cadence': task['cadence'],
+                            'submission': submission_data
+                        })
+                    
+                    grouped_data.append({
+                        'site': site_group['site'],
+                        'tasks': site_tasks
+                    })
+                
+                return Response(grouped_data)
             
         except PermissionDenied as e:
             return Response(
@@ -870,29 +1461,59 @@ class DataCollectionViewSet(viewsets.ModelViewSet):
     def progress(self, request):
         """Get data collection progress"""
         company_id = request.query_params.get('company_id')
+        site_id = request.query_params.get('site_id')
         year = request.query_params.get('year')
         month = request.query_params.get('month')
-        
+
         if not all([company_id, year]):
             return Response(
-                {'error': 'company_id and year parameters required'}, 
+                {'error': 'company_id and year parameters required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         try:
             # CRITICAL: Added proper permission check
             company = get_user_company(request.user, company_id)
+
+            # Get site if specified
+            site = None
+            if site_id:
+                try:
+                    site = Site.objects.get(id=site_id, company=company)
+                    print(f"📍 Progress filtered for site: {site.name}")
+                except Site.DoesNotExist:
+                    return Response(
+                        {'error': 'Site not found or unauthorized'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+            else:
+                print(f"🌐 Progress showing aggregated stats for all locations")
+
             progress = DataCollectionService.calculate_progress(
-                company, int(year), int(month) if month else None, user=request.user
+                company, int(year), int(month) if month else None, user=request.user, site=site
             )
+            print(f"🔍 Progress data for validation: {progress}")
             serializer = ProgressSerializer(data=progress)
-            serializer.is_valid(raise_exception=True)
+            if not serializer.is_valid():
+                print(f"❌ Serializer validation errors: {serializer.errors}")
+                return Response(
+                    {'error': 'Progress data validation failed', 'details': serializer.errors},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             return Response(serializer.data)
-            
+
         except PermissionDenied as e:
             return Response(
-                {'error': str(e)}, 
+                {'error': str(e)},
                 status=status.HTTP_403_FORBIDDEN
+            )
+        except Exception as e:
+            print(f"❌ Unexpected error in progress endpoint: {e}")
+            import traceback
+            traceback.print_exc()
+            return Response(
+                {'error': 'Internal server error', 'details': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
     @action(detail=False, methods=['post'], url_path='cleanup-orphaned')
@@ -1012,6 +1633,8 @@ class DashboardView(APIView):
     
     def get(self, request):
         company_id = request.query_params.get('company_id')
+        site_id = request.query_params.get('site_id')
+        
         if not company_id:
             return Response(
                 {'error': 'company_id parameter required'}, 
@@ -1021,7 +1644,22 @@ class DashboardView(APIView):
         try:
             # CRITICAL: Added proper permission check
             company = get_user_company(request.user, company_id)
-            stats = DashboardService.get_dashboard_stats(company, user=request.user)
+            
+            # Get site if specified
+            site = None
+            if site_id:
+                try:
+                    site = Site.objects.get(id=site_id, company=company)
+                    print(f"🏢 Dashboard filtered for site: {site.name}")
+                except Site.DoesNotExist:
+                    return Response(
+                        {'error': 'Site not found or unauthorized'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+            else:
+                print(f"🌐 Dashboard showing aggregated stats for all locations")
+            
+            stats = DashboardService.get_dashboard_stats(company, user=request.user, site=site)
             serializer = DashboardStatsSerializer(data=stats)
             serializer.is_valid(raise_exception=True)
             return Response(serializer.data)

@@ -1,12 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
+import { useLocationContext } from '../context/LocationContext';
 import { API_BASE_URL } from '../config';
+
+// Helper function for meter type colors (moved outside component to be accessible by MeterFormModal)
+const getMeterTypeColors = (color) => {
+  const colorMap = {
+    blue: { bg: 'bg-blue-100', text: 'text-blue-600' },
+    yellow: { bg: 'bg-yellow-100', text: 'text-yellow-600' },
+    cyan: { bg: 'bg-cyan-100', text: 'text-cyan-600' },
+    orange: { bg: 'bg-orange-100', text: 'text-orange-600' },
+    green: { bg: 'bg-green-100', text: 'text-green-600' },
+    purple: { bg: 'bg-purple-100', text: 'text-purple-600' },
+    indigo: { bg: 'bg-indigo-100', text: 'text-indigo-600' },
+    teal: { bg: 'bg-teal-100', text: 'text-teal-600' },
+    gray: { bg: 'bg-gray-100', text: 'text-gray-600' },
+    red: { bg: 'bg-red-100', text: 'text-red-600' },
+    amber: { bg: 'bg-amber-100', text: 'text-amber-600' },
+    emerald: { bg: 'bg-emerald-100', text: 'text-emerald-600' }
+  };
+  return colorMap[color] || colorMap.gray;
+};
+
+// Helper function to get category-specific styling for all 13 meter types
+const getCategoryStyles = (category) => {
+  const categoryMap = {
+    'Electricity Consumption': { icon: 'fas fa-bolt', bg: 'bg-yellow-100', text: 'text-yellow-600' },
+    'Water Consumption': { icon: 'fas fa-tint', bg: 'bg-cyan-100', text: 'text-cyan-600' },
+    'District Cooling Consumption': { icon: 'fas fa-snowflake', bg: 'bg-cyan-100', text: 'text-cyan-600' },
+    'LPG Fuel Consumption': { icon: 'fas fa-fire', bg: 'bg-orange-100', text: 'text-orange-600' },
+    'Non-hazardous Waste Generated': { icon: 'fas fa-trash-alt', bg: 'bg-green-100', text: 'text-green-600' },
+    'Waste Recycled': { icon: 'fas fa-recycle', bg: 'bg-green-100', text: 'text-green-600' },
+    'Vehicle Fuel Consumption – Petrol': { icon: 'fas fa-car', bg: 'bg-purple-100', text: 'text-purple-600' },
+    'Vehicle Fuel Consumption - Diesel': { icon: 'fas fa-truck', bg: 'bg-indigo-100', text: 'text-indigo-600' },
+    'Refrigerant Leakage': { icon: 'fas fa-thermometer-half', bg: 'bg-teal-100', text: 'text-teal-600' }
+  };
+  return categoryMap[category] || { icon: 'fas fa-gauge', bg: 'bg-gray-100', text: 'text-gray-600' };
+};
 
 const Meter = () => {
   // ALL HOOKS DECLARED AT THE TOP
   const navigate = useNavigate();
   const { user, selectedCompany } = useAuth();
+  const { selectedLocation, loading: locationLoading } = useLocationContext();
   const [selectedMeter, setSelectedMeter] = useState(null);
   const [showAddMeter, setShowAddMeter] = useState(false);
   const [showEditMeter, setShowEditMeter] = useState(false);
@@ -91,7 +128,15 @@ const Meter = () => {
     
     setLoading(true);
     try {
-      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/meters/?company_id=${companyId}`);
+      let url = `${API_BASE_URL}/api/meters/?company_id=${companyId}`;
+      // Add site filter if specific location is selected (not "All Locations")
+      if (selectedLocation?.id && selectedLocation.id !== 'all') {
+        url += `&site_id=${selectedLocation.id}`;
+        console.log(`Fetching meters for location: ${selectedLocation.name}`);
+      } else if (selectedLocation?.id === 'all') {
+        console.log(`🌐 Fetching meters for all locations`);
+      }
+      const response = await makeAuthenticatedRequest(url);
       const data = await response.json();
       
       // Transform backend data to frontend format
@@ -103,7 +148,7 @@ const Meter = () => {
           id: meter.id,
           name: meter.name,
           type: meter.type,
-          location: meter.location_description || 'To be configured',
+          location: meter.site_name || meter.location_description || 'To be configured',
           account_number: meter.account_number || '',
           status: meter.status === 'active' ? 'Active' : 'Inactive',
           lastReading: 'No readings yet',
@@ -135,13 +180,22 @@ const Meter = () => {
         type: meterData.type,
         location_description: meterData.location,
         account_number: meterData.account_number,
-        status: meterData.status?.toLowerCase() || 'active'
+        status: meterData.status?.toLowerCase() || 'active',
+        site_id: meterData.site_id || null  // Use the site_id from meterData (already determined in handleSubmit)
       };
       
       console.log('📤 Request body being sent:', requestBody);
-      console.log('🌐 Request URL:', `${API_BASE_URL}/api/meters/?company_id=${companyId}`);
       
-      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/meters/?company_id=${companyId}`, {
+      let url = `${API_BASE_URL}/api/meters/?company_id=${companyId}`;
+      if (selectedLocation?.id && selectedLocation.id !== 'all') {
+        url += `&site_id=${selectedLocation.id}`;
+        console.log(`Creating meter for location: ${selectedLocation.name}`);
+      } else if (selectedLocation?.id === 'all') {
+        console.log(`🌐 Creating meter for company (no specific location)`);
+      }
+      console.log('🌐 Request URL:', url);
+      
+      const response = await makeAuthenticatedRequest(url, {
         method: 'POST',
         body: JSON.stringify(requestBody),
       });
@@ -275,7 +329,7 @@ const Meter = () => {
     if (companyId) {
       fetchMeters();
     }
-  }, [companyId]);
+  }, [companyId, selectedLocation]);
 
   const meterTypes = [
     {
@@ -303,44 +357,52 @@ const Meter = () => {
       description: 'Water consumption and flow monitoring'
     },
     {
-      id: 'waste',
-      name: 'Waste Trackers',
-      icon: 'fas fa-trash-alt',
-      color: 'green',
-      count: meters.filter(m => m.type === 'Waste to Landfill').length,
-      description: 'Waste generation and disposal monitoring'
-    },
-    {
-      id: 'generator',
-      name: 'Generator Meters',
-      icon: 'fas fa-gas-pump',
-      color: 'red',
-      count: meters.filter(m => m.type === 'Generator Fuel Consumption').length,
-      description: 'Generator fuel consumption tracking'
-    },
-    {
-      id: 'vehicle',
-      name: 'Vehicle Trackers',
-      icon: 'fas fa-car',
-      color: 'purple',
-      count: meters.filter(m => m.type === 'Vehicle Fuel Consumption').length,
-      description: 'Vehicle fuel consumption monitoring'
+      id: 'cooling',
+      name: 'Cooling Meters',
+      icon: 'fas fa-snowflake',
+      color: 'cyan',
+      count: meters.filter(m => m.type === 'District Cooling Consumption').length,
+      description: 'District cooling consumption monitoring'
     },
     {
       id: 'lpg',
       name: 'LPG Meters',
       icon: 'fas fa-fire',
       color: 'orange',
-      count: meters.filter(m => m.type === 'LPG Usage').length,
-      description: 'LPG consumption monitoring'
+      count: meters.filter(m => m.type === 'LPG Fuel Consumption').length,
+      description: 'LPG fuel consumption monitoring'
     },
     {
-      id: 'renewable',
-      name: 'Renewable Energy',
-      icon: 'fas fa-solar-panel',
+      id: 'waste',
+      name: 'Waste Trackers',
+      icon: 'fas fa-trash-alt',
+      color: 'green',
+      count: meters.filter(m => m.type === 'Non-hazardous Waste Generated' || m.type === 'Waste Recycled').length,
+      description: 'Waste generation and recycling monitoring'
+    },
+    {
+      id: 'vehicle-petrol',
+      name: 'Vehicle Petrol',
+      icon: 'fas fa-car',
+      color: 'purple',
+      count: meters.filter(m => m.type === 'Vehicle Fuel Consumption – Petrol').length,
+      description: 'Petrol vehicle fuel consumption'
+    },
+    {
+      id: 'vehicle-diesel',
+      name: 'Vehicle Diesel',
+      icon: 'fas fa-truck',
+      color: 'indigo',
+      count: meters.filter(m => m.type === 'Vehicle Fuel Consumption - Diesel').length,
+      description: 'Diesel vehicle fuel consumption'
+    },
+    {
+      id: 'refrigerant',
+      name: 'Refrigerant',
+      icon: 'fas fa-thermometer-half',
       color: 'teal',
-      count: meters.filter(m => m.type === 'Renewable Energy Usage').length,
-      description: 'Renewable energy generation tracking'
+      count: meters.filter(m => m.type === 'Refrigerant Leakage').length,
+      description: 'Refrigerant leakage monitoring'
     }
   ];
 
@@ -353,6 +415,7 @@ const Meter = () => {
       default: return 'text-gray-600 bg-gray-100';
     }
   };
+
 
   const handleAddMeter = async (meterData) => {
     const success = await createMeter(meterData);
@@ -470,12 +533,14 @@ const Meter = () => {
   // Sort categories for consistent display order
   const categoryOrder = [
     'Electricity Consumption',
-    'Water Consumption', 
-    'Waste to Landfill',
-    'Generator Fuel Consumption',
-    'Vehicle Fuel Consumption',
-    'LPG Usage',
-    'Renewable Energy Usage'
+    'Water Consumption',
+    'District Cooling Consumption',
+    'LPG Fuel Consumption',
+    'Non-hazardous Waste Generated',
+    'Waste Recycled',
+    'Vehicle Fuel Consumption – Petrol',
+    'Vehicle Fuel Consumption - Diesel',
+    'Refrigerant Leakage'
   ];
 
   const sortedCategories = Object.keys(groupedMeters).sort((a, b) => {
@@ -545,6 +610,50 @@ const Meter = () => {
     );
   }
 
+  // Show loading while LocationContext is initializing
+  if (locationLoading) {
+    return (
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-3 text-sm sm:text-base text-gray-600">Loading location data...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while component is fetching data
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-3 text-sm sm:text-base text-gray-600">Loading meters...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if location is selected ONLY AFTER LocationContext has loaded
+  if (!locationLoading && !selectedLocation) {
+    return (
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
+          <i className="fas fa-map-marker-alt text-4xl text-yellow-600 mb-4"></i>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">No Location Selected</h2>
+          <p className="text-gray-600 mb-4">Please select a location to manage meters.</p>
+          <button 
+            onClick={() => navigate('/location')}
+            className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium"
+          >
+            <i className="fas fa-arrow-left mr-2"></i>
+            Go to Location Selection
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Auto-Created Notice */}
@@ -564,18 +673,21 @@ const Meter = () => {
 
       {/* Meter Types Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {meterTypes.filter(type => type.count > 0).map((type) => (
-          <div key={type.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <div className={`w-12 h-12 bg-${type.color}-100 rounded-lg flex items-center justify-center`}>
-                <i className={`${type.icon} text-${type.color}-600 text-lg`}></i>
+        {meterTypes.map((type) => {
+          const colors = getMeterTypeColors(type.color);
+          return (
+            <div key={type.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className={`w-12 h-12 ${colors.bg} rounded-lg flex items-center justify-center`}>
+                  <i className={`${type.icon} ${colors.text} text-lg`}></i>
+                </div>
+                <span className={`text-2xl font-bold ${colors.text}`}>{type.count}</span>
               </div>
-              <span className={`text-2xl font-bold text-${type.color}-600`}>{type.count}</span>
+              <h3 className="font-semibold text-gray-900 mb-2">{type.name}</h3>
+              <p className="text-sm text-gray-600">{type.description}</p>
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">{type.name}</h3>
-            <p className="text-sm text-gray-600">{type.description}</p>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Meter Configuration */}
@@ -657,64 +769,32 @@ const Meter = () => {
           {/* Meters Display */}
           {viewMode === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortedCategories.map((category) => (
-                <div key={category} className="category-column">
-                  {/* Category Header */}
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      category === 'Electricity Consumption' ? 'bg-yellow-100' :
-                      category === 'Water Consumption' ? 'bg-cyan-100' :
-                      category === 'Waste to Landfill' ? 'bg-green-100' :
-                      category === 'Generator Fuel Consumption' ? 'bg-red-100' :
-                      category === 'Vehicle Fuel Consumption' ? 'bg-purple-100' :
-                      category === 'LPG Usage' ? 'bg-orange-100' :
-                      category === 'Renewable Energy Usage' ? 'bg-teal-100' :
-                      'bg-gray-100'
-                    }`}>
-                      <i className={`${
-                        category === 'Electricity Consumption' ? 'fas fa-bolt text-yellow-600' :
-                        category === 'Water Consumption' ? 'fas fa-tint text-cyan-600' :
-                        category === 'Waste to Landfill' ? 'fas fa-trash-alt text-green-600' :
-                        category === 'Generator Fuel Consumption' ? 'fas fa-gas-pump text-red-600' :
-                        category === 'Vehicle Fuel Consumption' ? 'fas fa-car text-purple-600' :
-                        category === 'LPG Usage' ? 'fas fa-fire text-orange-600' :
-                        category === 'Renewable Energy Usage' ? 'fas fa-solar-panel text-teal-600' :
-                        'fas fa-gauge text-gray-600'
-                      }`}></i>
+              {sortedCategories.map((category) => {
+                const categoryStyles = getCategoryStyles(category);
+                return (
+                  <div key={category} className="category-column">
+                    {/* Category Header */}
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${categoryStyles.bg}`}>
+                        <i className={`${categoryStyles.icon} ${categoryStyles.text}`}></i>
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900">{category}</h4>
+                        <p className="text-sm text-gray-500">{groupedMeters[category].length} meter{groupedMeters[category].length !== 1 ? 's' : ''}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900">{category}</h4>
-                      <p className="text-sm text-gray-500">{groupedMeters[category].length} meter{groupedMeters[category].length !== 1 ? 's' : ''}</p>
-                    </div>
-                  </div>
                   
                   {/* Meters List for this Category */}
                   <div className="space-y-4">
-                    {groupedMeters[category].map((meter) => (
-                      <div key={meter.id} className="meter-card bg-gray-50 rounded-lg p-6 border border-gray-200 hover:shadow-md transition-all">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      meter.type === 'Electricity Consumption' ? 'bg-yellow-100' :
-                      meter.type === 'Water Consumption' ? 'bg-cyan-100' :
-                      meter.type === 'Waste to Landfill' ? 'bg-green-100' :
-                      meter.type === 'Generator Fuel Consumption' ? 'bg-red-100' :
-                      meter.type === 'Vehicle Fuel Consumption' ? 'bg-purple-100' :
-                      meter.type === 'LPG Usage' ? 'bg-orange-100' :
-                      meter.type === 'Renewable Energy Usage' ? 'bg-teal-100' :
-                      'bg-gray-100'
-                    }`}>
-                      <i className={`${
-                        meter.type === 'Electricity Consumption' ? 'fas fa-bolt text-yellow-600' :
-                        meter.type === 'Water Consumption' ? 'fas fa-tint text-cyan-600' :
-                        meter.type === 'Waste to Landfill' ? 'fas fa-trash-alt text-green-600' :
-                        meter.type === 'Generator Fuel Consumption' ? 'fas fa-gas-pump text-red-600' :
-                        meter.type === 'Vehicle Fuel Consumption' ? 'fas fa-car text-purple-600' :
-                        meter.type === 'LPG Usage' ? 'fas fa-fire text-orange-600' :
-                        meter.type === 'Renewable Energy Usage' ? 'fas fa-solar-panel text-teal-600' :
-                        'fas fa-gauge text-gray-600'
-                      }`}></i>
-                    </div>
+                    {groupedMeters[category].map((meter) => {
+                      const meterStyles = getCategoryStyles(meter.type);
+                      return (
+                        <div key={meter.id} className="meter-card bg-gray-50 rounded-lg p-6 border border-gray-200 hover:shadow-md transition-all">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${meterStyles.bg}`}>
+                        <i className={`${meterStyles.icon} ${meterStyles.text}`}></i>
+                      </div>
                     <div>
                       <h4 className="font-semibold text-gray-900 flex items-center">
                         {meter.name}
@@ -814,44 +894,30 @@ const Meter = () => {
                   )}
                 </div>
               </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             /* List View - Grouped by Category */
             <div className="space-y-6">
-              {sortedCategories.map((category) => (
-                <div key={category} className="category-section">
-                  {/* Category Header */}
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      category === 'Electricity Consumption' ? 'bg-yellow-100' :
-                      category === 'Water Consumption' ? 'bg-cyan-100' :
-                      category === 'Waste to Landfill' ? 'bg-green-100' :
-                      category === 'Generator Fuel Consumption' ? 'bg-red-100' :
-                      category === 'Vehicle Fuel Consumption' ? 'bg-purple-100' :
-                      category === 'LPG Usage' ? 'bg-orange-100' :
-                      category === 'Renewable Energy Usage' ? 'bg-teal-100' :
-                      'bg-gray-100'
-                    }`}>
-                      <i className={`${
-                        category === 'Electricity Consumption' ? 'fas fa-bolt text-yellow-600' :
-                        category === 'Water Consumption' ? 'fas fa-tint text-cyan-600' :
-                        category === 'Waste to Landfill' ? 'fas fa-trash-alt text-green-600' :
-                        category === 'Generator Fuel Consumption' ? 'fas fa-gas-pump text-red-600' :
-                        category === 'Vehicle Fuel Consumption' ? 'fas fa-car text-purple-600' :
-                        category === 'LPG Usage' ? 'fas fa-fire text-orange-600' :
-                        category === 'Renewable Energy Usage' ? 'fas fa-solar-panel text-teal-600' :
-                        'fas fa-gauge text-gray-600'
-                      } text-sm`}></i>
+              {sortedCategories.map((category) => {
+                const categoryStyles = getCategoryStyles(category);
+                return (
+                  <div key={category} className="category-section">
+                    {/* Category Header */}
+                    <div className="flex items-center space-x-3 mb-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${categoryStyles.bg}`}>
+                        <i className={`${categoryStyles.icon} ${categoryStyles.text} text-sm`}></i>
+                      </div>
+                      <div>
+                        <h4 className="text-md font-semibold text-gray-900">{category}</h4>
+                        <p className="text-xs text-gray-500">{groupedMeters[category].length} meter{groupedMeters[category].length !== 1 ? 's' : ''}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-md font-semibold text-gray-900">{category}</h4>
-                      <p className="text-xs text-gray-500">{groupedMeters[category].length} meter{groupedMeters[category].length !== 1 ? 's' : ''}</p>
-                    </div>
-                  </div>
                   
                   {/* Table for this Category */}
                   <div className="overflow-x-auto">
@@ -867,31 +933,15 @@ const Meter = () => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {groupedMeters[category].map((meter) => (
-                    <tr key={meter.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                            meter.type === 'Electricity Consumption' ? 'bg-yellow-100' :
-                            meter.type === 'Water Consumption' ? 'bg-cyan-100' :
-                            meter.type === 'Waste to Landfill' ? 'bg-green-100' :
-                            meter.type === 'Generator Fuel Consumption' ? 'bg-red-100' :
-                            meter.type === 'Vehicle Fuel Consumption' ? 'bg-purple-100' :
-                            meter.type === 'LPG Usage' ? 'bg-orange-100' :
-                            meter.type === 'Renewable Energy Usage' ? 'bg-teal-100' :
-                            'bg-gray-100'
-                          }`}>
-                            <i className={`${
-                              meter.type === 'Electricity Consumption' ? 'fas fa-bolt text-yellow-600' :
-                              meter.type === 'Water Consumption' ? 'fas fa-tint text-cyan-600' :
-                              meter.type === 'Waste to Landfill' ? 'fas fa-trash-alt text-green-600' :
-                              meter.type === 'Generator Fuel Consumption' ? 'fas fa-gas-pump text-red-600' :
-                              meter.type === 'Vehicle Fuel Consumption' ? 'fas fa-car text-purple-600' :
-                              meter.type === 'LPG Usage' ? 'fas fa-fire text-orange-600' :
-                              meter.type === 'Renewable Energy Usage' ? 'fas fa-solar-panel text-teal-600' :
-                              'fas fa-gauge text-gray-600'
-                            } text-sm`}></i>
-                          </div>
+                        {groupedMeters[category].map((meter) => {
+                          const meterStyles = getCategoryStyles(meter.type);
+                          return (
+                            <tr key={meter.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center space-x-3">
+                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${meterStyles.bg}`}>
+                                    <i className={`${meterStyles.icon} ${meterStyles.text} text-sm`}></i>
+                                  </div>
                           <div>
                             <div className="text-sm font-medium text-gray-900 flex items-center">
                               {meter.name}
@@ -980,13 +1030,15 @@ const Meter = () => {
                               </button>
                             </div>
                           </td>
-                        </tr>
-                        ))}
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
@@ -1242,14 +1294,35 @@ const Meter = () => {
 
 // Meter Form Modal Component
 const MeterFormModal = ({ isOpen, title, meter, meterTypes, onSave, onClose }) => {
+  const { selectedLocation } = useLocationContext();
+  const { selectedCompany } = useAuth();
   const [showTypeSelection, setShowTypeSelection] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     type: '',
     location: '',
-    account_number: ''
+    account_number: '',
+    site_id: ''
   });
+  const [sites, setSites] = useState([]);
   const [alert, setAlert] = useState({ show: false, message: '', type: 'error' });
+
+  // Fetch sites when in "All Locations" mode
+  React.useEffect(() => {
+    const fetchSites = async () => {
+      if (selectedLocation?.id === 'all' && selectedCompany?.id) {
+        try {
+          const response = await makeAuthenticatedRequest(`${API_BASE_URL}/api/sites/?company_id=${selectedCompany.id}`);
+          const data = await response.json();
+          setSites(data.results || []);
+        } catch (error) {
+          console.error('Failed to fetch sites:', error);
+        }
+      }
+    };
+
+    fetchSites();
+  }, [selectedLocation, selectedCompany]);
 
   // Initialize form data when meter changes
   React.useEffect(() => {
@@ -1258,7 +1331,8 @@ const MeterFormModal = ({ isOpen, title, meter, meterTypes, onSave, onClose }) =
         name: meter.name || '',
         type: meter.type || '',
         location: meter.location || '',
-        account_number: meter.account_number || ''
+        account_number: meter.account_number || '',
+        site_id: ''
       });
       setShowTypeSelection(false); // Skip type selection if editing existing meter
     } else {
@@ -1266,7 +1340,8 @@ const MeterFormModal = ({ isOpen, title, meter, meterTypes, onSave, onClose }) =
         name: '',
         type: '',
         location: '',
-        account_number: ''
+        account_number: '',
+        site_id: selectedLocation?.id !== 'all' ? selectedLocation?.id || '' : ''
       });
       setShowTypeSelection(true); // Show type selection for new meters
     }
@@ -1281,11 +1356,19 @@ const MeterFormModal = ({ isOpen, title, meter, meterTypes, onSave, onClose }) =
       return;
     }
 
+    // Check site selection when in "All Locations" mode
+    if (selectedLocation?.id === 'all' && !formData.site_id) {
+      setAlert({ show: true, message: 'Please select a site for this meter', type: 'error' });
+      return;
+    }
+
     const meterData = {
       ...formData,
+      // Use selected site_id if in "All Locations" mode, otherwise use current location
+      site_id: selectedLocation?.id === 'all' ? formData.site_id : selectedLocation?.id,
       ...(meter && { id: meter.id, isAutoCreated: meter.isAutoCreated })
     };
-    
+
     setAlert({ show: false, message: '', type: 'error' });
     onSave(meterData);
   };
@@ -1358,24 +1441,27 @@ const MeterFormModal = ({ isOpen, title, meter, meterTypes, onSave, onClose }) =
             <div>
               <p className="text-gray-600 mb-4">Select the type of meter to add:</p>
               <div className="space-y-2">
-                {meterTypes.filter(type => type.id !== 'total').map((type) => (
-                  <button
-                    key={type.id}
-                    type="button"
-                    className="w-full text-left p-2 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-colors"
-                    onClick={() => handleTypeSelect(type.name.replace(' Meters', '').replace(' Trackers', ''))}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-10 h-10 bg-${type.color}-100 rounded-lg flex items-center justify-center`}>
-                        <i className={`${type.icon} text-${type.color}-600`}></i>
+                {meterTypes.filter(type => type.id !== 'total').map((type) => {
+                  const colors = getMeterTypeColors(type.color);
+                  return (
+                    <button
+                      key={type.id}
+                      type="button"
+                      className="w-full text-left p-2 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-colors"
+                      onClick={() => handleTypeSelect(type.name.replace(' Meters', '').replace(' Trackers', ''))}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-10 h-10 ${colors.bg} rounded-lg flex items-center justify-center`}>
+                          <i className={`${type.icon} ${colors.text}`}></i>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-900">{type.name}</span>
+                          <p className="text-sm text-gray-500">{type.description}</p>
+                        </div>
                       </div>
-                      <div>
-                        <span className="font-medium text-gray-900">{type.name}</span>
-                        <p className="text-sm text-gray-500">{type.description}</p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -1393,10 +1479,11 @@ const MeterFormModal = ({ isOpen, title, meter, meterTypes, onSave, onClose }) =
                     <div className="flex items-center space-x-3">
                       {(() => {
                         const typeData = meterTypes.find(t => t.name.replace(' Meters', '').replace(' Trackers', '') === formData.type);
+                        const colors = getMeterTypeColors(typeData?.color);
                         return (
                           <>
-                            <div className={`w-8 h-8 bg-${typeData?.color}-100 rounded-lg flex items-center justify-center`}>
-                              <i className={`${typeData?.icon} text-${typeData?.color}-600`}></i>
+                            <div className={`w-8 h-8 ${colors.bg} rounded-lg flex items-center justify-center`}>
+                              <i className={`${typeData?.icon} ${colors.text}`}></i>
                             </div>
                             <span className="font-medium text-gray-900">{formData.type}</span>
                           </>
@@ -1428,12 +1515,50 @@ const MeterFormModal = ({ isOpen, title, meter, meterTypes, onSave, onClose }) =
                   />
                 </div>
 
-                {/* Location */}
+                {/* Site Selection - Only show when viewing All Locations */}
+                {selectedLocation?.id === 'all' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Site <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      value={formData.site_id}
+                      onChange={(e) => handleInputChange('site_id', e.target.value)}
+                      required={selectedLocation?.id === 'all'}
+                    >
+                      <option value="">Select a site...</option>
+                      {sites.map((site) => (
+                        <option key={site.id} value={site.id}>
+                          {site.name} {site.location && `(${site.location})`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Current Location Display - Show when in specific location */}
+                {selectedLocation?.id !== 'all' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Site
+                    </label>
+                    <div className="px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <i className="fas fa-map-marker-alt text-blue-600"></i>
+                        <span className="text-blue-800 font-medium">{selectedLocation.name}</span>
+                        <span className="text-blue-600 text-sm">(Auto-assigned)</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Location Description */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Location Description
                   </label>
-                  <input 
+                  <input
                     type="text"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="e.g., Main Building, Kitchen Area, Basement"

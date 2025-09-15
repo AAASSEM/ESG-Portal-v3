@@ -156,7 +156,66 @@ class UserViewSet(viewsets.ModelViewSet):
             profile.must_reset_password = True  # Force password reset on first login
             profile.save()
             
-            # TODO: Handle site assignments
+            # Handle site assignments
+            from .models import UserSiteAssignment, Site
+
+            if role == 'super_user':
+                # Super users get all sites automatically
+                # Clear any existing assignments
+                UserSiteAssignment.objects.filter(user=user).delete()
+
+                # Assign to all company sites
+                company_sites = Site.objects.filter(company=user_company)
+                for site in company_sites:
+                    UserSiteAssignment.objects.create(
+                        user=user,
+                        site=site,
+                        assigned_by=current_user
+                    )
+                print(f"✅ Super user assigned to all {company_sites.count()} company sites")
+
+            elif sites and len(sites) > 0:
+                # Explicit site assignments provided
+                # Clear any existing assignments
+                UserSiteAssignment.objects.filter(user=user).delete()
+
+                # Create new assignments
+                for site_id in sites:
+                    try:
+                        site = Site.objects.get(id=site_id, company=user_company)
+                        UserSiteAssignment.objects.create(
+                            user=user,
+                            site=site,
+                            assigned_by=current_user
+                        )
+                    except Site.DoesNotExist:
+                        print(f"⚠️ Site {site_id} not found or not in user's company")
+
+                print(f"✅ Assigned user to {len(sites)} sites")
+            elif user_role == 'site_manager' and role in ['meter_manager', 'uploader']:
+                # Auto-assign meter managers and uploaders created by site managers to the site manager's assigned sites
+                creating_user_assignments = UserSiteAssignment.objects.filter(user=current_user)
+                if creating_user_assignments.exists():
+                    print(f"🔄 Auto-assigning {role} to site manager's sites")
+                    for assignment in creating_user_assignments:
+                        UserSiteAssignment.objects.create(
+                            user=user,
+                            site=assignment.site,
+                            assigned_by=current_user
+                        )
+                    print(f"✅ Auto-assigned {role} to {creating_user_assignments.count()} sites")
+                else:
+                    print(f"⚠️ Site manager {current_user.username} has no assigned sites to auto-assign")
+
+            # Auto-set active location if user has exactly one site assignment
+            user_assignments = UserSiteAssignment.objects.filter(user=user)
+            if user_assignments.count() == 1:
+                # User has exactly one site - set it as active
+                profile.site = user_assignments.first().site
+                profile.view_all_locations = False
+                profile.save()
+                print(f"🎯 Auto-set active location to {user_assignments.first().site.name} for user with single site assignment")
+
             # TODO: Send welcome email if requested
             
             # OLD MESSAGE COMMENTED - Used to show company code password
@@ -172,7 +231,7 @@ class UserViewSet(viewsets.ModelViewSet):
                     'role': role,
                     'is_active': user.is_active,
                     'last_login': user.last_login,
-                    'sites': [],  # TODO: Implement site relationships
+                    'sites': [{'id': s.site.id, 'name': s.site.name} for s in user.site_assignments.all()],
                     # OLD FIELD COMMENTED: 'temp_password': user_company.company_code  # Include for admin reference
                     'invitation_sent': True  # New field indicating invitation was sent
                 }
@@ -211,7 +270,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 'company': company_info,
                 'is_active': user.is_active,
                 'last_login': user.last_login.isoformat() if user.last_login else None,
-                'sites': []  # TODO: Implement site relationships
+                'sites': [{'id': s.site.id, 'name': s.site.name} for s in user.site_assignments.all()]
             })
         
         return Response(user_data)
@@ -316,8 +375,51 @@ class UserViewSet(viewsets.ModelViewSet):
             profile.role = role
             profile.save()
             
-            # TODO: Handle site assignments
-            
+            # Handle site assignments
+            if sites is not None:  # Only process if sites are provided
+                from .models import UserSiteAssignment, Site
+                user_company = profile.company
+                
+                # Clear existing assignments
+                UserSiteAssignment.objects.filter(user=user).delete()
+                print(f"🏢 Cleared existing site assignments for user: {user.username}")
+                
+                # Create new assignments
+                if len(sites) > 0:
+                    assigned_sites = []
+                    for site_id in sites:
+                        try:
+                            site = Site.objects.get(id=site_id, company=user_company)
+                            UserSiteAssignment.objects.create(
+                                user=user,
+                                site=site,
+                                assigned_by=current_user
+                            )
+                            assigned_sites.append(f"{site.name} (ID: {site.id})")
+                            print(f"🏢 Assigned user {user.username} to site: {site.name}")
+                        except Site.DoesNotExist:
+                            print(f"❌ Site ID {site_id} not found for company {user_company.name}")
+                            continue
+                    
+                    print(f"✅ Successfully assigned {len(assigned_sites)} sites to {user.username}: {assigned_sites}")
+                else:
+                    print(f"🚫 No sites assigned to user: {user.username}")
+
+                # Auto-set active location if user has exactly one site assignment
+                user_assignments = UserSiteAssignment.objects.filter(user=user)
+                if user_assignments.count() == 1:
+                    # User has exactly one site - set it as active
+                    profile.site = user_assignments.first().site
+                    profile.view_all_locations = False
+                    profile.save()
+                    print(f"🎯 Auto-set active location to {user_assignments.first().site.name} for user with single site assignment")
+                elif user_assignments.count() == 0:
+                    # User has no site assignments - clear active site
+                    profile.site = None
+                    profile.view_all_locations = False
+                    profile.save()
+                    print(f"🚫 Cleared active location for user with no site assignments")
+
             return Response({
                 'message': 'User updated successfully',
                 'user': {
@@ -328,7 +430,7 @@ class UserViewSet(viewsets.ModelViewSet):
                     'role': role,
                     'is_active': user.is_active,
                     'last_login': user.last_login,
-                    'sites': []  # TODO: Implement site relationships
+                    'sites': [{'id': s.site.id, 'name': s.site.name} for s in user.site_assignments.all()]
                 }
             })
             

@@ -151,7 +151,7 @@ class LoginView(APIView):
         
         email = request.data.get('email', '').strip()
         username = request.data.get('username', '').strip()  # Backwards compatibility
-        password = request.data.get('password', '')
+        password = request.data.get('password', '').strip()  # Remove leading/trailing spaces
         
         print(f"🔍 Login attempt - Email: '{email}', Username: '{username}', Password: '{password[:3]}...'")
         print(f"🔍 Request data: {request.data}")
@@ -220,10 +220,25 @@ class LoginView(APIView):
                 user_profile = user.userprofile
                 user_role = user_profile.role
                 must_reset_password = user_profile.must_reset_password
+
+                # Auto-set active location for users with assignments but no active location
+                from .models import UserSiteAssignment
+                if not user_profile.site and not user_profile.view_all_locations:
+                    user_assignments = UserSiteAssignment.objects.filter(user=user)
+                    if user_assignments.count() == 1:
+                        # User has exactly one site assignment - set it as active
+                        user_profile.site = user_assignments.first().site
+                        user_profile.view_all_locations = False
+                        user_profile.save()
+                        print(f"🎯 Auto-set active location to {user_assignments.first().site.name} for user {user.username} on login")
+                    elif user_assignments.count() > 1:
+                        # User has multiple assignments but no active location - they'll need to choose
+                        print(f"📍 User {user.username} has {user_assignments.count()} site assignments but no active location - will need to select")
+
             except:
                 user_role = 'viewer'  # Default fallback role
                 must_reset_password = False
-            
+
             # Determine redirect path based on user role
             role_redirect_map = {
                 'super_user': '/onboard',
@@ -455,9 +470,142 @@ class UserSitesView(APIView):
                 'error': 'Not authenticated'
             }, status=status.HTTP_401_UNAUTHORIZED)
         
-        # For now, return empty sites since we haven't implemented the full site system yet
-        # TODO: Implement proper site filtering based on user role and permissions
-        return Response([])
+        try:
+            user = request.user
+            
+            # Get user's company
+            user_company = None
+            if hasattr(user, 'company') and user.company:
+                user_company = user.company
+            elif hasattr(user, 'userprofile') and user.userprofile and user.userprofile.company:
+                user_company = user.userprofile.company
+            
+            if not user_company:
+                return Response([])
+            
+            # Get user's role
+            user_role = 'viewer'  # default
+            if hasattr(user, 'userprofile') and user.userprofile:
+                user_role = user.userprofile.role
+            
+            # Role-based access control
+            if user_role in ['meter_manager', 'uploader']:
+                # Meter managers and uploaders have no access to locations
+                return Response([])
+            
+            # Import models
+            from .models import Site, UserSiteAssignment
+            from .serializers import SiteSerializer
+            
+            if user_role in ['super_user', 'admin']:
+                # Super users and admins see all company sites
+                sites = Site.objects.filter(company=user_company).order_by('name')
+            elif user_role in ['site_manager', 'viewer']:
+                # Site managers and viewers see sites based on assignments
+                # If no assignments, they see all company sites (backward compatibility)
+                user_assignments = UserSiteAssignment.objects.filter(user=user).select_related('site')
+                
+                if user_assignments.exists():
+                    # Return only assigned sites
+                    sites = [assignment.site for assignment in user_assignments]
+                    sites.sort(key=lambda x: x.name)
+                else:
+                    # No assignments yet - return all company sites for backward compatibility
+                    sites = Site.objects.filter(company=user_company).order_by('name')
+            else:
+                # Unknown role - no access
+                return Response([])
+            
+            serializer = SiteSerializer(sites, many=True)
+            
+            return Response(serializer.data)
+            
+        except Exception as e:
+            print(f"❌ Error in UserSitesView: {str(e)}")
+            return Response([])
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UserPermissionsView(APIView):
+    """Get user's location access permissions"""
+    
+    def get(self, request):
+        print(f"\n🔐 === PERMISSIONS REQUEST START ===")
+        print(f"👤 User: {request.user.username} (ID: {request.user.id})")
+        
+        if not request.user.is_authenticated:
+            return Response({
+                'error': 'Not authenticated'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        try:
+            user = request.user
+            
+            # Get user's role
+            user_role = 'viewer'  # default
+            if hasattr(user, 'userprofile') and user.userprofile:
+                user_role = user.userprofile.role
+                print(f"🎭 Role from userprofile: {user_role}")
+            else:
+                print("❗ No userprofile found, using default role: viewer")
+            
+            # Check user's site assignments
+            from .models import UserSiteAssignment
+            user_assignments = UserSiteAssignment.objects.filter(user=user)
+            assigned_site_count = user_assignments.count()
+            print(f"🏢 Site assignments: {assigned_site_count}")
+            if assigned_site_count > 0:
+                assigned_sites = [f"{assignment.site.name} (ID: {assignment.site.id})" for assignment in user_assignments]
+                print(f"📍 Assigned sites: {assigned_sites}")
+            
+            # Determine permissions based on role and assignments
+            can_access_location = user_role not in ['meter_manager', 'uploader']
+            
+            # For site managers and viewers, they need at least one site assignment to access anything
+            if user_role in ['site_manager', 'viewer'] and assigned_site_count == 0:
+                can_access_location = False
+                can_change_location = False
+                show_dropdown = False
+            else:
+                can_change_location = user_role in ['super_user', 'admin'] or (user_role in ['site_manager', 'viewer'] and assigned_site_count != 1)
+                show_dropdown = user_role not in ['meter_manager', 'uploader'] and (user_role in ['super_user', 'admin'] or assigned_site_count != 1)
+            
+            permissions = {
+                'canAccessLocationPage': can_access_location,
+                'canChangeLocation': can_change_location,
+                'showLocationDropdown': show_dropdown,
+                'role': user_role,
+                'assignedSiteCount': assigned_site_count
+            }
+            
+            print(f"🔐 Calculated permissions:")
+            print(f"  - canAccessLocationPage: {can_access_location}")
+            print(f"  - canChangeLocation: {can_change_location}")
+            print(f"  - showLocationDropdown: {show_dropdown}")
+            print(f"  - role: {user_role}")
+            print(f"  - assignedSiteCount: {assigned_site_count}")
+            
+            # Additional logic explanation
+            if user_role in ['site_manager', 'viewer'] and assigned_site_count == 0:
+                print(f"🚫 Site manager/viewer with 0 assignments - access denied")
+            elif user_role in ['site_manager', 'viewer'] and assigned_site_count == 1:
+                print(f"🔒 Site manager/viewer with 1 assignment - dropdown hidden, access read-only")
+            elif user_role in ['site_manager', 'viewer'] and assigned_site_count > 1:
+                print(f"🔓 Site manager/viewer with multiple assignments - full dropdown access")
+                
+            print(f"🔐 === PERMISSIONS REQUEST END ===\n")
+            
+            return Response(permissions)
+            
+        except Exception as e:
+            print(f"❌ Error in UserPermissionsView: {str(e)}")
+            return Response({
+                'canAccessLocationPage': False,
+                'canChangeLocation': False,
+                'showLocationDropdown': False,
+                'role': 'viewer',
+                'assignedSiteCount': 0
+            })
 
 
 @method_decorator(csrf_exempt, name='dispatch')

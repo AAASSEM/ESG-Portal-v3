@@ -1,0 +1,54 @@
+{
+  "type": "object",
+  "required": ["framework_id","sector","category","official_code","name_plain","unit","cadence","type","metered","providers_by_emirate","privacy_level"],
+  "properties": {
+    "framework_id": {"const": "UAE-ESG-GENERIC"},
+    "sector": {"const": "generic"},
+    "category": {"enum": ["E","S","G"]},
+    "official_code": {"type":"string", "pattern":"^UAE-ESG-[ESG]-\\d{3}$"},
+    "name_plain": {"type":"string"},
+    "description": {"type":["string","null"]},
+    "unit": {"type":["string","null"]},
+    "cadence": {"enum":["monthly","quarterly","annual","on_change","one_time"]},
+    "evidence": {"type":"array","items":{"type":"string"}},
+    "type": {"enum":["must-have","conditional"]},
+    "condition_logic": {"type":["string","null"]},
+    "wizard_question": {"type":["string","null"]},
+    "prompt": {"type":["string","null"]},
+    "metered": {"type":"boolean"},
+    "meter_type": {"type":["string","null"]},
+    "meter_scope": {"enum":["organization","site","fleet",null]},
+    "providers_by_emirate": {
+      "type":"object",
+      "additionalProperties": false,
+      "properties": {
+        "Dubai":{"type":"array","items":{"type":"string"}},
+        "Abu Dhabi":{"type":"array","items":{"type":"string"}},
+        "Sharjah":{"type":"array","items":{"type":"string"}},
+        "Northern Emirates":{"type":"array","items":{"type":"string"}},
+        "UAE-wide":{"type":"array","items":{"type":"string"}}
+      }
+    },
+    "calculation": {"type":["string","null"]},
+    "aggregation": {"type":["string","null"]},
+    "data_source_systems": {"type":"array","items":{"type":"string"}},
+    "quality_checks": {"type":"array","items":{"type":"string"}},
+    "privacy_level": {"enum":["public","internal","restricted"]},
+    "tags": {"type":"array","items":{"type":"string"}},
+    "notes": {"type":["string","null"]},
+    "sources": {"type":"array","items":{"type":"string"}},
+    "carbon": {
+      "type":["object","null"],
+      "properties": {
+        "scope": {
+          "type":"object",
+          "properties": {
+            "scope_number": {"type":"array","items":{"type":"integer"}},
+            "subcategory": {"type":["string","null"]},
+            "method": {"type":"array","items":{"type":"string"}}
+          }
+        }
+      }
+    }
+  }
+}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, makeAuthenticatedRequest } from '../context/AuthContext';
+import { useLocationContext } from '../context/LocationContext';
 import { API_BASE_URL } from '../config';
 
 const Data = () => {
@@ -9,8 +10,9 @@ const Data = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, selectedCompany } = useAuth();
+  const { selectedLocation, loading: locationLoading } = useLocationContext();
   const [selectedYear, setSelectedYear] = useState(2025); // Use 2025 to match backend data
-  const [selectedMonth, setSelectedMonth] = useState(8); // Use August to match current backend data
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // Dynamic current month
   const [searchTerm, setSearchTerm] = useState('');
   const [viewFilter, setViewFilter] = useState('All');
   const [groupBy, setGroupBy] = useState('Category');
@@ -161,16 +163,21 @@ const Data = () => {
 
   const fetchDataEntries = async (year, month) => {
     try {
-      const response = await makeAuthenticatedRequest(
-        `${API_BASE_URL}/api/data-collection/tasks/?company_id=${companyId}&year=${year}&month=${month}`
-      );
+      let url = `${API_BASE_URL}/api/data-collection/tasks/?company_id=${companyId}&year=${year}&month=${month}`;
+      if (selectedLocation?.id && selectedLocation.id !== 'all') {
+        url += `&site_id=${selectedLocation.id}`;
+        // console.log(`🏢 Fetching data entries for location: ${selectedLocation.name}`);
+      } else if (selectedLocation?.id === 'all') {
+        // console.log(`🌐 Fetching data entries for all locations`);
+      }
+      const response = await makeAuthenticatedRequest(url);
       const data = await response.json();
-      console.log('🔍 fetchDataEntries raw API response:', {
-        user_role: user?.role,
-        data_count: data?.length || 0,
-        sample_entry: data?.[0],
-        all_entries: data
-      });
+      // console.log('🔍 fetchDataEntries raw API response:', {
+      //   user_role: user?.role,
+      //   data_count: data?.length || 0,
+      //   sample_entry: data?.[0],
+      //   all_entries: data
+      // });
       return data || [];
     } catch (error) {
       console.error('Error fetching data entries:', error);
@@ -180,10 +187,17 @@ const Data = () => {
 
   const fetchProgress = async (year, month = null) => {
     try {
-      const url = month 
-        ? `${API_BASE_URL}/api/data-collection/progress/?company_id=${companyId}&year=${year}&month=${month}`
-        : `${API_BASE_URL}/api/data-collection/progress/?company_id=${companyId}&year=${year}`;
-      
+      // Build URL with site_id if a specific location is selected
+      let url = `${API_BASE_URL}/api/data-collection/progress/?company_id=${companyId}&year=${year}`;
+
+      if (month) {
+        url += `&month=${month}`;
+      }
+
+      if (selectedLocation?.id && selectedLocation?.id !== 'all') {
+        url += `&site_id=${selectedLocation.id}`;
+      }
+
       const response = await makeAuthenticatedRequest(url);
       const data = await response.json();
       return data;
@@ -290,6 +304,10 @@ const Data = () => {
   useEffect(() => {
     const loadInitialData = async () => {
       if (!companyId) return; // Don't load if no company selected
+      if (!selectedLocation) {
+        // console.log('⏳ Waiting for location selection...');
+        return;
+      }
       
       setLoading(true);
       try {
@@ -324,30 +342,68 @@ const Data = () => {
         });
 
         // Load data entries for current month - will include new meters automatically
-        console.log('Loading data entries for company:', companyId, 'year:', selectedYear, 'month:', selectedMonth);
+        // console.log('Loading data entries for company:', companyId, 'year:', selectedYear, 'month:', selectedMonth);
         const entries = await fetchDataEntries(selectedYear, selectedMonth);
-        console.log('Raw entries from API:', entries);
-        const transformedEntries = entries.map(entry => ({
-          id: entry.submission.id,
-          name: entry.element_name,
-          meter: entry.meter ? `${entry.meter.name} (${entry.meter.type})` : 'N/A',
-          meter_id: entry.meter ? entry.meter.id : null,
-          meter_type: entry.meter ? entry.meter.type : null,
-          meter_location: entry.meter ? entry.meter.location : null,
-          frequency: entry.cadence,
-          value: entry.submission.value || '',
-          unit: entry.element_unit || '',
-          status: entry.submission.status || 'missing',
-          category: entry.type,
-          description: entry.element_description || '',
-          evidence_file: entry.submission.evidence_file || null,
-          assignedTo: entry.submission.assigned_to ? 
-            `${entry.submission.assigned_to.first_name || ''} ${entry.submission.assigned_to.last_name || ''}`.trim() || entry.submission.assigned_to.username || entry.submission.assigned_to.email
-            : null,
-          assignedUserId: entry.submission.assigned_to ? entry.submission.assigned_to.id : null,
-          assignedAt: entry.submission.assigned_at || null
-        }));
-        console.log('Transformed entries:', transformedEntries);
+        // console.log('Raw entries from API:', entries);
+        
+        let transformedEntries = [];
+        
+        // Check if data is grouped by site (All Locations) or ungrouped (specific site)
+        if (selectedLocation?.id === 'all' && Array.isArray(entries) && entries.length > 0 && entries[0].site) {
+          // Grouped data: flatten all tasks from all sites
+          // console.log('Processing grouped data for All Locations');
+          for (const siteGroup of entries) {
+            for (const entry of siteGroup.tasks) {
+              transformedEntries.push({
+                id: entry.submission.id,
+                name: entry.element_name,
+                meter: entry.meter ? `${entry.meter.name} (${entry.meter.type})` : 'N/A',
+                meter_id: entry.meter ? entry.meter.id : null,
+                meter_type: entry.meter ? entry.meter.type : null,
+                meter_location: entry.meter ? entry.meter.location : null,
+                frequency: entry.cadence,
+                value: entry.submission.value || '',
+                unit: entry.element_unit || '',
+                status: entry.submission.status || 'missing',
+                category: entry.type,
+                description: entry.element_description || '',
+                evidence_file: entry.submission.evidence_file || null,
+                site_name: siteGroup.site.name, // Add site name for grouping
+                site_id: siteGroup.site.id,
+                assignedTo: entry.submission.assigned_to ? 
+                  `${entry.submission.assigned_to.first_name || ''} ${entry.submission.assigned_to.last_name || ''}`.trim() || entry.submission.assigned_to.username || entry.submission.assigned_to.email
+                  : null,
+                assignedUserId: entry.submission.assigned_to ? entry.submission.assigned_to.id : null,
+                assignedAt: entry.submission.assigned_at || null
+              });
+            }
+          }
+        } else {
+          // Ungrouped data: process normally
+          // console.log('Processing ungrouped data for specific site');
+          transformedEntries = entries.map(entry => ({
+            id: entry.submission.id,
+            name: entry.element_name,
+            meter: entry.meter ? `${entry.meter.name} (${entry.meter.type})` : 'N/A',
+            meter_id: entry.meter ? entry.meter.id : null,
+            meter_type: entry.meter ? entry.meter.type : null,
+            meter_location: entry.meter ? entry.meter.location : null,
+            frequency: entry.cadence,
+            value: entry.submission.value || '',
+            unit: entry.element_unit || '',
+            status: entry.submission.status || 'missing',
+            category: entry.type,
+            description: entry.element_description || '',
+            evidence_file: entry.submission.evidence_file || null,
+            assignedTo: entry.submission.assigned_to ? 
+              `${entry.submission.assigned_to.first_name || ''} ${entry.submission.assigned_to.last_name || ''}`.trim() || entry.submission.assigned_to.username || entry.submission.assigned_to.email
+              : null,
+            assignedUserId: entry.submission.assigned_to ? entry.submission.assigned_to.id : null,
+            assignedAt: entry.submission.assigned_at || null
+          }));
+        }
+        
+        // console.log('Transformed entries:', transformedEntries);
         setDataEntries(transformedEntries);
 
       } catch (error) {
@@ -358,7 +414,16 @@ const Data = () => {
     };
 
     loadInitialData();
-  }, [selectedYear, selectedMonth, companyId]);
+  }, [selectedYear, selectedMonth, companyId, selectedLocation]);
+
+  // Auto-set groupBy to Site when All Locations is selected
+  useEffect(() => {
+    if (selectedLocation?.id === 'all' && groupBy !== 'Site') {
+      setGroupBy('Site');
+    } else if (selectedLocation?.id !== 'all' && groupBy === 'Site') {
+      setGroupBy('Category'); // Reset to Category for specific locations
+    }
+  }, [selectedLocation?.id]);
 
   // Update filtered entries when search, filter, grouping, or assignment changes
   useEffect(() => {
@@ -379,50 +444,17 @@ const Data = () => {
     setFilteredEntries(filtered);
   }, [searchTerm, viewFilter, groupBy, dataEntries, assignmentFilter]);
 
-  // Add window focus listener to refresh data when user returns to tab
-  useEffect(() => {
-    const handleFocus = () => {
-      if (companyId) {
-        console.log('Window focused - refreshing data entries to include any new meters');
-        refreshDataEntries();
-      }
-    };
+  // Removed excessive window focus refresh to improve performance
 
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [companyId, selectedYear, selectedMonth]);
+  // Removed excessive navigation-based refresh to improve performance
 
-  // Add navigation-based refresh - triggers when navigating to Data page
-  useEffect(() => {
-    if (location.pathname === '/data' && companyId) {
-      console.log('Navigated to Data page - refreshing data entries to include any meter changes');
-      refreshDataEntries();
-    }
-  }, [location.pathname, companyId, selectedYear, selectedMonth]);
-
-  // Add periodic refresh to catch meter changes
-  useEffect(() => {
-    if (!companyId) return;
-    
-    console.log('Setting up periodic refresh every 10 seconds');
-    const interval = setInterval(() => {
-      if (location.pathname === '/data') {
-        console.log('Periodic refresh - checking for meter changes');
-        refreshDataEntries();
-      }
-    }, 10000); // Refresh every 10 seconds when on Data page
-    
-    return () => {
-      console.log('Clearing periodic refresh interval');
-      clearInterval(interval);
-    };
-  }, [location.pathname, companyId, selectedYear, selectedMonth]);
+  // Removed periodic refresh to improve performance - users can use manual refresh button if needed
 
   // Helper function to refresh data entries and progress
   const refreshDataEntries = async () => {
     if (!companyId) return;
     
-    console.log('🔄 REFRESH START - Company:', companyId, 'Year:', selectedYear, 'Month:', selectedMonth);
+    // console.log('🔄 REFRESH START - Company:', companyId, 'Year:', selectedYear, 'Month:', selectedMonth);
     try {
       // Refresh both data entries and progress simultaneously
       const [entries, annualProgress, monthlyProgress] = await Promise.all([
@@ -431,10 +463,10 @@ const Data = () => {
         fetchProgress(selectedYear, selectedMonth)
       ]);
 
-      console.log('📊 Raw API responses:');
-      console.log('- Data entries count:', entries.length);
-      console.log('- Annual progress:', annualProgress);
-      console.log('- Monthly progress:', monthlyProgress);
+      // console.log('📊 Raw API responses:');
+      // console.log('- Data entries count:', entries.length);
+      // console.log('- Annual progress:', annualProgress);
+      // console.log('- Monthly progress:', monthlyProgress);
 
       // For meter managers, calculate progress based only on metered tasks
       let finalAnnualProgress = annualProgress;
@@ -455,10 +487,10 @@ const Data = () => {
           items_remaining: Math.max(0, meterProgress.total_points - meterProgress.completed_points)
         };
         
-        console.log('🔧 Meter Manager Progress Override:', {
-          original: monthlyProgress,
-          meter_override: finalMonthlyProgress
-        });
+        // console.log('🔧 Meter Manager Progress Override:', {
+        //   original: monthlyProgress,
+        //   meter_override: finalMonthlyProgress
+        // });
       }
 
       // Update progress data
@@ -467,12 +499,12 @@ const Data = () => {
         monthly: finalMonthlyProgress
       });
 
-      console.log('🔄 Transforming entries:', {
-        user_role: user?.role,
-        entries_count: entries.length,
-        entries_with_values: entries.filter(e => e.submission?.value).length,
-        entries_with_meters: entries.filter(e => e.meter_id || e.meter).length
-      });
+      // console.log('🔄 Transforming entries:', {
+      //   user_role: user?.role,
+      //   entries_count: entries.length,
+      //   entries_with_values: entries.filter(e => e.submission?.value).length,
+      //   entries_with_meters: entries.filter(e => e.meter_id || e.meter).length
+      // });
 
       const transformedEntries = entries.map(entry => {
         const assignedUser = entry.submission.assigned_to;
@@ -505,31 +537,31 @@ const Data = () => {
         };
       });
       setDataEntries(transformedEntries);
-      console.log('✅ REFRESH COMPLETE - Found', transformedEntries.length, 'tasks');
-      console.log('- Raw entries breakdown with assignments:');
-      entries.forEach((entry, i) => {
-        const submission = entry.submission;
-        console.log(`  ${i + 1}. ${entry.element_name} - Meter: ${entry.meter ? entry.meter.name + ' (' + entry.meter.type + ')' : 'N/A'} - Status: ${submission?.status || 'missing'}`);
-        if (submission.assigned_to) {
-          console.log(`    ✅ Assignment: ${JSON.stringify(submission.assigned_to)}`);
-        } else {
-          console.log(`    ❌ No assignment data`);
-        }
-        
-        // Check if submission has all expected fields
-        console.log(`    Submission keys: ${Object.keys(submission)}`);
-        if (submission.assigned_to === null || submission.assigned_to === undefined) {
-          console.log(`    Assignment is explicitly null/undefined`);
-        }
-      });
-      console.log('- Expected total points (entries * 2):', transformedEntries.length * 2);
-      console.log('- Actual total points from API:', monthlyProgress.total_points);
-      console.log('- Completed points:', monthlyProgress.completed_points);
-      console.log('- Items remaining:', monthlyProgress.items_remaining);
-      console.log('- Progress calculations:');
-      console.log('  - Data progress:', monthlyProgress.data_progress);
-      console.log('  - Evidence progress:', monthlyProgress.evidence_progress);
-      console.log('  - Overall progress:', monthlyProgress.overall_progress);
+      // console.log('✅ REFRESH COMPLETE - Found', transformedEntries.length, 'tasks');
+      // console.log('- Raw entries breakdown with assignments:');
+      // entries.forEach((entry, i) => {
+      //   const submission = entry.submission;
+      //   console.log(`  ${i + 1}. ${entry.element_name} - Meter: ${entry.meter ? entry.meter.name + ' (' + entry.meter.type + ')' : 'N/A'} - Status: ${submission?.status || 'missing'}`);
+      //   if (submission.assigned_to) {
+      //     console.log(`    ✅ Assignment: ${JSON.stringify(submission.assigned_to)}`);
+      //   } else {
+      //     console.log(`    ❌ No assignment data`);
+      //   }
+      //   
+      //   // Check if submission has all expected fields
+      //   console.log(`    Submission keys: ${Object.keys(submission)}`);
+      //   if (submission.assigned_to === null || submission.assigned_to === undefined) {
+      //     console.log(`    Assignment is explicitly null/undefined`);
+      //   }
+      // });
+      // console.log('- Expected total points (entries * 2):', transformedEntries.length * 2);
+      // console.log('- Actual total points from API:', monthlyProgress.total_points);
+      // console.log('- Completed points:', monthlyProgress.completed_points);
+      // console.log('- Items remaining:', monthlyProgress.items_remaining);
+      // console.log('- Progress calculations:');
+      // console.log('  - Data progress:', monthlyProgress.data_progress);
+      // console.log('  - Evidence progress:', monthlyProgress.evidence_progress);
+      // console.log('  - Overall progress:', monthlyProgress.overall_progress);
     } catch (error) {
       console.error('❌ Error refreshing data entries:', error);
     }
@@ -651,11 +683,39 @@ const Data = () => {
   };
 
   const handleAutoSave = async (entryId, value, file) => {
-    // Skip if no value and no file
-    if (!value && !file) return;
-    
     // Skip if already saving this entry
     if (savingEntries[entryId]) return;
+
+    // Handle clearing data (empty value and no file)
+    if (!value && !file) {
+      setSavingEntries(prev => ({ ...prev, [entryId]: true }));
+
+      try {
+        const success = await saveDataEntry(entryId, '', null);
+        if (success) {
+          // Update the entry status to missing and clear value
+          setDataEntries(prev =>
+            prev.map(entry =>
+              entry.id === entryId
+                ? {
+                    ...entry,
+                    status: 'missing',
+                    value: ''
+                  }
+                : entry
+            )
+          );
+
+          // Refresh progress data
+          await refreshProgressData();
+        }
+      } catch (error) {
+        console.error('Error clearing entry:', error);
+      } finally {
+        setSavingEntries(prev => ({ ...prev, [entryId]: false }));
+      }
+      return;
+    }
 
     setSavingEntries(prev => ({ ...prev, [entryId]: true }));
     
@@ -722,25 +782,25 @@ const Data = () => {
 
   // Calculate progress for meter managers (only metered tasks)
   const calculateMeterManagerProgress = (entries) => {
-    console.log('🔧 Calculating meter manager progress:', {
-      total_entries: entries.length,
-      isMeterDataOnly: isMeterDataOnly,
-      user_role: user?.role
-    });
+    // console.log('🔧 Calculating meter manager progress:', {
+    //   total_entries: entries.length,
+    //   isMeterDataOnly: isMeterDataOnly,
+    //   user_role: user?.role
+    // });
     
     const meteredEntries = entries.filter(entry => entry.meter_id !== null);
     const totalMeteredTasks = meteredEntries.length;
     
-    console.log('📊 Metered entries found:', {
-      metered_count: totalMeteredTasks,
-      total_points_should_be: totalMeteredTasks * 2,
-      metered_entries: meteredEntries.map(e => ({
-        name: e.name,
-        meter_id: e.meter_id,
-        has_value: e.value !== null && e.value !== '',
-        has_evidence: !!e.evidence_file
-      }))
-    });
+    // console.log('📊 Metered entries found:', {
+    //   metered_count: totalMeteredTasks,
+    //   total_points_should_be: totalMeteredTasks * 2,
+    //   metered_entries: meteredEntries.map(e => ({
+    //     name: e.name,
+    //     meter_id: e.meter_id,
+    //     has_value: e.value !== null && e.value !== '',
+    //     has_evidence: !!e.evidence_file
+    //   }))
+    // });
     
     if (totalMeteredTasks === 0) {
       return {
@@ -771,7 +831,7 @@ const Data = () => {
       evidence_complete: evidenceCompleted
     };
     
-    console.log('✅ Meter manager progress calculated:', result);
+    // console.log('✅ Meter manager progress calculated:', result);
     return result;
   };
 
@@ -835,6 +895,13 @@ const Data = () => {
         groups[statusLabel].push(entry);
         return groups;
       }, {});
+    } else if (groupBy === 'Site') {
+      return entries.reduce((groups, entry) => {
+        const siteName = entry.site_name || 'Unknown Site';
+        if (!groups[siteName]) groups[siteName] = [];
+        groups[siteName].push(entry);
+        return groups;
+      }, {});
     }
     return { 'All Items': entries };
   };
@@ -879,11 +946,11 @@ const Data = () => {
           items_remaining: Math.max(0, meterProgress.total_points - meterProgress.completed_points)
         };
         
-        console.log('🔧 Meter Manager Progress Refresh:', {
-          entries_count: filteredEntries.length,
-          metered_count: filteredEntries.filter(e => e.meter_id !== null).length,
-          progress: meterProgress
-        });
+        // console.log('🔧 Meter Manager Progress Refresh:', {
+        //   entries_count: filteredEntries.length,
+        //   metered_count: filteredEntries.filter(e => e.meter_id !== null).length,
+        //   progress: meterProgress
+        // });
       }
       
       setProgressData({
@@ -957,8 +1024,8 @@ const Data = () => {
 
   const handleMonthSelect = async (monthId) => {
     if (monthId !== selectedMonth) {
-      setSelectedMonth(monthId);
       setLoading(true);
+      console.log(`📅 Month selection: Switching from ${selectedMonth} to ${monthId}`);
       
       try {
         // Update months with new selected month
@@ -969,26 +1036,61 @@ const Data = () => {
 
         // Reload data entries for new month
         const entries = await fetchDataEntries(selectedYear, monthId);
-        const transformedEntries = entries.map(entry => ({
-          id: entry.submission.id,
-          name: entry.element_name,
-          meter: entry.meter ? `${entry.meter.name} (${entry.meter.type})` : 'N/A',
-          meter_id: entry.meter ? entry.meter.id : null,
-          meter_type: entry.meter ? entry.meter.type : null,
-          meter_location: entry.meter ? entry.meter.location : null,
-          frequency: entry.cadence,
-          value: entry.submission.value || '',
-          unit: entry.element_unit || '',
-          status: entry.submission.status || 'missing',
-          category: entry.type,
-          description: entry.element_description || '',
-          evidence_file: entry.submission.evidence_file || null,
-          assignedTo: entry.submission.assigned_to ? 
-            `${entry.submission.assigned_to.first_name || ''} ${entry.submission.assigned_to.last_name || ''}`.trim() || entry.submission.assigned_to.username || entry.submission.assigned_to.email
-            : null,
-          assignedUserId: entry.submission.assigned_to ? entry.submission.assigned_to.id : null,
-          assignedAt: entry.submission.assigned_at || null
-        }));
+
+        let transformedEntries = [];
+
+        // Check if data is grouped by site (All Locations) or ungrouped (specific site)
+        if (selectedLocation?.id === 'all' && Array.isArray(entries) && entries.length > 0 && entries[0].site) {
+          // Grouped data: flatten all tasks from all sites
+          for (const siteGroup of entries) {
+            for (const entry of siteGroup.tasks) {
+              transformedEntries.push({
+                id: entry.submission.id,
+                name: entry.element_name,
+                meter: entry.meter ? `${entry.meter.name} (${entry.meter.type})` : 'N/A',
+                meter_id: entry.meter ? entry.meter.id : null,
+                meter_type: entry.meter ? entry.meter.type : null,
+                meter_location: entry.meter ? entry.meter.location : null,
+                site_name: siteGroup.site.name,
+                frequency: entry.cadence,
+                value: entry.submission.value || '',
+                unit: entry.element_unit || '',
+                status: entry.submission.status || 'missing',
+                category: entry.type,
+                description: entry.element_description || '',
+                evidence_file: entry.submission.evidence_file || null,
+                assignedTo: entry.submission.assigned_to ?
+                  `${entry.submission.assigned_to.first_name || ''} ${entry.submission.assigned_to.last_name || ''}`.trim() || entry.submission.assigned_to.username || entry.submission.assigned_to.email
+                  : null,
+                assignedUserId: entry.submission.assigned_to ? entry.submission.assigned_to.id : null,
+                assignedAt: entry.submission.assigned_at || null
+              });
+            }
+          }
+        } else {
+          // Ungrouped data: transform directly
+          transformedEntries = entries.map(entry => ({
+            id: entry.submission.id,
+            name: entry.element_name,
+            meter: entry.meter ? `${entry.meter.name} (${entry.meter.type})` : 'N/A',
+            meter_id: entry.meter ? entry.meter.id : null,
+            meter_type: entry.meter ? entry.meter.type : null,
+            meter_location: entry.meter ? entry.meter.location : null,
+            frequency: entry.cadence,
+            value: entry.submission.value || '',
+            unit: entry.element_unit || '',
+            status: entry.submission.status || 'missing',
+            category: entry.type,
+            description: entry.element_description || '',
+            evidence_file: entry.submission.evidence_file || null,
+            assignedTo: entry.submission.assigned_to ?
+              `${entry.submission.assigned_to.first_name || ''} ${entry.submission.assigned_to.last_name || ''}`.trim() || entry.submission.assigned_to.username || entry.submission.assigned_to.email
+              : null,
+            assignedUserId: entry.submission.assigned_to ? entry.submission.assigned_to.id : null,
+            assignedAt: entry.submission.assigned_at || null
+          }));
+        }
+
         setDataEntries(transformedEntries);
 
         // Update monthly progress
@@ -1004,6 +1106,10 @@ const Data = () => {
             total_points: monthlyProgress.total_points || 0
           }
         }));
+        
+        // Update selectedMonth only after all data is loaded to prevent race conditions
+        setSelectedMonth(monthId);
+        console.log(`✅ Month selection complete: Now showing data for month ${monthId}`);
       } catch (error) {
         console.error('Error loading month data:', error);
       } finally {
@@ -1096,7 +1202,7 @@ const Data = () => {
           );
         }
         
-        console.log('Available users for assignment:', filteredUsers);
+        // console.log('Available users for assignment:', filteredUsers);
         setAvailableUsers(filteredUsers);
       } else {
         console.error('Failed to fetch available users, status:', response.status);
@@ -1128,7 +1234,7 @@ const Data = () => {
       
       if (response.ok) {
         const responseData = await response.json();
-        console.log('Assignment response:', responseData);
+        // console.log('Assignment response:', responseData);
         
         // Update the task in the data entries
         const assignedUser = availableUsers.find(u => u.id === userId);
@@ -1136,7 +1242,7 @@ const Data = () => {
           `${assignedUser.first_name || ''} ${assignedUser.last_name || ''}`.trim() || assignedUser.name || assignedUser.email
           : 'Unknown User';
         
-        console.log('Updating entry with assignment:', { taskId, assignedName, userId });
+        // console.log('Updating entry with assignment:', { taskId, assignedName, userId });
         
         setDataEntries(prev => prev.map(entry => 
           entry.id === taskId 
@@ -1146,7 +1252,7 @@ const Data = () => {
         
         setShowAssignModal(false);
         setSelectedTaskForAssignment(null);
-        console.log('Task assigned successfully to:', assignedName);
+        // console.log('Task assigned successfully to:', assignedName);
         
         // Refresh data to get updated assignment info from server
         refreshDataEntries();
@@ -1166,6 +1272,50 @@ const Data = () => {
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           <span className="ml-3 text-gray-600">Loading data collection interface...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while LocationContext is initializing
+  if (locationLoading) {
+    return (
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-3 text-sm sm:text-base text-gray-600">Loading location data...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while component is fetching data
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-3 text-sm sm:text-base text-gray-600">Loading data entries...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if location is selected ONLY AFTER LocationContext has loaded
+  if (!locationLoading && !selectedLocation) {
+    return (
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
+          <i className="fas fa-map-marker-alt text-4xl text-yellow-600 mb-4"></i>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">No Location Selected</h2>
+          <p className="text-gray-600 mb-4">Please select a location to manage data entries.</p>
+          <button 
+            onClick={() => navigate('/location')}
+            className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium"
+          >
+            <i className="fas fa-arrow-left mr-2"></i>
+            Go to Location Selection
+          </button>
         </div>
       </div>
     );
@@ -2071,6 +2221,7 @@ const Data = () => {
           setShowGroupByModal(false);
         }}
         onClose={() => setShowGroupByModal(false)}
+        selectedLocation={selectedLocation}
       />}
 
       {showAssignmentFilterModal && <AssignmentFilterModal 
@@ -2137,7 +2288,7 @@ const ViewFilterModal = ({ isOpen, currentFilter, onApply, onClose }) => {
   );
 };
 
-const GroupByModal = ({ isOpen, currentFilter, onApply, onClose }) => {
+const GroupByModal = ({ isOpen, currentFilter, onApply, onClose, selectedLocation }) => {
   const handleSelect = (option) => {
     onApply(option);
     onClose();
@@ -2148,7 +2299,9 @@ const GroupByModal = ({ isOpen, currentFilter, onApply, onClose }) => {
   const options = [
     { value: 'Category', label: 'Category', description: 'Group by data categories', icon: 'fa-folder', color: 'text-purple-600', bgColor: 'bg-purple-100' },
     { value: 'Frequency', label: 'Frequency', description: 'Group by reporting frequency', icon: 'fa-clock', color: 'text-blue-600', bgColor: 'bg-blue-100' },
-    { value: 'Status', label: 'Status', description: 'Group by completion status', icon: 'fa-check-circle', color: 'text-green-600', bgColor: 'bg-green-100' }
+    { value: 'Status', label: 'Status', description: 'Group by completion status', icon: 'fa-check-circle', color: 'text-green-600', bgColor: 'bg-green-100' },
+    // Show Site option only when All Locations is selected
+    ...(selectedLocation?.id === 'all' ? [{ value: 'Site', label: 'Site', description: 'Group by location/site', icon: 'fa-map-marker-alt', color: 'text-orange-600', bgColor: 'bg-orange-100' }] : [])
   ];
 
   return (

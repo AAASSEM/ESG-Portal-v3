@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { LocationProvider } from './context/LocationContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './components/Login';
 import Signup from './components/Signup';
@@ -9,6 +10,7 @@ import Home from './components/Home';
 import DashboardHome from './components/DashboardHome';
 import Onboard from './components/Onboard';
 import Rame from './components/Rame';
+import LocationSelection from './components/LocationSelection';
 import List from './components/List';
 import Meter from './components/Meter';
 import Data from './components/Data';
@@ -35,8 +37,9 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <div className="App min-h-screen bg-gray-50">
-          <Routes>
+        <LocationProvider>
+          <div className="App min-h-screen bg-gray-50">
+            <Routes>
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
@@ -81,6 +84,22 @@ function App() {
                 <TopNavbar />
                 <div className="w-full px-4 py-8">
                   <Rame />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/framework" element={
+              <ProtectedRoute>
+                <TopNavbar />
+                <div className="w-full px-4 py-8">
+                  <Rame />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/location" element={
+              <ProtectedRoute>
+                <TopNavbar />
+                <div className="w-full px-4 py-8">
+                  <LocationSelection />
                 </div>
               </ProtectedRoute>
             } />
@@ -178,6 +197,7 @@ function App() {
             } />
           </Routes>
         </div>
+        </LocationProvider>
       </AuthProvider>
     </Router>
   );

@@ -25,6 +25,7 @@ class UserProfile(models.Model):
     email = models.EmailField(help_text="Required business email address")
     company = models.ForeignKey('Company', on_delete=models.CASCADE, null=True, blank=True)
     site = models.ForeignKey('Site', on_delete=models.CASCADE, null=True, blank=True)
+    view_all_locations = models.BooleanField(default=False, help_text="User is viewing all locations instead of a specific site")
     must_reset_password = models.BooleanField(default=False, help_text="User must reset password on next login")
     email_verified = models.BooleanField(default=False, help_text="Email address has been verified")
     simplelogin_alias = models.EmailField(null=True, blank=True, help_text="SimpleLogin alias for privacy protection")
@@ -38,6 +39,22 @@ class UserProfile(models.Model):
     class Meta:
         verbose_name = "User Profile"
         verbose_name_plural = "User Profiles"
+
+
+class UserSiteAssignment(models.Model):
+    """Many-to-many relationship between users and sites they can access"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='site_assignments')
+    site = models.ForeignKey('Site', on_delete=models.CASCADE, related_name='user_assignments')
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_sites')
+    
+    class Meta:
+        unique_together = ('user', 'site')
+        verbose_name = "User Site Assignment"
+        verbose_name_plural = "User Site Assignments"
+    
+    def __str__(self):
+        return f"{self.user.username} -> {self.site.name}"
 
 
 class Company(models.Model):
@@ -157,18 +174,18 @@ class CompanyFramework(models.Model):
 
 
 class DataElement(models.Model):
-    """Master list of all possible data elements"""
+    """Master list of all possible data elements - Legacy model for backward compatibility"""
     ELEMENT_TYPES = [
         ('must_have', 'Must Have'),
         ('conditional', 'Conditional'),
     ]
-    
+
     CATEGORY_CHOICES = [
         ('Environmental', 'Environmental'),
         ('Social', 'Social'),
         ('Governance', 'Governance'),
     ]
-    
+
     element_id = models.CharField(max_length=50, primary_key=True)
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
@@ -176,9 +193,109 @@ class DataElement(models.Model):
     is_metered = models.BooleanField(default=False)
     type = models.CharField(max_length=50, choices=ELEMENT_TYPES)
     unit = models.CharField(max_length=50, blank=True)
-    
+
     def __str__(self):
         return self.name
+
+
+class FrameworkElement(models.Model):
+    """New framework-based data elements with rich specifications"""
+    ELEMENT_TYPES = [
+        ('must-have', 'Must Have'),
+        ('conditional', 'Conditional'),
+    ]
+
+    CATEGORY_CHOICES = [
+        ('E', 'Environmental'),
+        ('S', 'Social'),
+        ('G', 'Governance'),
+    ]
+
+    CADENCE_CHOICES = [
+        ('monthly', 'Monthly'),
+        ('quarterly', 'Quarterly'),
+        ('annual', 'Annual'),
+        ('on_change', 'On Change'),
+        ('on_installation', 'On Installation'),
+        ('daily', 'Daily'),
+        ('every_3_years', 'Every 3 Years'),
+        ('on_implementation', 'On Implementation'),
+        ('on_purchase', 'On Purchase'),
+        ('on_menu_change', 'On Menu Change'),
+    ]
+
+    METER_TYPE_CHOICES = [
+        ('electricity', 'Electricity'),
+        ('water', 'Water'),
+        ('district_cooling', 'District Cooling'),
+        ('fuel', 'Fuel'),
+        ('waste', 'Waste'),
+        ('refrigerant', 'Refrigerant'),
+    ]
+
+    METER_SCOPE_CHOICES = [
+        ('site', 'Site'),
+        ('organization', 'Organization'),
+        ('fleet', 'Fleet'),
+        ('value_chain', 'Value Chain'),
+        ('local_community', 'Local Community'),
+    ]
+
+    # Basic framework information
+    framework_id = models.CharField(max_length=100, help_text="Framework this element belongs to")
+    sector = models.CharField(max_length=50, help_text="Target sector (e.g., hospitality, generic)")
+    official_code = models.CharField(max_length=100, help_text="Official framework code")
+    element_id = models.CharField(max_length=100, primary_key=True, help_text="Unique element identifier")
+    name_plain = models.CharField(max_length=300, help_text="Plain English name")
+    description = models.TextField(help_text="Detailed description of the requirement")
+
+    # Data collection specifications
+    unit = models.CharField(max_length=50, blank=True, help_text="Unit of measurement")
+    cadence = models.CharField(max_length=50, choices=CADENCE_CHOICES, help_text="Reporting frequency")
+    type = models.CharField(max_length=50, choices=ELEMENT_TYPES, help_text="Element type")
+    category = models.CharField(max_length=1, choices=CATEGORY_CHOICES, help_text="ESG category")
+
+    # Conditional logic
+    condition_logic = models.TextField(blank=True, null=True, help_text="Conditions for this element to apply")
+    wizard_question = models.TextField(blank=True, null=True, help_text="Question to ask user to determine if element applies")
+    prompt = models.TextField(help_text="User-facing prompt for data collection")
+
+    # Metering information
+    metered = models.BooleanField(default=False, help_text="Whether this element requires meter readings")
+    meter_type = models.CharField(max_length=50, choices=METER_TYPE_CHOICES, blank=True, null=True)
+    meter_scope = models.CharField(max_length=50, choices=METER_SCOPE_CHOICES, blank=True, null=True)
+
+    # Processing specifications
+    calculation = models.TextField(blank=True, null=True, help_text="How to calculate this value")
+    aggregation = models.TextField(blank=True, null=True, help_text="How to aggregate across sites/time")
+
+    # Quality and privacy
+    privacy_level = models.CharField(max_length=20, default='public', help_text="Data privacy classification")
+
+    # Framework metadata
+    evidence_requirements = models.JSONField(default=list, help_text="Required evidence types")
+    providers_by_emirate = models.JSONField(default=dict, help_text="Service providers by emirate")
+    data_source_systems = models.JSONField(default=list, help_text="Expected data source systems")
+    quality_checks = models.JSONField(default=list, help_text="Quality validation checks")
+    tags = models.JSONField(default=list, help_text="Element tags for filtering and search")
+    notes = models.TextField(blank=True, help_text="Additional implementation notes")
+    sources = models.JSONField(default=list, help_text="Reference sources and legislation")
+
+    # Carbon calculation specifications
+    carbon_specifications = models.JSONField(blank=True, null=True, help_text="Carbon calculation details")
+
+    def __str__(self):
+        return f"{self.official_code}: {self.name_plain}"
+
+    @property
+    def name(self):
+        """Backward compatibility property"""
+        return self.name_plain
+
+    @property
+    def is_metered(self):
+        """Backward compatibility property"""
+        return self.metered
 
 
 class DataElementFrameworkMapping(models.Model):
@@ -219,12 +336,13 @@ class CompanyProfileAnswer(models.Model):
     """Stores a company's answers to the profiling questions"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, null=True, blank=True, related_name='profile_answers')
     question = models.ForeignKey(ProfilingQuestion, on_delete=models.CASCADE)
     answer = models.BooleanField()
     answered_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        unique_together = ('user', 'company', 'question')
+        unique_together = ('user', 'company', 'site', 'question')
 
 
 class Meter(models.Model):
@@ -236,6 +354,7 @@ class Meter(models.Model):
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, null=True, blank=True, related_name='meters')
     type = models.CharField(max_length=100)  # e.g., 'Electricity', 'Water'
     name = models.CharField(max_length=255)  # e.g., 'Main', 'Kitchen Meter'
     account_number = models.CharField(max_length=255, blank=True)
@@ -265,7 +384,9 @@ class CompanyDataSubmission(models.Model):
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    element = models.ForeignKey(DataElement, on_delete=models.CASCADE)
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, null=True, blank=True, related_name='data_submissions')
+    element = models.ForeignKey(DataElement, on_delete=models.CASCADE, null=True, blank=True)
+    framework_element = models.ForeignKey(FrameworkElement, on_delete=models.CASCADE, null=True, blank=True)
     meter = models.ForeignKey(Meter, on_delete=models.CASCADE, null=True, blank=True)
     reporting_year = models.PositiveIntegerField()
     reporting_period = models.CharField(max_length=50)  # e.g., 'Jan', 'Q1', '2025'
@@ -278,8 +399,22 @@ class CompanyDataSubmission(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        unique_together = ('user', 'company', 'element', 'meter', 'reporting_year', 'reporting_period')
+        unique_together = ('user', 'company', 'site', 'element', 'framework_element', 'meter', 'reporting_year', 'reporting_period')
     
+    @property
+    def element_instance(self):
+        """Return the actual element (either DataElement or FrameworkElement)"""
+        return self.framework_element or self.element
+
+    @property
+    def element_name(self):
+        """Return the element name for compatibility"""
+        if self.framework_element:
+            return self.framework_element.name_plain
+        elif self.element:
+            return self.element.name
+        return "Unknown Element"
+
     @property
     def status(self):
         """Calculate status based on data and evidence availability"""
@@ -298,24 +433,25 @@ class CompanyDataSubmission(models.Model):
             return 'missing'
     
     def __str__(self):
-        return f"{self.company.name} - {self.element.name} - {self.reporting_period}/{self.reporting_year}"
+        return f"{self.company.name} - {self.element_name} - {self.reporting_period}/{self.reporting_year}"
 
 
 class CompanyChecklist(models.Model):
     """Stores the personalized checklist for each company"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    element = models.ForeignKey(DataElement, on_delete=models.CASCADE)
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, null=True, blank=True, related_name='checklists')
+    element = models.ForeignKey(FrameworkElement, on_delete=models.CASCADE)
     is_required = models.BooleanField(default=True)
     cadence = models.CharField(max_length=50)  # Final consolidated cadence
-    frameworks = models.ManyToManyField(Framework, through='ChecklistFrameworkMapping')
+    framework_id = models.CharField(max_length=100, default='UAE-CLIMATE-LAW-2024')  # Track which framework this comes from
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
-        unique_together = ('user', 'company', 'element')
-    
+        unique_together = ('user', 'company', 'site', 'element')
+
     def __str__(self):
-        return f"{self.company.name} - {self.element.name}"
+        return f"{self.company.name} - {self.element.name_plain}"
 
 
 class ChecklistFrameworkMapping(models.Model):
