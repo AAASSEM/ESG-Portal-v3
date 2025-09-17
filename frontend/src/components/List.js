@@ -114,7 +114,14 @@ const List = () => {
         const elements = await response.json();
         console.log('📋 Fetched conditional elements:', elements);
 
-        const questions = elements
+        // Ensure elements is an array
+        const elementsArray = Array.isArray(elements) ? elements : [];
+
+        if (!Array.isArray(elements)) {
+          console.warn('⚠️ Backend returned non-array data for framework elements:', typeof elements, elements);
+        }
+
+        const questions = elementsArray
           .filter(el => el.wizard_question || el.condition_logic)
           .map(el => ({
             id: el.element_id,

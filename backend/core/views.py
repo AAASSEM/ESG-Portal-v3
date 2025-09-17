@@ -19,6 +19,7 @@ from .models import (
     Company, Site, Activity, CompanyActivity, Framework, CompanyFramework, DataElement, FrameworkElement, ProfilingQuestion,
     CompanyProfileAnswer, Meter, CompanyDataSubmission, CompanyChecklist
 )
+from .services import FrameworkService
 from .serializers import (
     CompanySerializer, CompanyCreateSerializer, SiteSerializer, ActivitySerializer,
     FrameworkSerializer, DataElementSerializer, FrameworkElementSerializer, ProfilingQuestionSerializer,

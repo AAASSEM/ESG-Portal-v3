@@ -263,8 +263,8 @@ function LocationSelection() {
 
         {/* Sites Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* All Locations Option - Only show if user can change locations */}
-          {userPermissions.canChangeLocation && (
+          {/* All Locations Option - Only show if user can change locations AND sites exist */}
+          {userPermissions.canChangeLocation && sites.length > 0 && (
             <div
               onClick={() => handleAllLocationsSelect()}
               className={`relative bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-dashed rounded-lg p-6 cursor-pointer transition-all hover:from-purple-100 hover:to-blue-100 ${
@@ -288,6 +288,51 @@ function LocationSelection() {
               </div>
             </div>
           </div>
+          )}
+
+          {/* Empty State Message - Show when no sites exist */}
+          {sites.length === 0 && userPermissions.canChangeLocation && (
+            <div className="col-span-full bg-blue-50 border-2 border-blue-200 border-dashed rounded-lg p-8 text-center">
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                  <i className="fas fa-map-marker-alt text-blue-500 text-2xl"></i>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold text-gray-900">No Locations Yet</h3>
+                  <p className="text-gray-600 max-w-md">
+                    Create your first location to start tracking ESG data and managing your sustainability metrics.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    console.log('Add location clicked!');
+                    setShowAddModal(true);
+                    console.log('showAddModal should be true now');
+                  }}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                >
+                  <i className="fas fa-plus"></i>
+                  <span>Add Your First Location</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Empty State for Read-Only Users */}
+          {sites.length === 0 && !userPermissions.canChangeLocation && (
+            <div className="col-span-full bg-gray-50 border-2 border-gray-200 border-dashed rounded-lg p-8 text-center">
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                  <i className="fas fa-building text-gray-400 text-2xl"></i>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold text-gray-900">No Locations Available</h3>
+                  <p className="text-gray-600 max-w-md">
+                    No locations have been set up for your account yet. Contact an administrator to add locations.
+                  </p>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Existing Sites */}

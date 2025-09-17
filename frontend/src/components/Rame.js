@@ -31,12 +31,19 @@ const Rame = () => {
         
         if (response.ok) {
           const frameworks = await response.json();
-          
+
+          // Ensure frameworks is an array
+          const frameworksArray = Array.isArray(frameworks) ? frameworks : [];
+
+          if (!Array.isArray(frameworks)) {
+            console.warn('⚠️ Backend returned non-array data for existing frameworks:', typeof frameworks, frameworks);
+          }
+
           // Filter for voluntary frameworks (type === 'voluntary')
-          const voluntaryIds = frameworks
+          const voluntaryIds = frameworksArray
             .filter(fw => fw.type === 'voluntary')
             .map(fw => fw.framework_id);
-          
+
           console.log('📋 Existing voluntary frameworks from DB:', voluntaryIds);
           setSelectedVoluntaryFrameworks(voluntaryIds);
         }
@@ -198,8 +205,15 @@ const Rame = () => {
           const frameworks = await response.json();
           console.log('📋 Backend voluntary frameworks:', frameworks);
 
+          // Ensure frameworks is an array
+          const frameworksArray = Array.isArray(frameworks) ? frameworks : [];
+
+          if (!Array.isArray(frameworks)) {
+            console.warn('⚠️ Backend returned non-array data for voluntary frameworks:', typeof frameworks, frameworks);
+          }
+
           // Map backend data to frontend format with icons and styling
-          const mappedFrameworks = frameworks.map(fw => ({
+          const mappedFrameworks = frameworksArray.map(fw => ({
             id: fw.framework_id,
             name: fw.name,
             description: fw.description || 'Comprehensive sustainability framework',
@@ -213,6 +227,11 @@ const Rame = () => {
           setVoluntaryFrameworks(mappedFrameworks);
         } else {
           console.error('❌ Failed to fetch voluntary frameworks:', response.status);
+          console.error('❌ Response details:', {
+            status: response.status,
+            statusText: response.statusText,
+            url: response.url
+          });
         }
       } catch (error) {
         console.error('❌ Error fetching voluntary frameworks:', error);
