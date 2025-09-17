@@ -3,11 +3,11 @@
 
 set -o errexit
 
-# Build React frontend
-echo "Building React frontend..."
+# Build React frontend for production
+echo "Building React frontend for production..."
 cd frontend
 npm install
-CI=false npm run build
+CI=false npm run build:prod
 cd ..
 
 # Copy React build files to Django static directory
