@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     CompanyViewSet, SiteViewSet, ActivityViewSet, FrameworkViewSet, FrameworkElementViewSet,
     ProfilingQuestionViewSet, CompanyChecklistViewSet,
-    MeterViewSet, DataCollectionViewSet, DashboardView
+    MeterViewSet, DataCollectionViewSet, DashboardView, LoggingView
 )
 from .user_views import UserViewSet
 from .auth_views import SignupView, LoginView, LogoutView, UserProfileView, CsrfTokenView, UserSitesView, UserPermissionsView, RoleSwitchView, ResetPasswordView, CompanyUpdateView, EmailVerificationView, EmailCodeVerificationView, ResendVerificationView, SendResetCodeView, VerifyResetCodeView, MagicLinkAuthView
@@ -26,6 +26,7 @@ router.register(r'element-assignments', ElementAssignmentViewSet, basename='elem
 urlpatterns = [
     path('', include(router.urls)),
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
+    path('logs/', LoggingView.as_view(), name='logs'),
     # Authentication endpoints
     path('auth/signup/', SignupView.as_view(), name='signup'),
     path('auth/login/', LoginView.as_view(), name='login'),

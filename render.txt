@@ -1,265 +1,29 @@
-App.js:24 App.js loaded
-index.js:7 index.js loaded
-index.js:10 Root element: <div id=​"root">​…​</div>​
-index.js:16 Rendering App...
-index.js:20 App render called
-App.js:27 App component rendering
-index.iife.js:1 content script loaded
-AuthContext.js:123 ✅ User authenticated: {id: 2, username: 'assem.render2', email: 'assem@render.com', name: 'assem.render2', role: 'super_user', …}
-AuthContext.js:150 🏢 User companies fetched: [{…}]
-AuthContext.js:154 🔍 Saved company ID from storage: null
-AuthContext.js:155 🔍 Available companies for user: [{…}]
-AuthContext.js:172 🏢 Auto-selected first company: {id: 1, name: 'assem.render2', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-28T21:05:00.717145+04:00'}
-TopNavbar.js:146 TopNavbar rendering
-TopNavbar.js:150 Current location: /list
-List.js:27 List component - selectedCompany: {id: 1, name: 'assem.render2', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-28T21:05:00.717145+04:00'}
-List.js:28 List component - companyId: 1
-List.js:29 List component - user: {id: 2, username: 'assem.render2', email: 'assem@render.com', name: 'assem.render2', role: 'super_user', …}
-List.js:375 🔍 Component render state: {companyId: 1, answersCount: 0, questionsCount: 0, allQuestionsAnswered: false, showChecklist: false, …}
-List.js:58 Fetching profiling questions for company: 1
-AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/profiling-questions/for_company/?company_id=1
-List.js:27 List component - selectedCompany: {id: 1, name: 'assem.render2', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-28T21:05:00.717145+04:00'}
-List.js:28 List component - companyId: 1
-List.js:29 List component - user: {id: 2, username: 'assem.render2', email: 'assem@render.com', name: 'assem.render2', role: 'super_user', …}
-List.js:375 🔍 Component render state: {companyId: 1, answersCount: 0, questionsCount: 0, allQuestionsAnswered: false, showChecklist: false, …}
-AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/profiling-questions/for_company/?company_id=1 Status: 200
-List.js:60 Response status: 200 Response ok: true
-List.js:64 Fetched questions from backend: (4) [{…}, {…}, {…}, {…}]
-List.js:65 Questions type: object Length: 4
-List.js:74 Transformed questions: (4) [{…}, {…}, {…}, {…}]
-List.js:115 Fetching existing profile answers for company: 1
-AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/profile_answers/
-List.js:27 List component - selectedCompany: {id: 1, name: 'assem.render2', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-28T21:05:00.717145+04:00'}
-List.js:28 List component - companyId: 1
-List.js:29 List component - user: {id: 2, username: 'assem.render2', email: 'assem@render.com', name: 'assem.render2', role: 'super_user', …}
-List.js:375 🔍 Component render state: {companyId: 1, answersCount: 0, questionsCount: 4, allQuestionsAnswered: false, showChecklist: false, …}
-AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/profile_answers/ Status: 200
-List.js:120 Loaded profile answers from API: []
-List.js:128 Setting answers state to: {}
-List.js:148 🔍 Checking if checklist exists for company: 1
-AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/checklist/?company_id=1
-List.js:27 List component - selectedCompany: {id: 1, name: 'assem.render2', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-28T21:05:00.717145+04:00'}
-List.js:28 List component - companyId: 1
-List.js:29 List component - user: {id: 2, username: 'assem.render2', email: 'assem@render.com', name: 'assem.render2', role: 'super_user', …}
-List.js:375 🔍 Component render state: {companyId: 1, answersCount: 0, questionsCount: 4, allQuestionsAnswered: false, showChecklist: false, …}
-AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/checklist/?company_id=1 Status: 200
-List.js:153 ✅ Checklist exists check result: false
-AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/profile_answers/
-List.js:27 List component - selectedCompany: {id: 1, name: 'assem.render2', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-28T21:05:00.717145+04:00'}
-List.js:28 List component - companyId: 1
-List.js:29 List component - user: {id: 2, username: 'assem.render2', email: 'assem@render.com', name: 'assem.render2', role: 'super_user', …}
-List.js:375 🔍 Component render state: {companyId: 1, answersCount: 0, questionsCount: 4, allQuestionsAnswered: false, showChecklist: false, …}
-AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/profile_answers/ Status: 200
-AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/profiling-questions/for_company/?company_id=1
-AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/profiling-questions/for_company/?company_id=1 Status: 200
-List.js:27 List component - selectedCompany: {id: 1, name: 'assem.render2', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-28T21:05:00.717145+04:00'}
-List.js:28 List component - companyId: 1
-List.js:29 List component - user: {id: 2, username: 'assem.render2', email: 'assem@render.com', name: 'assem.render2', role: 'super_user', …}
-List.js:375 🔍 Component render state: {companyId: 1, answersCount: 0, questionsCount: 4, allQuestionsAnswered: false, showChecklist: false, …}
-List.js:341 Saving all profiling answers to database: true
-AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/save_profile_answer/
-AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/save_profile_answer/
-AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/save_profile_answer/
-AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/save_profile_answer/
-List.js:27 List component - selectedCompany: {id: 1, name: 'assem.render2', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-28T21:05:00.717145+04:00'}
-List.js:28 List component - companyId: 1
-List.js:29 List component - user: {id: 2, username: 'assem.render2', email: 'assem@render.com', name: 'assem.render2', role: 'super_user', …}
-List.js:375 🔍 Component render state: {companyId: 1, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: false, …}
-AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:71  POST https://esg-portal.onrender.com/api/companies/1/save_profile_answer/ 403 (Forbidden)
-ze @ AuthContext.js:71
-await in ze
-(anonymous) @ List.js:343
-E @ List.js:342
-onClick @ List.js:690
-Fe @ react-dom.production.min.js:54
-Ge @ react-dom.production.min.js:54
-(anonymous) @ react-dom.production.min.js:55
-Ln @ react-dom.production.min.js:105
-Un @ react-dom.production.min.js:106
-(anonymous) @ react-dom.production.min.js:117
-cc @ react-dom.production.min.js:273
-Te @ react-dom.production.min.js:52
-Bn @ react-dom.production.min.js:109
-Qt @ react-dom.production.min.js:74
-qt @ react-dom.production.min.js:73
-AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/save_profile_answer/ Status: 403
-AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:71  POST https://esg-portal.onrender.com/api/companies/1/save_profile_answer/ 403 (Forbidden)
-ze @ AuthContext.js:71
-await in ze
-(anonymous) @ List.js:343
-E @ List.js:342
-onClick @ List.js:690
-Fe @ react-dom.production.min.js:54
-Ge @ react-dom.production.min.js:54
-(anonymous) @ react-dom.production.min.js:55
-Ln @ react-dom.production.min.js:105
-Un @ react-dom.production.min.js:106
-(anonymous) @ react-dom.production.min.js:117
-cc @ react-dom.production.min.js:273
-Te @ react-dom.production.min.js:52
-Bn @ react-dom.production.min.js:109
-Qt @ react-dom.production.min.js:74
-qt @ react-dom.production.min.js:73
-AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/save_profile_answer/ Status: 403
-List.js:400 Sending answers to backend: (4) [{…}, {…}, {…}, {…}]
-AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/profiling-questions/save_answers/
-List.js:27 List component - selectedCompany: {id: 1, name: 'assem.render2', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-28T21:05:00.717145+04:00'}
-List.js:28 List component - companyId: 1
-List.js:29 List component - user: {id: 2, username: 'assem.render2', email: 'assem@render.com', name: 'assem.render2', role: 'super_user', …}
-List.js:375 🔍 Component render state: {companyId: 1, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: false, …}
-AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:71  POST https://esg-portal.onrender.com/api/companies/1/save_profile_answer/ 403 (Forbidden)
-ze @ AuthContext.js:71
-await in ze
-(anonymous) @ List.js:343
-E @ List.js:342
-onClick @ List.js:690
-Fe @ react-dom.production.min.js:54
-Ge @ react-dom.production.min.js:54
-(anonymous) @ react-dom.production.min.js:55
-Ln @ react-dom.production.min.js:105
-Un @ react-dom.production.min.js:106
-(anonymous) @ react-dom.production.min.js:117
-cc @ react-dom.production.min.js:273
-Te @ react-dom.production.min.js:52
-Bn @ react-dom.production.min.js:109
-Qt @ react-dom.production.min.js:74
-qt @ react-dom.production.min.js:73
-AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/save_profile_answer/ Status: 403
-AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:71  POST https://esg-portal.onrender.com/api/companies/1/save_profile_answer/ 403 (Forbidden)
-ze @ AuthContext.js:71
-await in ze
-(anonymous) @ List.js:343
-E @ List.js:342
-onClick @ List.js:690
-Fe @ react-dom.production.min.js:54
-Ge @ react-dom.production.min.js:54
-(anonymous) @ react-dom.production.min.js:55
-Ln @ react-dom.production.min.js:105
-Un @ react-dom.production.min.js:106
-(anonymous) @ react-dom.production.min.js:117
-cc @ react-dom.production.min.js:273
-Te @ react-dom.production.min.js:52
-Bn @ react-dom.production.min.js:109
-Qt @ react-dom.production.min.js:74
-qt @ react-dom.production.min.js:73
-AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/save_profile_answer/ Status: 403
-List.js:358 Some answers failed to save
-E @ List.js:358
-await in E
-onClick @ List.js:690
-Fe @ react-dom.production.min.js:54
-Ge @ react-dom.production.min.js:54
-(anonymous) @ react-dom.production.min.js:55
-Ln @ react-dom.production.min.js:105
-Un @ react-dom.production.min.js:106
-(anonymous) @ react-dom.production.min.js:117
-cc @ react-dom.production.min.js:273
-Te @ react-dom.production.min.js:52
-Bn @ react-dom.production.min.js:109
-Qt @ react-dom.production.min.js:74
-qt @ react-dom.production.min.js:73
-List.js:27 List component - selectedCompany: {id: 1, name: 'assem.render2', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-28T21:05:00.717145+04:00'}
-List.js:28 List component - companyId: 1
-List.js:29 List component - user: {id: 2, username: 'assem.render2', email: 'assem@render.com', name: 'assem.render2', role: 'super_user', …}
-List.js:375 🔍 Component render state: {companyId: 1, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: false, …}
-AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:71  POST https://esg-portal.onrender.com/api/profiling-questions/save_answers/ 403 (Forbidden)
-ze @ AuthContext.js:71
-await in ze
-(anonymous) @ List.js:403
-onClick @ List.js:772
-Fe @ react-dom.production.min.js:54
-Ge @ react-dom.production.min.js:54
-(anonymous) @ react-dom.production.min.js:55
-Ln @ react-dom.production.min.js:105
-Un @ react-dom.production.min.js:106
-(anonymous) @ react-dom.production.min.js:117
-cc @ react-dom.production.min.js:273
-Te @ react-dom.production.min.js:52
-Bn @ react-dom.production.min.js:109
-Qt @ react-dom.production.min.js:74
-qt @ react-dom.production.min.js:73
-AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/profiling-questions/save_answers/ Status: 403
-List.js:436 Error saving answers and generating checklist: Error: Failed to save answers or generate checklist
-    at List.js:434:13
-    at async onClick (List.js:771:24)
-(anonymous) @ List.js:436
-await in (anonymous)
-onClick @ List.js:772
-Fe @ react-dom.production.min.js:54
-Ge @ react-dom.production.min.js:54
-(anonymous) @ react-dom.production.min.js:55
-Ln @ react-dom.production.min.js:105
-Un @ react-dom.production.min.js:106
-(anonymous) @ react-dom.production.min.js:117
-cc @ react-dom.production.min.js:273
-Te @ react-dom.production.min.js:52
-Bn @ react-dom.production.min.js:109
-Qt @ react-dom.production.min.js:74
-qt @ react-dom.production.min.js:73
-List.js:27 List component - selectedCompany: {id: 1, name: 'assem.render2', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-28T21:05:00.717145+04:00'}
-List.js:28 List component - companyId: 1
-List.js:29 List component - user: {id: 2, username: 'assem.render2', email: 'assem@render.com', name: 'assem.render2', role: 'super_user', …}
-List.js:375 🔍 Component render state: {companyId: 1, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: false, …}
-List.js:27 List component - selectedCompany: {id: 1, name: 'assem.render2', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-28T21:05:00.717145+04:00'}
-List.js:28 List component - companyId: 1
-List.js:29 List component - user: {id: 2, username: 'assem.render2', email: 'assem@render.com', name: 'assem.render2', role: 'super_user', …}
-List.js:375 🔍 Component render state: {companyId: 1, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: false, …}
-List.js:400 Sending answers to backend: (4) [{…}, {…}, {…}, {…}]
-AuthContext.js:46 🔄 Making request to: https://esg-portal.onrender.com/api/profiling-questions/save_answers/
-List.js:27 List component - selectedCompany: {id: 1, name: 'assem.render2', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-28T21:05:00.717145+04:00'}
-List.js:28 List component - companyId: 1
-List.js:29 List component - user: {id: 2, username: 'assem.render2', email: 'assem@render.com', name: 'assem.render2', role: 'super_user', …}
-List.js:375 🔍 Component render state: {companyId: 1, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: false, …}
-AuthContext.js:52 🔑 CSRF token: obtained
-AuthContext.js:71  POST https://esg-portal.onrender.com/api/profiling-questions/save_answers/ 403 (Forbidden)
-ze @ AuthContext.js:71
-await in ze
-(anonymous) @ List.js:403
-onClick @ List.js:772
-Fe @ react-dom.production.min.js:54
-Ge @ react-dom.production.min.js:54
-(anonymous) @ react-dom.production.min.js:55
-Ln @ react-dom.production.min.js:105
-Un @ react-dom.production.min.js:106
-(anonymous) @ react-dom.production.min.js:117
-cc @ react-dom.production.min.js:273
-Te @ react-dom.production.min.js:52
-Bn @ react-dom.production.min.js:109
-Qt @ react-dom.production.min.js:74
-qt @ react-dom.production.min.js:73
-AuthContext.js:76 ✅ Request completed: https://esg-portal.onrender.com/api/profiling-questions/save_answers/ Status: 403
-List.js:436 Error saving answers and generating checklist: Error: Failed to save answers or generate checklist
-    at List.js:434:13
-    at async onClick (List.js:771:24)
-(anonymous) @ List.js:436
-await in (anonymous)
-onClick @ List.js:772
-Fe @ react-dom.production.min.js:54
-Ge @ react-dom.production.min.js:54
-(anonymous) @ react-dom.production.min.js:55
-Ln @ react-dom.production.min.js:105
-Un @ react-dom.production.min.js:106
-(anonymous) @ react-dom.production.min.js:117
-cc @ react-dom.production.min.js:273
-Te @ react-dom.production.min.js:52
-Bn @ react-dom.production.min.js:109
-Qt @ react-dom.production.min.js:74
-qt @ react-dom.production.min.js:73
-List.js:27 List component - selectedCompany: {id: 1, name: 'assem.render2', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-28T21:05:00.717145+04:00'}
-List.js:28 List component - companyId: 1
-List.js:29 List component - user: {id: 2, username: 'assem.render2', email: 'assem@render.com', name: 'assem.render2', role: 'super_user', …}
-List.js:375 🔍 Component render state: {companyId: 1, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: false, …}
-List.js:27 List component - selectedCompany: {id: 1, name: 'assem.render2', emirate: 'dubai', sector: 'hospitality', created_at: '2025-08-28T21:05:00.717145+04:00'}
-List.js:28 List component - companyId: 1
-List.js:29 List component - user: {id: 2, username: 'assem.render2', email: 'assem@render.com', name: 'assem.render2', role: 'super_user', …}
-List.js:375 🔍 Component render state: {companyId: 1, answersCount: 4, questionsCount: 4, allQuestionsAnswered: true, showChecklist: false, …}
+127.0.0.1 - - [18/Sep/2025:05:28:54 +0400] "GET / HTTP/1.1" 200 895 "-" "Go-http-client/2.0"
+127.0.0.1 - - [18/Sep/2025:05:29:21 +0400] "GET / HTTP/1.1" 200 895 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+127.0.0.1 - - [18/Sep/2025:05:29:22 +0400] "GET /static/js/main.d8da7472.js HTTP/1.1" 200 0 "https://esg-portal.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+127.0.0.1 - - [18/Sep/2025:05:29:22 +0400] "GET /static/css/main.2d0f1f2e.css HTTP/1.1" 200 0 "https://esg-portal.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+Forbidden: /api/sites/active/
+127.0.0.1 - - [18/Sep/2025:05:29:24 +0400] "GET /api/sites/active/ HTTP/1.1" 403 58 "https://esg-portal.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+Unauthorized: /api/auth/user/
+127.0.0.1 - - [18/Sep/2025:05:29:24 +0400] "GET /api/auth/user/ HTTP/1.1" 401 29 "https://esg-portal.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+🔄 Starting user creation transaction...
+📧 *** USER CREATION SIGNAL TRIGGERED *** for: lucienna.rivero@easymailer.live
+🔍 User details: ID=2, has_password=True, is_active=False
+📝 Determining email type: signup (has password) or invitation (no password)
+⏳ Email scheduled for after transaction commit
+⚠️ Framework assignment SKIPPED for email testing
+✅ User creation transaction completed - all data committed
+🚀 Transaction committed - determining email type for lucienna.rivero@easymailer.live
+🚀 *** TRANSACTION COMMITTED - PROCESSING EMAIL FOR lucienna.rivero@easymailer.live ***
+🔑 Password check: has_usable_password()=True
+✉️ Self-signup detected in signal - sending verification email to lucienna.rivero@easymailer.live
+⚠️ WARNING: This might be a double email trigger!
+🔐 Token signal triggered for email_verification: lucienna.rivero@easymailer.live
+🚀 Transaction committed - sending email_verification email to lucienna.rivero@easymailer.live
+✉️ Email verification result: {'success': True, 'email_sent': True, 'verification_token': 'UP8mDFavDZ1lbV8X6OHkc1Y7u3_HhdxnN9fDipt92TNXrJYqU8osNAm_OTpctASx', 'magic_link_url': 'https://esg-portal.onrender.com/api/auth/magic-link/UP8mDFavDZ1lbV8X6OHkc1Y7u3_HhdxnN9fDipt92TNXrJYqU8osNAm_OTpctASx/', 'message': 'Email verification sent successfully'}
+✅ EMAIL VERIFICATION SENT SUCCESSFULLY to lucienna.rivero@easymailer.live
+⏳ email_verification email scheduled for after transaction commit
+📧 Email verification token created - verification email will be sent
+✅ User account created successfully: lucienna.rivero@easymailer.live
+📧 Email verification will be handled automatically by signals
+127.0.0.1 - - [18/Sep/2025:05:29:56 +0400] "POST /api/auth/signup/ HTTP/1.1" 201 238 "https://esg-portal.onrender.com/signup" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"

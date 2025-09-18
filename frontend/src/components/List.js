@@ -5,6 +5,7 @@ import { useLocationContext } from '../context/LocationContext';
 import { API_BASE_URL } from '../config';
 import Modal from './Modal';
 import Layout from './Layout';
+import { frameworkLogger } from '../utils/logger';
 
 const List = () => {
   const navigate = useNavigate();
@@ -78,6 +79,13 @@ const List = () => {
           const questions = data.questions || [];
           console.log('🎯 Fetched framework wizard questions:', questions);
 
+          // Log to backend for production debugging
+          await frameworkLogger.logWizardQuestionsFetch(
+            companyId,
+            questions.length,
+            response.status
+          );
+
           if (Array.isArray(questions) && questions.length > 0) {
             const transformedQuestions = questions.map(q => ({
               id: q.element_id || q.id,
@@ -91,6 +99,10 @@ const List = () => {
             setProfilingQuestions(transformedQuestions);
           } else {
             console.log('⚠️ No framework wizard questions found, using default approach');
+
+            // Log warning to backend
+            await frameworkLogger.logNoWizardQuestions(companyId);
+
             // Fallback: Get framework elements directly and create questions from conditional ones
             await fetchFrameworkElementsAsQuestions();
           }

@@ -1,0 +1,90 @@
+[
+{
+  "model": "core.companyframework",
+  "pk": 222,
+  "fields": {
+    "user": null,
+    "company": 6,
+    "framework": "UAE-CLIMATE-LAW-2024",
+    "is_auto_assigned": true,
+    "assigned_at": "2025-09-18T02:08:54.176Z"
+  }
+},
+{
+  "model": "core.companyframework",
+  "pk": 223,
+  "fields": {
+    "user": null,
+    "company": 6,
+    "framework": "DUBAI-SUSTAINABLE-TOURISM",
+    "is_auto_assigned": true,
+    "assigned_at": "2025-09-18T02:08:54.184Z"
+  }
+},
+{
+  "model": "core.companyframework",
+  "pk": 224,
+  "fields": {
+    "user": null,
+    "company": 7,
+    "framework": "UAE-CLIMATE-LAW-2024",
+    "is_auto_assigned": true,
+    "assigned_at": "2025-09-18T02:08:54.191Z"
+  }
+},
+{
+  "model": "core.companyframework",
+  "pk": 225,
+  "fields": {
+    "user": null,
+    "company": 7,
+    "framework": "DUBAI-SUSTAINABLE-TOURISM",
+    "is_auto_assigned": true,
+    "assigned_at": "2025-09-18T02:08:54.197Z"
+  }
+},
+{
+  "model": "core.companyframework",
+  "pk": 226,
+  "fields": {
+    "user": null,
+    "company": 57,
+    "framework": "UAE-CLIMATE-LAW-2024",
+    "is_auto_assigned": true,
+    "assigned_at": "2025-09-18T02:08:54.204Z"
+  }
+},
+{
+  "model": "core.companyframework",
+  "pk": 227,
+  "fields": {
+    "user": null,
+    "company": 57,
+    "framework": "DUBAI-SUSTAINABLE-TOURISM",
+    "is_auto_assigned": true,
+    "assigned_at": "2025-09-18T02:08:54.211Z"
+  }
+},
+{
+  "model": "core.companyframework",
+  "pk": 228,
+  "fields": {
+    "user": null,
+    "company": 58,
+    "framework": "UAE-CLIMATE-LAW-2024",
+    "is_auto_assigned": true,
+    "assigned_at": "2025-09-18T02:08:54.218Z"
+  }
+},
+{
+  "model": "core.companyframework",
+  "pk": 229,
+  "fields": {
+    "user": null,
+    "company": 58,
+    "framework": "DUBAI-SUSTAINABLE-TOURISM",
+    "is_auto_assigned": true,
+    "assigned_at": "2025-09-18T02:08:54.230Z"
+  }
+}
+]

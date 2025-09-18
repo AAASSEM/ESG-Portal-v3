@@ -207,6 +207,44 @@ BACKEND_URL = os.environ.get('BACKEND_URL', 'https://esg-portal.onrender.com' if
 
 # SimpleLogin settings for email privacy
 SIMPLELOGIN_API_KEY = os.environ.get('SIMPLELOGIN_API_KEY', 'kgijojjqlgkqxfulqakbaenrheratgmrwpiviivigetoqabomfhaxtkvmndv')
+
+# Logging configuration for production debugging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{levelname}] {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'core': {  # Your core app
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+    },
+}
 SIMPLELOGIN_BASE_URL = os.environ.get('SIMPLELOGIN_BASE_URL', 'https://app.simplelogin.io')
 SIMPLELOGIN_ALIAS_SUFFIX = os.environ.get('SIMPLELOGIN_ALIAS_SUFFIX', '@simplelogin.io')
 SIMPLELOGIN_ENABLED = os.environ.get('SIMPLELOGIN_ENABLED', 'False').lower() == 'true'

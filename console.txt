@@ -1,329 +1,324 @@
-main.175c2ccc.js:2 App.js loaded
-main.175c2ccc.js:2 index.js loaded
-main.175c2ccc.js:2 Root element: <div id=​"root">​…​</div>​
-main.175c2ccc.js:2 Rendering App...
-main.175c2ccc.js:2 App render called
-main.175c2ccc.js:2 App component rendering
-main.175c2ccc.js:2 🔄 LocationContext State Update:
-main.175c2ccc.js:2    - selectedLocation: null
-main.175c2ccc.js:2    - locations: Array(0)
-main.175c2ccc.js:2    - loading: true
-main.175c2ccc.js:2    - updateVersion: 0
-main.175c2ccc.js:2 🔍 Fetching active location from backend...
-index.iife.js:1 content script loaded
-api/auth/user/:1  Failed to load resource: the server responded with a status of 401 ()
-main.175c2ccc.js:2 ❌ User not authenticated
-api/sites/active/:1  Failed to load resource: the server responded with a status of 403 ()
-main.175c2ccc.js:2 ❌ Error fetching active location: Tt
-f @ main.175c2ccc.js:2
-main.175c2ccc.js:2 ✅ Location loading complete
-main.175c2ccc.js:2 🔄 LocationContext State Update:
-main.175c2ccc.js:2    - selectedLocation: null
-main.175c2ccc.js:2    - locations: Array(0)
-main.175c2ccc.js:2    - loading: false
-main.175c2ccc.js:2    - updateVersion: 0
-main.175c2ccc.js:2 ✅ Login successful: Object
-main.175c2ccc.js:2 🏢 User companies fetched: Array(1)
-main.175c2ccc.js:2 🔍 Available companies for user: Array(1)
-main.175c2ccc.js:2 🏢 Using user assigned company: Object
-main.175c2ccc.js:2 🏢 User sites fetched: Array(0)
-main.175c2ccc.js:2 🎯 Redirecting user to: /onboard (role: super_user)
-main.175c2ccc.js:2 🚀 Onboard component loaded/re-rendered at 3:51:11 AM
-main.175c2ccc.js:2 📊 Current formData state: Object
-main.175c2ccc.js:2 ⏱️ Component states - Loading: true Saving: false InitialLoad: true
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/user/permissions/
-main.175c2ccc.js:2 🔄 useEffect for data fetching triggered
-main.175c2ccc.js:2 📡 Fetching company data for ID: 1
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 🔄 LocationContext State Update:
-main.175c2ccc.js:2    - selectedLocation: null
-main.175c2ccc.js:2    - locations: Array(0)
-main.175c2ccc.js:2    - loading: false
-main.175c2ccc.js:2    - updateVersion: 0
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/user/permissions/ Status: 200
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/ Status: 200
-main.175c2ccc.js:2 Company API Response status: 200
-main.175c2ccc.js:2 Loaded company data from API: Object
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/activities/
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/activities/ Status: 200
-main.175c2ccc.js:2 Loaded activities data: Array(0)
-main.175c2ccc.js:2 Setting form data: Object
-main.175c2ccc.js:2 🚀 Onboard component loaded/re-rendered at 3:51:13 AM
-main.175c2ccc.js:2 📊 Current formData state: Object
-main.175c2ccc.js:2 ⏱️ Component states - Loading: false Saving: false InitialLoad: false
-main.175c2ccc.js:2 🔍 Checking onboarding access: Object
-main.175c2ccc.js:2 ✅ Access check result: true for role: super_user
-main.175c2ccc.js:2 🔍 Rame.js Debug - User object: Object
-main.175c2ccc.js:2 🔍 Rame.js Debug - User role: super_user
-main.175c2ccc.js:2 🔍 Rame.js Debug - User is_superuser: undefined
-main.175c2ccc.js:2 🔍 Rame.js Debug - canEditFrameworks: true
-main.175c2ccc.js:2 🔍 Rame.js Debug - isViewOnly: false
-main.175c2ccc.js:2 🔍 Fetching existing voluntary frameworks for company: 1
-main.175c2ccc.js:2 🔍 Fetching mandatory frameworks for company: 1
-main.175c2ccc.js:2 🔍 Fetching voluntary frameworks from backend...
-main.175c2ccc.js:2 📋 Backend voluntary frameworks: Array(3)
-main.175c2ccc.js:2 ✅ Mapped voluntary frameworks: Array(3)
-main.175c2ccc.js:2 🔍 Rame.js Debug - User object: Object
-main.175c2ccc.js:2 🔍 Rame.js Debug - User role: super_user
-main.175c2ccc.js:2 🔍 Rame.js Debug - User is_superuser: undefined
-main.175c2ccc.js:2 🔍 Rame.js Debug - canEditFrameworks: true
-main.175c2ccc.js:2 🔍 Rame.js Debug - isViewOnly: false
-main.175c2ccc.js:2 📋 Existing voluntary frameworks from DB: Array(0)
-main.175c2ccc.js:2 🔍 Rame.js Debug - User object: Object
-main.175c2ccc.js:2 🔍 Rame.js Debug - User role: super_user
-main.175c2ccc.js:2 🔍 Rame.js Debug - User is_superuser: undefined
-main.175c2ccc.js:2 🔍 Rame.js Debug - canEditFrameworks: true
-main.175c2ccc.js:2 🔍 Rame.js Debug - isViewOnly: false
-main.175c2ccc.js:2 📋 Backend frameworks: Array(0)
-main.175c2ccc.js:2 ⚠️ Backend returned empty frameworks, using all mandatory frameworks
-main.175c2ccc.js:2 ✅ Final mandatory frameworks: Array(2)
-main.175c2ccc.js:2 🔍 Rame.js Debug - User object: Object
-main.175c2ccc.js:2 🔍 Rame.js Debug - User role: super_user
-main.175c2ccc.js:2 🔍 Rame.js Debug - User is_superuser: undefined
-main.175c2ccc.js:2 🔍 Rame.js Debug - canEditFrameworks: true
-main.175c2ccc.js:2 🔍 Rame.js Debug - isViewOnly: false
-main.175c2ccc.js:2 🔐 LocationSelection: Fetching user permissions
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/user/permissions/
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 📍 LocationSelection: No active location in context
-main.175c2ccc.js:2 🔄 LocationContext State Update:
-main.175c2ccc.js:2    - selectedLocation: null
-main.175c2ccc.js:2    - locations: Array(0)
-main.175c2ccc.js:2    - loading: false
-main.175c2ccc.js:2    - updateVersion: 0
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/user/permissions/ Status: 200
-main.175c2ccc.js:2 🔐 LocationSelection: Received permissions: Object
-main.175c2ccc.js:2 Add location clicked!
-main.175c2ccc.js:2 showAddModal should be true now
-main.175c2ccc.js:2 🎯 LocationContext.selectLocation called with: Object
-main.175c2ccc.js:2    Previous location: undefined (ID: undefined)
-main.175c2ccc.js:2    New location: Main (ID: 1)
-main.175c2ccc.js:2 ✅ Backend updated for location Main
-main.175c2ccc.js:2 📍 LocationContext state updated to: Main
-main.175c2ccc.js:2 🔄 LocationContext State Update:
-main.175c2ccc.js:2    - selectedLocation: Object
-main.175c2ccc.js:2    - locations: Array(0)
-main.175c2ccc.js:2    - loading: false
-main.175c2ccc.js:2    - updateVersion: 1
-main.175c2ccc.js:2 List component - selectedCompany: Object
-main.175c2ccc.js:2 List component - companyId: 1
-main.175c2ccc.js:2 List component - user: Object
-main.175c2ccc.js:2 🔍 Component render state: Object
-main.175c2ccc.js:2 📊 Checklist Status: Object
-main.175c2ccc.js:2 📍 Location set: Main (ID: 1)
-main.175c2ccc.js:2 🔄 Starting data fetch for location: Main ID: 1
-main.175c2ccc.js:2 🔍 Fetching framework questions for company: 1
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/framework-elements/wizard_questions/?company_id=1
-main.175c2ccc.js:2 List component - selectedCompany: Object
-main.175c2ccc.js:2 List component - companyId: 1
-main.175c2ccc.js:2 List component - user: Object
-main.175c2ccc.js:2 🔍 Component render state: Object
-main.175c2ccc.js:2 📊 Checklist Status: Object
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/framework-elements/wizard_questions/?company_id=1 Status: 200
-main.175c2ccc.js:2 Framework wizard questions response status: 200
-main.175c2ccc.js:2 🎯 Fetched framework wizard questions: Array(0)
-main.175c2ccc.js:2 ⚠️ No framework wizard questions found, using default approach
-main.175c2ccc.js:2 🔄 Fetching framework elements for conversion to questions
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/framework-elements/?type=conditional
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/framework-elements/?type=conditional Status: 200
-main.175c2ccc.js:2 📋 Fetched conditional elements: Object
-main.175c2ccc.js:2 ⚠️ Backend returned non-array data for framework elements: object Object
-U @ main.175c2ccc.js:2
-main.175c2ccc.js:2 🔄 Generated questions from elements: Array(0)
-main.175c2ccc.js:2 🔍 Fetching framework elements for company: 1
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/framework-elements/for_company/?company_id=1
-main.175c2ccc.js:2 List component - selectedCompany: Object
-main.175c2ccc.js:2 List component - companyId: 1
-main.175c2ccc.js:2 List component - user: Object
-main.175c2ccc.js:2 🔍 Component render state: Object
-main.175c2ccc.js:2 📊 Checklist Status: Object
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/framework-elements/for_company/?company_id=1 Status: 200
-main.175c2ccc.js:2 📋 Fetched framework elements: Array(0)
-main.175c2ccc.js:2 Fetching existing profile answers for company: 1
-main.175c2ccc.js:2 📍 Fetching answers for location: Main
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/profile_answers/?site_id=1
-main.175c2ccc.js:2 List component - selectedCompany: Object
-main.175c2ccc.js:2 List component - companyId: 1
-main.175c2ccc.js:2 List component - user: Object
-main.175c2ccc.js:2 🔍 Component render state: Object
-main.175c2ccc.js:2 📊 Checklist Status: Object
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/profile_answers/?site_id=1 Status: 200
-main.175c2ccc.js:2 Loaded profile answers from API: Array(0)
-main.175c2ccc.js:2 Setting answers state to: Object
-main.175c2ccc.js:2 🔍 Checking if checklist exists for company: 1
-main.175c2ccc.js:2 🏢 Checking checklist for location: Main
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/checklist/?company_id=1&t=1758156722492&site_id=1
-main.175c2ccc.js:2 List component - selectedCompany: Object
-main.175c2ccc.js:2 List component - companyId: 1
-main.175c2ccc.js:2 List component - user: Object
-main.175c2ccc.js:2 🔍 Component render state: Object
-main.175c2ccc.js:2 📊 Checklist Status: Object
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/checklist/?company_id=1&t=1758156722492&site_id=1 Status: 200
-main.175c2ccc.js:2 📋 Raw checklist response: Object
-main.175c2ccc.js:2 ✅ Checklist exists check result: false
-main.175c2ccc.js:2 🔍 Checking wizard completion for location: Main
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/profile_answers/?site_id=1
-main.175c2ccc.js:2 List component - selectedCompany: Object
-main.175c2ccc.js:2 List component - companyId: 1
-main.175c2ccc.js:2 List component - user: Object
-main.175c2ccc.js:2 🔍 Component render state: Object
-main.175c2ccc.js:2 📊 Checklist Status: Object
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/profile_answers/?site_id=1 Status: 200
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/profiling-questions/for_company/?company_id=1
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/profiling-questions/for_company/?company_id=1 Status: 200
-main.175c2ccc.js:2 ⏳ Wizard not completed for Main: 0/0 questions answered
-main.175c2ccc.js:2 ✅ Data fetch complete for location: Main
-main.175c2ccc.js:2    - Checklist exists: false
-main.175c2ccc.js:2    - Backend checklist items: 0
-main.175c2ccc.js:2 List component - selectedCompany: Object
-main.175c2ccc.js:2 List component - companyId: 1
-main.175c2ccc.js:2 List component - user: Object
-main.175c2ccc.js:2 🔍 Component render state: Object
-main.175c2ccc.js:2 📊 Checklist Status: Object
-main.175c2ccc.js:2 🔐 LocationSelection: Fetching user permissions
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/user/permissions/
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 📍 LocationSelection: Active location from context: Main
-main.175c2ccc.js:2 🔄 LocationContext State Update:
-main.175c2ccc.js:2    - selectedLocation: Object
-main.175c2ccc.js:2    - locations: Array(1)
-main.175c2ccc.js:2    - loading: false
-main.175c2ccc.js:2    - updateVersion: 1
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/user/permissions/ Status: 200
-main.175c2ccc.js:2 🔐 LocationSelection: Received permissions: Object
-main.175c2ccc.js:2 🎯 LocationContext.selectLocation called with: Object
-main.175c2ccc.js:2    Previous location: Main (ID: 1)
-main.175c2ccc.js:2    New location: Main (ID: 1)
-main.175c2ccc.js:2    Location already selected, skipping...
-main.175c2ccc.js:2 List component - selectedCompany: Object
-main.175c2ccc.js:2 List component - companyId: 1
-main.175c2ccc.js:2 List component - user: Object
-main.175c2ccc.js:2 🔍 Component render state: Object
-main.175c2ccc.js:2 📊 Checklist Status: Object
-main.175c2ccc.js:2 📍 Location set: Main (ID: 1)
-main.175c2ccc.js:2 🔄 Starting data fetch for location: Main ID: 1
-main.175c2ccc.js:2 🔍 Fetching framework questions for company: 1
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/framework-elements/wizard_questions/?company_id=1
-main.175c2ccc.js:2 List component - selectedCompany: Object
-main.175c2ccc.js:2 List component - companyId: 1
-main.175c2ccc.js:2 List component - user: Object
-main.175c2ccc.js:2 🔍 Component render state: Object
-main.175c2ccc.js:2 📊 Checklist Status: Object
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/framework-elements/wizard_questions/?company_id=1 Status: 200
-main.175c2ccc.js:2 Framework wizard questions response status: 200
-main.175c2ccc.js:2 🎯 Fetched framework wizard questions: Array(0)
-main.175c2ccc.js:2 ⚠️ No framework wizard questions found, using default approach
-main.175c2ccc.js:2 🔄 Fetching framework elements for conversion to questions
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/framework-elements/?type=conditional
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/framework-elements/?type=conditional Status: 200
-main.175c2ccc.js:2 📋 Fetched conditional elements: Object
-main.175c2ccc.js:2 ⚠️ Backend returned non-array data for framework elements: object Object
-U @ main.175c2ccc.js:2
-main.175c2ccc.js:2 🔄 Generated questions from elements: Array(0)
-main.175c2ccc.js:2 🔍 Fetching framework elements for company: 1
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/framework-elements/for_company/?company_id=1
-main.175c2ccc.js:2 List component - selectedCompany: Object
-main.175c2ccc.js:2 List component - companyId: 1
-main.175c2ccc.js:2 List component - user: Object
-main.175c2ccc.js:2 🔍 Component render state: Object
-main.175c2ccc.js:2 📊 Checklist Status: Object
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/framework-elements/for_company/?company_id=1 Status: 200
-main.175c2ccc.js:2 📋 Fetched framework elements: Array(0)
-main.175c2ccc.js:2 Fetching existing profile answers for company: 1
-main.175c2ccc.js:2 📍 Fetching answers for location: Main
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/profile_answers/?site_id=1
-main.175c2ccc.js:2 List component - selectedCompany: Object
-main.175c2ccc.js:2 List component - companyId: 1
-main.175c2ccc.js:2 List component - user: Object
-main.175c2ccc.js:2 🔍 Component render state: Object
-main.175c2ccc.js:2 📊 Checklist Status: Object
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/profile_answers/?site_id=1 Status: 200
-main.175c2ccc.js:2 Loaded profile answers from API: Array(0)
-main.175c2ccc.js:2 Setting answers state to: Object
-main.175c2ccc.js:2 🔍 Checking if checklist exists for company: 1
-main.175c2ccc.js:2 🏢 Checking checklist for location: Main
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/checklist/?company_id=1&t=1758156735023&site_id=1
-main.175c2ccc.js:2 List component - selectedCompany: Object
-main.175c2ccc.js:2 List component - companyId: 1
-main.175c2ccc.js:2 List component - user: Object
-main.175c2ccc.js:2 🔍 Component render state: Object
-main.175c2ccc.js:2 📊 Checklist Status: Object
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/checklist/?company_id=1&t=1758156735023&site_id=1 Status: 200
-main.175c2ccc.js:2 📋 Raw checklist response: Object
-main.175c2ccc.js:2 ✅ Checklist exists check result: false
-main.175c2ccc.js:2 🔍 Checking wizard completion for location: Main
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/profile_answers/?site_id=1
-main.175c2ccc.js:2 List component - selectedCompany: Object
-main.175c2ccc.js:2 List component - companyId: 1
-main.175c2ccc.js:2 List component - user: Object
-main.175c2ccc.js:2 🔍 Component render state: Object
-main.175c2ccc.js:2 📊 Checklist Status: Object
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/profile_answers/?site_id=1 Status: 200
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/profiling-questions/for_company/?company_id=1
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/profiling-questions/for_company/?company_id=1 Status: 200
-main.175c2ccc.js:2 ⏳ Wizard not completed for Main: 0/0 questions answered
-main.175c2ccc.js:2 ✅ Data fetch complete for location: Main
-main.175c2ccc.js:2    - Checklist exists: false
-main.175c2ccc.js:2    - Backend checklist items: 0
-main.175c2ccc.js:2 List component - selectedCompany: Object
-main.175c2ccc.js:2 List component - companyId: 1
-main.175c2ccc.js:2 List component - user: Object
-main.175c2ccc.js:2 🔍 Component render state: Object
-main.175c2ccc.js:2 📊 Checklist Status: Object
-main.175c2ccc.js:2 🔍 Fetching framework questions for company: 1
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/framework-elements/wizard_questions/?company_id=1
-main.175c2ccc.js:2 List component - selectedCompany: {id: 1, name: 'lucienna.rivero', emirate: 'dubai', sector: 'hospitality', created_at: '2025-09-18T04:49:35.645587+04:00'}
-main.175c2ccc.js:2 List component - companyId: 1
-main.175c2ccc.js:2 List component - user: {id: 2, username: 'lucienna.rivero', email: 'lucienna.rivero@easymailer.live', name: 'lucienna.rivero', role: 'super_user', …}
-main.175c2ccc.js:2 🔍 Component render state: {companyId: 1, answersCount: 0, questionsCount: 0, allQuestionsAnswered: false, showChecklist: false, …}
-main.175c2ccc.js:2 📊 Checklist Status: {backendChecklistCount: 0, localChecklistCount: 0, finalChecklistCount: 0, usingBackend: false}
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/framework-elements/wizard_questions/?company_id=1 Status: 200
-main.175c2ccc.js:2 Framework wizard questions response status: 200
-main.175c2ccc.js:2 🎯 Fetched framework wizard questions: []
-main.175c2ccc.js:2 ⚠️ No framework wizard questions found, using default approach
-main.175c2ccc.js:2 🔄 Fetching framework elements for conversion to questions
-main.175c2ccc.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/framework-elements/?type=conditional
-main.175c2ccc.js:2 🔑 CSRF token: obtained
-main.175c2ccc.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/framework-elements/?type=conditional Status: 200
-main.175c2ccc.js:2 📋 Fetched conditional elements: {count: 0, next: null, previous: null, results: Array(0)}
-main.175c2ccc.js:2 ⚠️ Backend returned non-array data for framework elements: object {count: 0, next: null, previous: null, results: Array(0)}
-U @ main.175c2ccc.js:2
-await in U
-M @ main.175c2ccc.js:2
-await in M
-onClick @ main.175c2ccc.js:2
-Fe @ main.175c2ccc.js:2
-Be @ main.175c2ccc.js:2
-(anonymous) @ main.175c2ccc.js:2
-Da @ main.175c2ccc.js:2
-Ma @ main.175c2ccc.js:2
-(anonymous) @ main.175c2ccc.js:2
-cc @ main.175c2ccc.js:2
-Te @ main.175c2ccc.js:2
-Wa @ main.175c2ccc.js:2
-Yt @ main.175c2ccc.js:2
-Gt @ main.175c2ccc.js:2
-main.175c2ccc.js:2 🔄 Generated questions from elements: []
-main.175c2ccc.js:2 List component - selectedCompany: {id: 1, name: 'lucienna.rivero', emirate: 'dubai', sector: 'hospitality', created_at: '2025-09-18T04:49:35.645587+04:00'}
-main.175c2ccc.js:2 List component - companyId: 1
-main.175c2ccc.js:2 List component - user: {id: 2, username: 'lucienna.rivero', email: 'lucienna.rivero@easymailer.live', name: 'lucienna.rivero', role: 'super_user', …}
-main.175c2ccc.js:2 🔍 Component render state: {companyId: 1, answersCount: 0, questionsCount: 0, allQuestionsAnswered: false, showChecklist: false, …}
-main.175c2ccc.js:2 📊 Checklist Status: {backendChecklistCount: 0, localChecklistCount: 0, finalChecklistCount: 0, usingBackend: false}
+ App.js loaded
+ index.js loaded
+ Root element: 
+ Rendering App...
+ App render called
+ App component rendering
+ 🔄 LocationContext State Update:
+    - selectedLocation: null
+    - locations: Array(0)
+    - loading: true
+    - updateVersion: 0
+ 🔍 Fetching active location from backend...
+ content script loaded
+ ✅ User authenticated: Object
+ 🏢 User companies fetched: Array(1)
+ 🔍 Available companies for user: Array(1)
+ 🏢 Using user assigned company: Object
+ 🚀 Onboard component loaded/re-rendered at 4:30:42 AM
+ 📊 Current formData state: Object
+ ⏱️ Component states - Loading: true Saving: false InitialLoad: true
+api/sites/active/:1  Failed to load resource: the server responded with a status of 404 ()
+ ℹ️ No active location (404)
+ ✅ Location loading complete
+ 🔄 Making request to: https://esg-portal.onrender.com/api/user/permissions/
+ 🔄 useEffect for data fetching triggered
+ 📡 Fetching company data for ID: 1
+ 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/
+ 🔄 LocationContext State Update:
+    - selectedLocation: null
+    - locations: Array(0)
+    - loading: false
+    - updateVersion: 0
+ 🔑 CSRF token: obtained
+ 🔄 LocationContext State Update:
+    - selectedLocation: null
+    - locations: Array(0)
+    - loading: false
+    - updateVersion: 0
+ 🔑 CSRF token: obtained
+ ✅ Request completed: https://esg-portal.onrender.com/api/user/permissions/ Status: 200
+ ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/ Status: 200
+ Company API Response status: 200
+ Loaded company data from API: Object
+ 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/activities/
+ 🔑 CSRF token: obtained
+ ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/activities/ Status: 200
+ Loaded activities data: Array(0)
+ Setting form data: Object
+ 🚀 Onboard component loaded/re-rendered at 4:30:43 AM
+ 📊 Current formData state: Object
+ ⏱️ Component states - Loading: false Saving: false InitialLoad: false
+ 🔍 Checking onboarding access: Object
+ ✅ Access check result: true for role: super_user
+ 💾 saveData function called with showMessage: true
+ 💾 Current saving state: false
+ 💾 saveData called, formData: Object
+ 💾 Set saving state to true
+ 💾 Starting to save company data: Object
+ 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/
+ 🚀 Onboard component loaded/re-rendered at 4:30:46 AM
+ 📊 Current formData state: Object
+ ⏱️ Component states - Loading: false Saving: true InitialLoad: false
+ 🔍 Checking onboarding access: Object
+ ✅ Access check result: true for role: super_user
+ 🔑 CSRF token: obtained
+ ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/ Status: 200
+ Company data to send: Object
+ Updating existing company...
+ 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/
+ 🔑 CSRF token: obtained
+ ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/ Status: 200
+ Company data saved successfully: Object
+ 🔄 Making request to: https://esg-portal.onrender.com/api/activities/
+ 🔑 CSRF token: obtained
+ ✅ Request completed: https://esg-portal.onrender.com/api/activities/ Status: 200
+ All available activities: Array(10)
+ Selected activity names: Array(0)
+ Database activity names: Array(10)
+ Frontend activity names: Array(0)
+ Final activity IDs to save: Array(0)
+ 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/save_activities/
+ 🔑 CSRF token: obtained
+ ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/save_activities/ Status: 200
+ Activities saved successfully: Array(0)
+ 🔍 Rame.js Debug - User object: Object
+ 🔍 Rame.js Debug - User role: super_user
+ 🔍 Rame.js Debug - User is_superuser: true
+ 🔍 Rame.js Debug - canEditFrameworks: true
+ 🔍 Rame.js Debug - isViewOnly: false
+ 🔍 Fetching existing voluntary frameworks for company: 1
+ 🔍 Fetching mandatory frameworks for company: 1
+ 🔍 Fetching voluntary frameworks from backend...
+ 📋 Existing voluntary frameworks from DB: Array(0)
+ 🔍 Rame.js Debug - User object: Object
+ 🔍 Rame.js Debug - User role: super_user
+ 🔍 Rame.js Debug - User is_superuser: true
+ 🔍 Rame.js Debug - canEditFrameworks: true
+ 🔍 Rame.js Debug - isViewOnly: false
+ 📋 Backend voluntary frameworks: Array(3)
+ 🎨 [PROD] Getting icon for framework ID: GREEN_KEY
+ 🎨 [PROD] Mapped icon: fas fa-certificate
+ 🎨 [PROD] Getting icon for framework ID: GRI
+ 🎨 [PROD] Mapped icon: fas fa-globe
+ 🎨 [PROD] Getting icon for framework ID: ADX_ESG
+ 🎨 [PROD] Mapped icon: fas fa-certificate
+ ✅ Mapped voluntary frameworks: Array(3)
+ 🔍 Rame.js Debug - User object: Object
+ 🔍 Rame.js Debug - User role: super_user
+ 🔍 Rame.js Debug - User is_superuser: true
+ 🔍 Rame.js Debug - canEditFrameworks: true
+ 🔍 Rame.js Debug - isViewOnly: false
+ 📋 Backend frameworks: Array(3)
+ ✅ Mapped backend frameworks: Array(2)
+ ✅ Final mandatory frameworks: Array(2)
+ 🔍 Rame.js Debug - User object: Object
+ 🔍 Rame.js Debug - User role: super_user
+ 🔍 Rame.js Debug - User is_superuser: true
+ 🔍 Rame.js Debug - canEditFrameworks: true
+ 🔍 Rame.js Debug - isViewOnly: false
+ 🔐 LocationSelection: Fetching user permissions
+ 🔄 Making request to: https://esg-portal.onrender.com/api/user/permissions/
+ 🔑 CSRF token: obtained
+ 📍 LocationSelection: No active location in context
+ ✅ Request completed: https://esg-portal.onrender.com/api/user/permissions/ Status: 200
+ 🔄 LocationContext State Update:
+    - selectedLocation: null
+    - locations: Array(0)
+    - loading: false
+    - updateVersion: 0
+ 🔐 LocationSelection: Received permissions: Object
+ Add location clicked!
+ showAddModal should be true now
+ 🎯 LocationContext.selectLocation called with: Object
+    Previous location: undefined (ID: undefined)
+    New location: main office (ID: 1)
+ ✅ Backend updated for location main office
+ 📍 LocationContext state updated to: main office
+ 🔄 LocationContext State Update:
+    - selectedLocation: Object
+    - locations: Array(0)
+    - loading: false
+    - updateVersion: 1
+ 🎯 LocationContext.selectLocation called with: Object
+    Previous location: main office (ID: 1)
+    New location: main office (ID: 1)
+    Location already selected, skipping...
+ List component - selectedCompany: Object
+ List component - companyId: 1
+ List component - user: Object
+ 🔍 Component render state: Object
+ 📊 Checklist Status: Object
+ 📍 Location set: main office (ID: 1)
+ 🔄 Starting data fetch for location: main office ID: 1
+ 🔍 Fetching framework questions for company: 1
+ 🔄 Making request to: https://esg-portal.onrender.com/api/framework-elements/wizard_questions/?company_id=1
+ List component - selectedCompany: Object
+ List component - companyId: 1
+ List component - user: Object
+ 🔍 Component render state: Object
+ 📊 Checklist Status: Object
+ 🔑 CSRF token: obtained
+ ✅ Request completed: https://esg-portal.onrender.com/api/framework-elements/wizard_questions/?company_id=1 Status: 200
+ Framework wizard questions response status: 200
+ 🎯 Fetched framework wizard questions: Array(0)
+ ⚠️ No framework wizard questions found, using default approach
+ 🔄 Fetching framework elements for conversion to questions
+ 🔄 Making request to: https://esg-portal.onrender.com/api/framework-elements/?type=conditional
+ 🔑 CSRF token: obtained
+ ✅ Request completed: https://esg-portal.onrender.com/api/framework-elements/?type=conditional Status: 200
+ 📋 Fetched conditional elements: Object
+ ✅ Using paginated results: 0 elements
+ 🔄 Generated questions from elements: Array(0)
+ 🔍 Fetching framework elements for company: 1
+ 🔄 Making request to: https://esg-portal.onrender.com/api/framework-elements/for_company/?company_id=1
+ List component - selectedCompany: Object
+ List component - companyId: 1
+ List component - user: Object
+ 🔍 Component render state: Object
+ 📊 Checklist Status: Object
+ 🔑 CSRF token: obtained
+ ✅ Request completed: https://esg-portal.onrender.com/api/framework-elements/for_company/?company_id=1 Status: 200
+ 📋 Fetched framework elements: Array(0)
+ Fetching existing profile answers for company: 1
+ 📍 Fetching answers for location: main office
+ 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/profile_answers/?site_id=1
+ List component - selectedCompany: Object
+ List component - companyId: 1
+ List component - user: Object
+ 🔍 Component render state: Object
+ 📊 Checklist Status: Object
+ 🔑 CSRF token: obtained
+ ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/profile_answers/?site_id=1 Status: 200
+ Loaded profile answers from API: Array(0)
+ Setting answers state to: Object
+ 🔍 Checking if checklist exists for company: 1
+ 🏢 Checking checklist for location: main office
+ 🔄 Making request to: https://esg-portal.onrender.com/api/checklist/?company_id=1&t=1758159095571&site_id=1
+ List component - selectedCompany: Object
+ List component - companyId: 1
+ List component - user: Object
+ 🔍 Component render state: Object
+ 📊 Checklist Status: Object
+ 🔑 CSRF token: obtained
+ ✅ Request completed: https://esg-portal.onrender.com/api/checklist/?company_id=1&t=1758159095571&site_id=1 Status: 200
+ 📋 Raw checklist response: Object
+ ✅ Checklist exists check result: false
+ 🔍 Checking wizard completion for location: main office
+ 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/profile_answers/?site_id=1
+ List component - selectedCompany: Object
+ List component - companyId: 1
+ List component - user: Object
+ 🔍 Component render state: Object
+ 📊 Checklist Status: Object
+ 🔑 CSRF token: obtained
+ ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/profile_answers/?site_id=1 Status: 200
+ 🔄 Making request to: https://esg-portal.onrender.com/api/profiling-questions/for_company/?company_id=1
+ 🔑 CSRF token: obtained
+ ✅ Request completed: https://esg-portal.onrender.com/api/profiling-questions/for_company/?company_id=1 Status: 200
+ ⏳ Wizard not completed for main office: 0/4 questions answered
+ ✅ Data fetch complete for location: main office
+    - Checklist exists: false
+    - Backend checklist items: 0
+ List component - selectedCompany: Object
+ List component - companyId: 1
+ List component - user: Object
+ 🔍 Component render state: Object
+ 📊 Checklist Status: Object
+ List component - selectedCompany: Object
+ List component - companyId: 1
+ List component - user: Object
+ 🔍 Component render state: Object
+ 📊 Checklist Status: Object
+ 🔐 LocationSelection: Fetching user permissions
+ 🔄 Making request to: https://esg-portal.onrender.com/api/user/permissions/
+ 🔑 CSRF token: obtained
+ ✅ Request completed: https://esg-portal.onrender.com/api/user/permissions/ Status: 200
+ 🔐 LocationSelection: Received permissions: Object
+ 📍 LocationSelection: Active location from context: main office
+ 🔄 LocationContext State Update:
+    - selectedLocation: Object
+    - locations: Array(1)
+    - loading: false
+    - updateVersion: 1
+ List component - selectedCompany: Object
+ List component - companyId: 1
+ List component - user: Object
+ 🔍 Component render state: Object
+ 📊 Checklist Status: Object
+ 📍 Location set: main office (ID: 1)
+ 🔄 Starting data fetch for location: main office ID: 1
+ 🔍 Fetching framework questions for company: 1
+ 🔄 Making request to: https://esg-portal.onrender.com/api/framework-elements/wizard_questions/?company_id=1
+ List component - selectedCompany: Object
+ List component - companyId: 1
+ List component - user: Object
+ 🔍 Component render state: Object
+ 📊 Checklist Status: Object
+ 🔑 CSRF token: obtained
+ ✅ Request completed: https://esg-portal.onrender.com/api/framework-elements/wizard_questions/?company_id=1 Status: 200
+ Framework wizard questions response status: 200
+ 🎯 Fetched framework wizard questions: Array(0)
+ ⚠️ No framework wizard questions found, using default approach
+ 🔄 Fetching framework elements for conversion to questions
+main.d8da7472.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/framework-elements/?type=conditional
+main.d8da7472.js:2 🔑 CSRF token: obtained
+main.d8da7472.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/framework-elements/?type=conditional Status: 200
+main.d8da7472.js:2 📋 Fetched conditional elements: Object
+main.d8da7472.js:2 ✅ Using paginated results: 0 elements
+main.d8da7472.js:2 🔄 Generated questions from elements: Array(0)
+main.d8da7472.js:2 🔍 Fetching framework elements for company: 1
+main.d8da7472.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/framework-elements/for_company/?company_id=1
+main.d8da7472.js:2 List component - selectedCompany: Object
+main.d8da7472.js:2 List component - companyId: 1
+main.d8da7472.js:2 List component - user: Object
+main.d8da7472.js:2 🔍 Component render state: Object
+main.d8da7472.js:2 📊 Checklist Status: Object
+main.d8da7472.js:2 🔑 CSRF token: obtained
+main.d8da7472.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/framework-elements/for_company/?company_id=1 Status: 200
+main.d8da7472.js:2 📋 Fetched framework elements: Array(0)
+main.d8da7472.js:2 Fetching existing profile answers for company: 1
+main.d8da7472.js:2 📍 Fetching answers for location: main office
+main.d8da7472.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/profile_answers/?site_id=1
+main.d8da7472.js:2 List component - selectedCompany: Object
+main.d8da7472.js:2 List component - companyId: 1
+main.d8da7472.js:2 List component - user: Object
+main.d8da7472.js:2 🔍 Component render state: Object
+main.d8da7472.js:2 📊 Checklist Status: Object
+main.d8da7472.js:2 🔑 CSRF token: obtained
+main.d8da7472.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/profile_answers/?site_id=1 Status: 200
+main.d8da7472.js:2 Loaded profile answers from API: Array(0)
+main.d8da7472.js:2 Setting answers state to: Object
+main.d8da7472.js:2 🔍 Checking if checklist exists for company: 1
+main.d8da7472.js:2 🏢 Checking checklist for location: main office
+main.d8da7472.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/checklist/?company_id=1&t=1758159150054&site_id=1
+main.d8da7472.js:2 List component - selectedCompany: Object
+main.d8da7472.js:2 List component - companyId: 1
+main.d8da7472.js:2 List component - user: Object
+main.d8da7472.js:2 🔍 Component render state: Object
+main.d8da7472.js:2 📊 Checklist Status: Object
+main.d8da7472.js:2 🔑 CSRF token: obtained
+main.d8da7472.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/checklist/?company_id=1&t=1758159150054&site_id=1 Status: 200
+main.d8da7472.js:2 📋 Raw checklist response: Object
+main.d8da7472.js:2 ✅ Checklist exists check result: false
+main.d8da7472.js:2 🔍 Checking wizard completion for location: main office
+main.d8da7472.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/companies/1/profile_answers/?site_id=1
+main.d8da7472.js:2 List component - selectedCompany: Object
+main.d8da7472.js:2 List component - companyId: 1
+main.d8da7472.js:2 List component - user: Object
+main.d8da7472.js:2 🔍 Component render state: Object
+main.d8da7472.js:2 📊 Checklist Status: Object
+main.d8da7472.js:2 🔑 CSRF token: obtained
+main.d8da7472.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/companies/1/profile_answers/?site_id=1 Status: 200
+main.d8da7472.js:2 🔄 Making request to: https://esg-portal.onrender.com/api/profiling-questions/for_company/?company_id=1
+main.d8da7472.js:2 🔑 CSRF token: obtained
+main.d8da7472.js:2 ✅ Request completed: https://esg-portal.onrender.com/api/profiling-questions/for_company/?company_id=1 Status: 200
+main.d8da7472.js:2 ⏳ Wizard not completed for main office: 0/4 questions answered
+main.d8da7472.js:2 ✅ Data fetch complete for location: main office
+main.d8da7472.js:2    - Checklist exists: false
+main.d8da7472.js:2    - Backend checklist items: 0
+main.d8da7472.js:2 List component - selectedCompany: Object
+main.d8da7472.js:2 List component - companyId: 1
+main.d8da7472.js:2 List component - user: Object
+main.d8da7472.js:2 🔍 Component render state: Object
+main.d8da7472.js:2 📊 Checklist Status: Object

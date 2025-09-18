@@ -1,0 +1,223 @@
+To add logging that will appear in your Render deploy logs and help diagnose the framework issue, you need to add server-side logging in your Django backend. Here's how:
+
+## 1. Add Logging to Your Django Views/Serializers
+
+In your Django backend, add logging to the critical endpoints:
+
+### In your framework-related views:
+```python
+# views.py or viewsets.py
+import logging
+
+logger = logging.getLogger(__name__)
+
+class FrameworkElementWizardQuestionsView(APIView):
+    def get(self, request):
+        company_id = request.query_params.get('company_id')
+        
+        # Add detailed logging
+        logger.info(f"[FRAMEWORK_WIZARD] Request for company_id: {company_id}")
+        
+        # Check if company exists
+        try:
+            company = Company.objects.get(id=company_id)
+            logger.info(f"[FRAMEWORK_WIZARD] Company found: {company.name}")
+        except Company.DoesNotExist:
+            logger.error(f"[FRAMEWORK_WIZARD] Company {company_id} does not exist")
+            return Response({'error': 'Company not found'}, status=404)
+        
+        # Check company's frameworks
+        company_frameworks = CompanyFramework.objects.filter(company_id=company_id)
+        framework_ids = list(company_frameworks.values_list('framework_id', flat=True))
+        logger.info(f"[FRAMEWORK_WIZARD] Company {company_id} has {len(framework_ids)} frameworks: {framework_ids}")
+        
+        # Check framework elements
+        framework_elements = FrameworkElement.objects.filter(
+            framework_id__in=framework_ids
+        )
+        logger.info(f"[FRAMEWORK_WIZARD] Found {framework_elements.count()} framework elements")
+        
+        # Check wizard questions
+        wizard_questions = framework_elements.filter(
+            wizard_question__isnull=False
+        ).exclude(wizard_question='')
+        logger.info(f"[FRAMEWORK_WIZARD] Found {wizard_questions.count()} wizard questions")
+        
+        # Log sample data
+        if wizard_questions.exists():
+            sample = wizard_questions.first()
+            logger.info(f"[FRAMEWORK_WIZARD] Sample question - ID: {sample.id}, Question: {sample.wizard_question[:50]}...")
+        else:
+            logger.warning(f"[FRAMEWORK_WIZARD] No wizard questions found for company {company_id}")
+        
+        # Your existing logic here...
+```
+
+### In your company frameworks endpoint:
+```python
+class CompanyFrameworksView(APIView):
+    def get(self, request, company_id):
+        logger.info(f"[COMPANY_FRAMEWORKS] Fetching frameworks for company {company_id}")
+        
+        # Log database state
+        total_frameworks = Framework.objects.count()
+        logger.info(f"[COMPANY_FRAMEWORKS] Total frameworks in DB: {total_frameworks}")
+        
+        company_frameworks = CompanyFramework.objects.filter(company_id=company_id)
+        logger.info(f"[COMPANY_FRAMEWORKS] Company {company_id} has {company_frameworks.count()} assigned frameworks")
+        
+        for cf in company_frameworks:
+            logger.info(f"[COMPANY_FRAMEWORKS] - {cf.framework.framework_id} (type: {cf.type})")
+        
+        # Your existing logic...
+```
+
+## 2. Configure Django Logging Settings
+
+In your `settings.py`:
+```python
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{levelname}] {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'your_app': {  # Replace with your app name
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+```
+
+## 3. Add Database Inspection Endpoint (Temporary)
+
+Create a temporary debug endpoint to check database state:
+```python
+# In urls.py
+path('api/debug/framework-status/<int:company_id>/', FrameworkDebugView.as_view()),
+
+# In views.py
+class FrameworkDebugView(APIView):
+    def get(self, request, company_id):
+        # Only enable in DEBUG mode or for superusers
+        if not (settings.DEBUG or request.user.is_superuser):
+            return Response({'error': 'Not authorized'}, status=403)
+        
+        debug_info = {
+            'company_id': company_id,
+            'timestamp': timezone.now().isoformat(),
+        }
+        
+        # Check company
+        try:
+            company = Company.objects.get(id=company_id)
+            debug_info['company'] = {
+                'exists': True,
+                'name': company.name,
+            }
+        except Company.DoesNotExist:
+            debug_info['company'] = {'exists': False}
+            
+        # Check frameworks
+        all_frameworks = Framework.objects.all()
+        debug_info['total_frameworks'] = all_frameworks.count()
+        debug_info['frameworks'] = list(all_frameworks.values('framework_id', 'name', 'type'))
+        
+        # Check company frameworks
+        company_frameworks = CompanyFramework.objects.filter(company_id=company_id)
+        debug_info['company_frameworks'] = {
+            'count': company_frameworks.count(),
+            'list': list(company_frameworks.values('framework_id', 'type'))
+        }
+        
+        # Check framework elements
+        if company_frameworks.exists():
+            framework_ids = company_frameworks.values_list('framework_id', flat=True)
+            elements = FrameworkElement.objects.filter(framework_id__in=framework_ids)
+            debug_info['framework_elements'] = {
+                'count': elements.count(),
+                'with_wizard_questions': elements.filter(wizard_question__isnull=False).count()
+            }
+        else:
+            debug_info['framework_elements'] = {
+                'count': 0,
+                'with_wizard_questions': 0,
+                'reason': 'No frameworks assigned to company'
+            }
+        
+        logger.info(f"[DEBUG] Framework status for company {company_id}: {json.dumps(debug_info, indent=2)}")
+        
+        return Response(debug_info)
+```
+
+## 4. Add Frontend Logging That Sends to Backend
+
+In your React code, create a logging utility:
+```javascript
+// utils/logger.js
+export const logToBackend = async (level, message, data = {}) => {
+  try {
+    await fetch(`${API_BASE_URL}/api/logs/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        level,
+        message,
+        data,
+        timestamp: new Date().toISOString(),
+        url: window.location.href,
+        userAgent: navigator.userAgent
+      })
+    });
+  } catch (error) {
+    console.error('Failed to send log to backend:', error);
+  }
+};
+
+// In List.js, add backend logging
+const fetchProfilingQuestions = async () => {
+  // ... existing code ...
+  
+  const response = await makeAuthenticatedRequest(...);
+  const data = await response.json();
+  
+  // Log to backend
+  await logToBackend('info', 'Framework wizard questions fetched', {
+    company_id: companyId,
+    question_count: data.questions?.length || 0,
+    response_status: response.status
+  });
+  
+  if (data.questions?.length === 0) {
+    await logToBackend('warning', 'No wizard questions returned', {
+      company_id: companyId,
+      endpoint: 'framework-elements/wizard_questions'
+    });
+  }
+};
+```
+
+
+This will show you exactly what's happening in your production database and help confirm whether the missing framework assignments are indeed the issue.

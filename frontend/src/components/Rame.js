@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config';
+import { frameworkLogger } from '../utils/logger';
 
 const Rame = () => {
   // ALL HOOKS DECLARED AT THE TOP
@@ -75,7 +76,13 @@ const Rame = () => {
         if (response.ok) {
           const frameworks = await response.json();
           console.log('📋 Backend frameworks:', frameworks);
-          
+
+          // Log to backend for production debugging
+          await frameworkLogger.logCompanyFrameworksFetch(
+            companyId,
+            Array.isArray(frameworks) ? frameworks.length : 0
+          );
+
           // Only DST and ESG are mandatory frameworks
           const defaultMandatoryFrameworks = [
             {

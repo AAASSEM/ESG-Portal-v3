@@ -14,6 +14,8 @@ from django.utils.decorators import method_decorator
 from datetime import datetime
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
+import logging
+import json
 
 from .models import (
     Company, Site, Activity, CompanyActivity, Framework, CompanyFramework, DataElement, FrameworkElement, ProfilingQuestion,
@@ -31,6 +33,9 @@ from .services import (
     ProfilingService, ChecklistService,
     MeterService, DataCollectionService, DashboardService, FrameworkProcessor
 )
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 
 def get_user_company(request_user, company_id):
@@ -279,22 +284,26 @@ class CompanyViewSet(viewsets.ModelViewSet):
         """Get company's assigned mandatory frameworks"""
         company = self._get_user_company(pk)
 
-        print(f"🔍 [PROD] Company frameworks request for company: {company.name} (ID: {pk})")
-        print(f"🔍 [PROD] User: {request.user}")
+        # Enhanced logging for production debugging
+        logger.info(f"[COMPANY_FRAMEWORKS] Fetching frameworks for company {pk}: {company.name}")
+        logger.info(f"[COMPANY_FRAMEWORKS] User: {request.user}")
+
+        # Log database state
+        total_frameworks = Framework.objects.count()
+        logger.info(f"[COMPANY_FRAMEWORKS] Total frameworks in DB: {total_frameworks}")
 
         # Get company's assigned frameworks (company-wide, visible to all users)
         company_frameworks = CompanyFramework.objects.filter(
             company=company
         )
-        print(f"🔍 [PROD] CompanyFramework count: {company_frameworks.count()}")
+        logger.info(f"[COMPANY_FRAMEWORKS] Company {pk} has {company_frameworks.count()} assigned frameworks")
 
         frameworks = [cf.framework for cf in company_frameworks]
-        print(f"🔍 [PROD] Assigned frameworks:")
         for fw in frameworks:
-            print(f"🔍 [PROD]   - {fw.framework_id}: {fw.name} (type: {fw.type})")
+            logger.info(f"[COMPANY_FRAMEWORKS] - {fw.framework_id}: {fw.name} (type: {fw.type})")
 
         serializer = FrameworkSerializer(frameworks, many=True)
-        print(f"🔍 [PROD] Serialized frameworks data: {serializer.data}")
+        logger.info(f"[COMPANY_FRAMEWORKS] Serialized data length: {len(serializer.data)}")
 
         return Response(serializer.data)
     
@@ -658,6 +667,102 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
         
         return Response(response_data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
+    @action(detail=True, methods=['get'])
+    def framework_debug(self, request, pk=None):
+        """Debug endpoint to check framework status for a company"""
+        # Only enable for superusers or in DEBUG mode
+        from django.conf import settings
+        if not (settings.DEBUG or request.user.is_superuser):
+            return Response({'error': 'Not authorized'}, status=403)
+
+        company_id = pk
+        debug_info = {
+            'company_id': company_id,
+            'timestamp': timezone.now().isoformat(),
+            'user': str(request.user),
+        }
+
+        # Check company
+        try:
+            company = Company.objects.get(id=company_id)
+            debug_info['company'] = {
+                'exists': True,
+                'name': company.name,
+            }
+        except Company.DoesNotExist:
+            debug_info['company'] = {'exists': False}
+
+        # Check frameworks
+        all_frameworks = Framework.objects.all()
+        debug_info['total_frameworks'] = all_frameworks.count()
+        debug_info['frameworks'] = list(all_frameworks.values('framework_id', 'name', 'type'))
+
+        # Check company frameworks
+        company_frameworks = CompanyFramework.objects.filter(company_id=company_id)
+        debug_info['company_frameworks'] = {
+            'count': company_frameworks.count(),
+            'list': list(company_frameworks.values('framework_id', 'is_auto_assigned'))
+        }
+
+        # Check framework elements
+        if company_frameworks.exists():
+            framework_ids = company_frameworks.values_list('framework_id', flat=True)
+            elements = FrameworkElement.objects.filter(framework_id__in=framework_ids)
+            wizard_elements = elements.filter(
+                wizard_question__isnull=False
+            ).exclude(wizard_question='')
+
+            debug_info['framework_elements'] = {
+                'count': elements.count(),
+                'with_wizard_questions': wizard_elements.count(),
+                'sample_elements': list(elements.values('element_id', 'name', 'framework_id')[:5])
+            }
+        else:
+            debug_info['framework_elements'] = {
+                'count': 0,
+                'with_wizard_questions': 0,
+                'reason': 'No frameworks assigned to company'
+            }
+
+        # Log the debug info
+        logger.info(f"[DEBUG] Framework status for company {company_id}: {json.dumps(debug_info, indent=2, default=str)}")
+
+        return Response(debug_info)
+
+
+class LoggingView(APIView):
+    """Accept frontend logging messages"""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """Log messages from frontend"""
+        try:
+            data = request.data
+            level = data.get('level', 'info').upper()
+            message = data.get('message', 'Frontend log')
+            log_data = data.get('data', {})
+
+            # Create log message
+            log_message = f"[FRONTEND] {message}"
+            if log_data:
+                log_message += f" | Data: {json.dumps(log_data, default=str)}"
+
+            # Log at appropriate level
+            if level == 'ERROR':
+                logger.error(log_message)
+            elif level == 'WARNING':
+                logger.warning(log_message)
+            elif level == 'DEBUG':
+                logger.debug(log_message)
+            else:
+                logger.info(log_message)
+
+            return Response({'status': 'logged'})
+
+        except Exception as e:
+            logger.error(f"[FRONTEND_LOGGING] Error processing log: {str(e)}")
+            return Response({'error': 'Logging failed'}, status=400)
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class FrameworkViewSet(viewsets.ReadOnlyModelViewSet):
@@ -843,19 +948,58 @@ class FrameworkElementViewSet(viewsets.ReadOnlyModelViewSet):
         company_id = request.query_params.get('company_id')
         framework_id = request.query_params.get('framework_id')
 
+        # Enhanced logging for production debugging
+        logger.info(f"[FRAMEWORK_WIZARD] Request for company_id: {company_id}, framework_id: {framework_id}")
+
         if not company_id:
+            logger.error(f"[FRAMEWORK_WIZARD] Missing company_id parameter")
             return Response(
                 {'error': 'company_id parameter is required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
+            # Check if company exists
             company = get_object_or_404(Company, id=company_id)
+            logger.info(f"[FRAMEWORK_WIZARD] Company found: {company.name}")
+
+            # Check company's frameworks
+            company_frameworks = CompanyFramework.objects.filter(company_id=company_id)
+            framework_ids = list(company_frameworks.values_list('framework_id', flat=True))
+            logger.info(f"[FRAMEWORK_WIZARD] Company {company_id} has {len(framework_ids)} frameworks: {framework_ids}")
+
+            # Check framework elements
+            if framework_ids:
+                framework_elements = FrameworkElement.objects.filter(
+                    framework_id__in=framework_ids
+                )
+                logger.info(f"[FRAMEWORK_WIZARD] Found {framework_elements.count()} framework elements")
+
+                # Check wizard questions
+                wizard_questions = framework_elements.filter(
+                    wizard_question__isnull=False
+                ).exclude(wizard_question='')
+                logger.info(f"[FRAMEWORK_WIZARD] Found {wizard_questions.count()} wizard questions")
+
+                # Log sample data
+                if wizard_questions.exists():
+                    sample = wizard_questions.first()
+                    logger.info(f"[FRAMEWORK_WIZARD] Sample question - ID: {sample.element_id}, Question: {sample.wizard_question[:50]}...")
+                else:
+                    logger.warning(f"[FRAMEWORK_WIZARD] No wizard questions found for company {company_id}")
+            else:
+                logger.warning(f"[FRAMEWORK_WIZARD] Company {company_id} has no framework assignments")
+
+            # Process questions
             processor = FrameworkProcessor(company)
             questions = processor.get_wizard_questions(framework_id=framework_id)
+
+            logger.info(f"[FRAMEWORK_WIZARD] Processor returned {len(questions) if questions else 0} questions")
+
             return Response({'questions': questions})
 
         except Company.DoesNotExist:
+            logger.error(f"[FRAMEWORK_WIZARD] Company {company_id} does not exist")
             return Response(
                 {'error': 'Company not found'},
                 status=status.HTTP_404_NOT_FOUND
