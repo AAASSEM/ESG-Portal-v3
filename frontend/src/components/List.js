@@ -114,11 +114,16 @@ const List = () => {
         const elements = await response.json();
         console.log('📋 Fetched conditional elements:', elements);
 
-        // Ensure elements is an array
-        const elementsArray = Array.isArray(elements) ? elements : [];
-
-        if (!Array.isArray(elements)) {
-          console.warn('⚠️ Backend returned non-array data for framework elements:', typeof elements, elements);
+        // Handle DRF paginated response format
+        let elementsArray = [];
+        if (Array.isArray(elements)) {
+          elementsArray = elements;
+        } else if (elements && Array.isArray(elements.results)) {
+          // DRF paginated response
+          elementsArray = elements.results;
+          console.log('✅ Using paginated results:', elementsArray.length, 'elements');
+        } else {
+          console.warn('⚠️ Backend returned unexpected data format for framework elements:', typeof elements, elements);
         }
 
         const questions = elementsArray

@@ -243,21 +243,26 @@ const Rame = () => {
 
   // Helper functions for framework styling
   const getFrameworkIcon = (frameworkId) => {
+    console.log('🎨 [PROD] Getting icon for framework ID:', frameworkId);
     const iconMap = {
       'GREEN-KEY-HOSPITALITY': 'fas fa-key',
       'HOSPITALITY-MASTER': 'fas fa-database',
+      'ADX-ESG-DISCLOSURE-GUIDANCE': 'fas fa-file-contract',
       'GRI': 'fas fa-globe',
       'SASB': 'fas fa-chart-bar',
       'TCFD': 'fas fa-thermometer-half',
       'CDP': 'fas fa-cloud'
     };
-    return iconMap[frameworkId] || 'fas fa-certificate';
+    const icon = iconMap[frameworkId] || 'fas fa-certificate';
+    console.log('🎨 [PROD] Mapped icon:', icon);
+    return icon;
   };
 
   const getFrameworkColor = (frameworkId) => {
     const colorMap = {
       'GREEN-KEY-HOSPITALITY': 'green',
       'HOSPITALITY-MASTER': 'blue',
+      'ADX-ESG-DISCLOSURE-GUIDANCE': 'indigo',
       'GRI': 'blue',
       'SASB': 'purple',
       'TCFD': 'orange',

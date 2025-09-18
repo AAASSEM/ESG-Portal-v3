@@ -278,14 +278,24 @@ class CompanyViewSet(viewsets.ModelViewSet):
     def frameworks(self, request, pk=None):
         """Get company's assigned mandatory frameworks"""
         company = self._get_user_company(pk)
-        
+
+        print(f"🔍 [PROD] Company frameworks request for company: {company.name} (ID: {pk})")
+        print(f"🔍 [PROD] User: {request.user}")
+
         # Get company's assigned frameworks (company-wide, visible to all users)
         company_frameworks = CompanyFramework.objects.filter(
             company=company
         )
+        print(f"🔍 [PROD] CompanyFramework count: {company_frameworks.count()}")
+
         frameworks = [cf.framework for cf in company_frameworks]
+        print(f"🔍 [PROD] Assigned frameworks:")
+        for fw in frameworks:
+            print(f"🔍 [PROD]   - {fw.framework_id}: {fw.name} (type: {fw.type})")
+
         serializer = FrameworkSerializer(frameworks, many=True)
-        
+        print(f"🔍 [PROD] Serialized frameworks data: {serializer.data}")
+
         return Response(serializer.data)
     
     @action(detail=True, methods=['get'])
@@ -659,8 +669,15 @@ class FrameworkViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'])
     def voluntary(self, request):
         """Get all voluntary frameworks"""
+        print(f"🔍 [PROD] Voluntary frameworks request from user: {request.user}")
         frameworks = FrameworkService.get_voluntary_frameworks()
+        print(f"🔍 [PROD] Voluntary frameworks count: {frameworks.count()}")
+
+        for fw in frameworks:
+            print(f"🔍 [PROD]   - {fw.framework_id}: {fw.name} (type: {fw.type})")
+
         serializer = self.get_serializer(frameworks, many=True)
+        print(f"🔍 [PROD] Serialized data: {serializer.data}")
         return Response(serializer.data)
     
     @action(detail=False, methods=['post'])
@@ -755,25 +772,40 @@ class FrameworkElementViewSet(viewsets.ReadOnlyModelViewSet):
         """Filter framework elements based on company context"""
         queryset = super().get_queryset()
 
+        # Production logging
+        print(f"🔍 [PROD] FrameworkElement total count: {queryset.count()}")
+        print(f"🔍 [PROD] User: {self.request.user}")
+        print(f"🔍 [PROD] Query params: {dict(self.request.query_params)}")
+
         # Filter by framework if specified
         framework_id = self.request.query_params.get('framework_id')
         if framework_id:
             queryset = queryset.filter(framework_id=framework_id)
+            print(f"🔍 [PROD] Filtered by framework_id '{framework_id}': {queryset.count()}")
 
         # Filter by sector if specified
         sector = self.request.query_params.get('sector')
         if sector:
             queryset = queryset.filter(sector=sector)
+            print(f"🔍 [PROD] Filtered by sector '{sector}': {queryset.count()}")
 
         # Filter by category if specified
         category = self.request.query_params.get('category')
         if category:
             queryset = queryset.filter(category=category)
+            print(f"🔍 [PROD] Filtered by category '{category}': {queryset.count()}")
 
         # Filter by type if specified
         element_type = self.request.query_params.get('type')
         if element_type:
             queryset = queryset.filter(type=element_type)
+            print(f"🔍 [PROD] Filtered by type '{element_type}': {queryset.count()}")
+
+        final_count = queryset.count()
+        print(f"🔍 [PROD] Final queryset count: {final_count}")
+
+        if final_count > 0:
+            print(f"🔍 [PROD] Sample elements: {[e.name_plain for e in queryset[:3]]}")
 
         return queryset.order_by('official_code')
 
