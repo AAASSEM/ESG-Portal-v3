@@ -44,4 +44,7 @@ python3 init_production_data.py
 echo "Fixing user company associations..."
 python3 fix_user_companies.py
 
+echo "Cleaning up frameworks..."
+python manage.py cleanup_frameworks
+
 echo "Build complete!"
