@@ -1,0 +1,46 @@
+[
+{
+  "model": "core.framework",
+  "pk": "DUBAI-SUSTAINABLE-TOURISM",
+  "fields": {
+    "name": "Dubai Sustainable Tourism",
+    "type": "mandatory_conditional",
+    "description": "ESG framework for hospitality sector",
+    "condition_emirate": "",
+    "condition_sector": ""
+  }
+},
+{
+  "model": "core.framework",
+  "pk": "GREEN-KEY-HOSPITALITY",
+  "fields": {
+    "name": "Green Key Hospitality Certification",
+    "type": "voluntary",
+    "description": "ESG framework for hospitality sector",
+    "condition_emirate": "",
+    "condition_sector": ""
+  }
+},
+{
+  "model": "core.framework",
+  "pk": "HOSPITALITY-MASTER",
+  "fields": {
+    "name": "Master Framework (Consolidated Data)",
+    "type": "voluntary",
+    "description": "ESG framework for hospitality sector",
+    "condition_emirate": "",
+    "condition_sector": ""
+  }
+},
+{
+  "model": "core.framework",
+  "pk": "UAE-CLIMATE-LAW-2024",
+  "fields": {
+    "name": "UAE Climate Change Law 2024",
+    "type": "mandatory",
+    "description": "ESG framework for generic sector",
+    "condition_emirate": "",
+    "condition_sector": ""
+  }
+}
+]
