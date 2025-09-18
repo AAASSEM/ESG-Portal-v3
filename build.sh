@@ -32,6 +32,10 @@ python3 manage.py migrate
 echo "Loading initial framework data..."
 python3 manage.py load_initial_data
 
+# Fix framework assignment flags
+echo "Fixing framework assignments..."
+python3 manage.py fix_auto_assigned
+
 # Initialize production data
 echo "Initializing production data..."
 python3 init_production_data.py
