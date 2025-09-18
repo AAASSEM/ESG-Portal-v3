@@ -28,6 +28,10 @@ python3 manage.py collectstatic --no-input
 echo "Running database migrations..."
 python3 manage.py migrate
 
+# Load initial framework data (frameworks, elements, assignments)
+echo "Loading initial framework data..."
+python3 manage.py load_initial_data
+
 # Initialize production data
 echo "Initializing production data..."
 python3 init_production_data.py
